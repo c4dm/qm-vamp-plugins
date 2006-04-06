@@ -8,9 +8,9 @@ OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 
 INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
-LIBPATH += ../qm-dsp
+LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
-LIBS += -lqm-dsp
+LIBS += -lqm-dsp -lvamp-sdk
 
 DEPENDPATH += plugins
 INCLUDEPATH += . plugins
@@ -22,6 +22,4 @@ HEADERS += plugins/BeatDetect.h \
 SOURCES += plugins/BeatDetect.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/TonalChangeDetect.cpp \
-           ../vamp-plugin-sdk/vamp-sdk/PluginAdapter.cpp \
-           ../vamp-plugin-sdk/vamp-sdk/RealTime.cpp \
            ./libmain.cpp
