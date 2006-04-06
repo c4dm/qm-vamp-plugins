@@ -9,8 +9,8 @@
 
 #include "ChromagramPlugin.h"
 
-#include "base/Pitch.h"
-#include "dsp/chromagram/Chromagram.h"
+#include <base/Pitch.h>
+#include <dsp/chromagram/Chromagram.h>
 
 using std::string;
 using std::vector;

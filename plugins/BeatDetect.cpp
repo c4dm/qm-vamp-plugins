@@ -9,8 +9,8 @@
 
 #include "BeatDetect.h"
 
-#include "dsp/onsets/DetectionFunction.h"
-#include "dsp/tempotracking/TempoTrack.h"
+#include <dsp/onsets/DetectionFunction.h>
+#include <dsp/tempotracking/TempoTrack.h>
 
 using std::string;
 using std::vector;

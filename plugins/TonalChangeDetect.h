@@ -10,11 +10,11 @@
 #ifndef _TONALCHANGEDETECT_
 #define _TONALCHANGEDETECT_
 
-#include "dsp/chromagram/Chromagram.h"
-#include "dsp/tonal/TonalEstimator.h"
-#include "dsp/tonal/TCSgram.h"
+#include <vamp-sdk/Plugin.h>
 
-#include "vamp-sdk/Plugin.h"
+#include <dsp/chromagram/Chromagram.h>
+#include <dsp/tonal/TonalEstimator.h>
+#include <dsp/tonal/TCSgram.h>
 
 #include <queue>
 #include <vector>

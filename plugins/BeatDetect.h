@@ -7,12 +7,10 @@
     All rights reserved.
 */
 
-//!!! This guard inadequate, must be unique to plugin if plugin is to
-//be compilable in with app as well as being, well, a plugin
 #ifndef _BEAT_DETECT_PLUGIN_H_
 #define _BEAT_DETECT_PLUGIN_H_
 
-#include "vamp-sdk/Plugin.h"
+#include <vamp-sdk/Plugin.h>
 
 class BeatDetectorData;
 

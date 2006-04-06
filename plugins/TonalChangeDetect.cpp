@@ -9,9 +9,9 @@
 
 #include "TonalChangeDetect.h"
 
-#include "base/Pitch.h"
-#include "dsp/chromagram/Chromagram.h"
-#include "dsp/tonal/ChangeDetectionFunction.h"
+#include <base/Pitch.h>
+#include <dsp/chromagram/Chromagram.h>
+#include <dsp/tonal/ChangeDetectionFunction.h>
 
 TonalChangeDetect::TonalChangeDetect(float fInputSampleRate)	
     : Vamp::Plugin(fInputSampleRate),
