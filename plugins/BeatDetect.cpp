@@ -55,19 +55,19 @@ BeatDetector::~BeatDetector()
 string
 BeatDetector::getName() const
 {
-    return "beats";
+    return "qm-tempotracker";
 }
 
 string
 BeatDetector::getDescription() const
 {
-    return "Beat Detector";
+    return "Tempo Tracker";
 }
 
 string
 BeatDetector::getMaker() const
 {
-    return "QMUL";
+    return "Queen Mary, University of London";
 }
 
 int

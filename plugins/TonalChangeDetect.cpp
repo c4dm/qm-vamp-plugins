@@ -76,7 +76,7 @@ std::string TonalChangeDetect::getName() const
 
 std::string TonalChangeDetect::getDescription() const
 {
-    return "TonalChange";
+    return "Tonal Change";
 }
 
 std::string TonalChangeDetect::getMaker() const

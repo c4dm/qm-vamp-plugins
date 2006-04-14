@@ -69,7 +69,7 @@ ChromagramPlugin::getDescription() const
 string
 ChromagramPlugin::getMaker() const
 {
-    return "QMUL";
+    return "Queen Mary, University of London";
 }
 
 int
