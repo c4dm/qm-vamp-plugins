@@ -18,8 +18,10 @@ INCLUDEPATH += . plugins
 # Input
 HEADERS += plugins/BeatDetect.h \
            plugins/ChromagramPlugin.h \
+           plugins/ConstantQSpectrogram.h \
            plugins/TonalChangeDetect.h
 SOURCES += plugins/BeatDetect.cpp \
            plugins/ChromagramPlugin.cpp \
+           plugins/ConstantQSpectrogram.cpp \
            plugins/TonalChangeDetect.cpp \
            ./libmain.cpp

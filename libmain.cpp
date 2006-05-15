@@ -12,10 +12,12 @@
 
 #include "plugins/BeatDetect.h"
 #include "plugins/ChromagramPlugin.h"
+#include "plugins/ConstantQSpectrogram.h"
 #include "plugins/TonalChangeDetect.h"
 
 static Vamp::PluginAdapter<BeatDetector> beatDetectorAdapter;
 static Vamp::PluginAdapter<ChromagramPlugin> chromagramPluginAdapter;
+static Vamp::PluginAdapter<ConstantQSpectrogram> constantQAdapter;
 static Vamp::PluginAdapter<TonalChangeDetect> tonalChangeDetectorAdapter;
 
 const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int index)
@@ -23,7 +25,8 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int index)
     switch (index) {
     case  0: return beatDetectorAdapter.getDescriptor();
     case  1: return chromagramPluginAdapter.getDescriptor();
-    case  2: return tonalChangeDetectorAdapter.getDescriptor();
+    case  2: return constantQAdapter.getDescriptor();
+    case  3: return tonalChangeDetectorAdapter.getDescriptor();
     default: return 0;
     }
 }

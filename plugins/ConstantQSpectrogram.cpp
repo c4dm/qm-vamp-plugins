@@ -7,21 +7,22 @@
     All rights reserved.
 */
 
-#include "ChromagramPlugin.h"
+#include "ConstantQSpectrogram.h"
 
 #include <base/Pitch.h>
-#include <dsp/chromagram/Chromagram.h>
+#include <dsp/chromagram/ConstantQ.h>
 
 using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
 
-ChromagramPlugin::ChromagramPlugin(float inputSampleRate) :
+ConstantQSpectrogram::ConstantQSpectrogram(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
-    m_chromagram(0),
+    m_cq(0),
     m_step(0),
-    m_block(0)
+    m_block(0),
+    m_bins(1)
 {
     m_minMIDIPitch = 12;
     m_maxMIDIPitch = 96;
@@ -33,7 +34,7 @@ ChromagramPlugin::ChromagramPlugin(float inputSampleRate) :
 }
 
 void
-ChromagramPlugin::setupConfig()
+ConstantQSpectrogram::setupConfig()
 {
     m_config.FS = lrintf(m_inputSampleRate);
     m_config.min = Pitch::getFrequencyForPitch
@@ -42,49 +43,48 @@ ChromagramPlugin::setupConfig()
         (m_maxMIDIPitch, 0, m_tuningFrequency);
     m_config.BPO = m_bpo;
     m_config.CQThresh = 0.0054;
-    m_config.isNormalised = m_normalized;
 
     m_step = 0;
     m_block = 0;
 }
 
-ChromagramPlugin::~ChromagramPlugin()
+ConstantQSpectrogram::~ConstantQSpectrogram()
 {
-    delete m_chromagram;
+    delete m_cq;
 }
 
 string
-ChromagramPlugin::getName() const
+ConstantQSpectrogram::getName() const
 {
-    return "qm-chromagram";
+    return "qm-constantq";
 }
 
 string
-ChromagramPlugin::getDescription() const
+ConstantQSpectrogram::getDescription() const
 {
-    return "Chromagram";
+    return "Constant-Q Spectrogram";
 }
 
 string
-ChromagramPlugin::getMaker() const
+ConstantQSpectrogram::getMaker() const
 {
     return "Queen Mary, University of London";
 }
 
 int
-ChromagramPlugin::getPluginVersion() const
+ConstantQSpectrogram::getPluginVersion() const
 {
-    return 2;
+    return 1;
 }
 
 string
-ChromagramPlugin::getCopyright() const
+ConstantQSpectrogram::getCopyright() const
 {
     return "Copyright (c) 2006 - All Rights Reserved";
 }
 
-ChromagramPlugin::ParameterList
-ChromagramPlugin::getParameterDescriptors() const
+ConstantQSpectrogram::ParameterList
+ConstantQSpectrogram::getParameterDescriptors() const
 {
     ParameterList list;
 
@@ -94,7 +94,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
-    desc.defaultValue = 12;
+    desc.defaultValue = 36;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
     list.push_back(desc);
@@ -104,7 +104,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
-    desc.defaultValue = 96;
+    desc.defaultValue = 84;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
     list.push_back(desc);
@@ -142,7 +142,7 @@ ChromagramPlugin::getParameterDescriptors() const
 }
 
 float
-ChromagramPlugin::getParameter(std::string param) const
+ConstantQSpectrogram::getParameter(std::string param) const
 {
     if (param == "minpitch") {
         return m_minMIDIPitch;
@@ -159,13 +159,13 @@ ChromagramPlugin::getParameter(std::string param) const
     if (param == "normalized") {
         return m_normalized;
     }
-    std::cerr << "WARNING: ChromagramPlugin::getParameter: unknown parameter \""
+    std::cerr << "WARNING: ConstantQSpectrogram::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
     return 0.0;
 }
 
 void
-ChromagramPlugin::setParameter(std::string param, float value)
+ConstantQSpectrogram::setParameter(std::string param, float value)
 {
     if (param == "minpitch") {
         m_minMIDIPitch = lrintf(value);
@@ -178,7 +178,7 @@ ChromagramPlugin::setParameter(std::string param, float value)
     } else if (param == "normalized") {
         m_normalized = (value > 0.0001);
     } else {
-        std::cerr << "WARNING: ChromagramPlugin::setParameter: unknown parameter \""
+        std::cerr << "WARNING: ConstantQSpectrogram::setParameter: unknown parameter \""
                   << param << "\"" << std::endl;
     }
 
@@ -187,11 +187,11 @@ ChromagramPlugin::setParameter(std::string param, float value)
 
 
 bool
-ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
+ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
-    if (m_chromagram) {
-	delete m_chromagram;
-	m_chromagram = 0;
+    if (m_cq) {
+	delete m_cq;
+	m_cq = 0;
     }
 
     if (channels < getMinChannelCount() ||
@@ -200,69 +200,71 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (stepSize != m_step) return false;
     if (blockSize != m_block) return false;
 
-    std::cerr << "ChromagramPlugin::initialise: step " << stepSize << ", block "
+    std::cerr << "ConstantQSpectrogram::initialise: step " << stepSize << ", block "
 	      << blockSize << std::endl;
 
-    m_chromagram = new Chromagram(m_config);
+    m_cq = new ConstantQ(m_config);
+    m_bins = (int)ceil(m_bpo * log(m_config.max / m_config.min) / log(2.0));
+    m_cq->sparsekernel();
+
     return true;
 }
 
 void
-ChromagramPlugin::reset()
+ConstantQSpectrogram::reset()
 {
-    if (m_chromagram) {
-	delete m_chromagram;
-	m_chromagram = new Chromagram(m_config);
+    if (m_cq) {
+	delete m_cq;
+	m_cq = new ConstantQ(m_config);
     }
 }
 
 size_t
-ChromagramPlugin::getPreferredStepSize() const
+ConstantQSpectrogram::getPreferredStepSize() const
 {
     if (!m_step) {
-	Chromagram chroma(m_config);
-	m_step = chroma.getHopSize();
-	m_block = chroma.getFrameSize();
+	ConstantQ cq(m_config);
+	m_step = cq.gethop();
+	m_block = cq.getfftlength();
     }
 
     return m_step;
 }
 
 size_t
-ChromagramPlugin::getPreferredBlockSize() const
+ConstantQSpectrogram::getPreferredBlockSize() const
 {
     if (!m_block) {
-	Chromagram chroma(m_config);
-	m_step = chroma.getHopSize();
-	m_block = chroma.getFrameSize();
+	ConstantQ cq(m_config);
+	m_step = cq.gethop();
+	m_block = cq.getfftlength();
     }
 
     return m_block;
 }
 
-ChromagramPlugin::OutputList
-ChromagramPlugin::getOutputDescriptors() const
+ConstantQSpectrogram::OutputList
+ConstantQSpectrogram::getOutputDescriptors() const
 {
     OutputList list;
 
     OutputDescriptor d;
-    d.name = "chromagram";
+    d.name = "constantq";
     d.unit = "";
-    d.description = "Chromagram";
+    d.description = "Constant-Q Spectrogram";
     d.hasFixedBinCount = true;
-    d.binCount = m_config.BPO;
+    d.binCount = m_bins;
+
+    std::cerr << "Bin count " << d.binCount << std::endl;
     
     const char *names[] =
 	{ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
-    if (d.binCount % 12 == 0) {
-        for (int i = 0; i < 12; ++i) {
+    if (m_bpo == 12) {
+        for (int i = 0; i < d.binCount; ++i) {
             int ipc = m_minMIDIPitch % 12;
             int index = (i + ipc) % 12;
             d.binNames.push_back(names[index]);
-            for (int j = 0; j < d.binCount / 12 - 1; ++j) {
-                d.binNames.push_back("");
-            }
         }
     } else {
         d.binNames.push_back(names[m_minMIDIPitch % 12]);
@@ -278,8 +280,8 @@ ChromagramPlugin::getOutputDescriptors() const
     return list;
 }
 
-ChromagramPlugin::Feature
-ChromagramPlugin::normalize(const Feature &feature)
+ConstantQSpectrogram::Feature
+ConstantQSpectrogram::normalize(const Feature &feature)
 {
     float min = 0.0, max = 0.0;
 
@@ -300,18 +302,20 @@ ChromagramPlugin::normalize(const Feature &feature)
     return normalized;
 }
 
-ChromagramPlugin::FeatureSet
-ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
+ConstantQSpectrogram::FeatureSet
+ConstantQSpectrogram::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
 {
-    if (!m_chromagram) {
-	cerr << "ERROR: ChromagramPlugin::process: "
-	     << "Chromagram has not been initialised"
+    if (!m_cq) {
+	cerr << "ERROR: ConstantQSpectrogram::process: "
+	     << "Constant-Q has not been initialised"
 	     << endl;
 	return FeatureSet();
     }
 
     double *real = new double[m_block];
     double *imag = new double[m_block];
+    double *cqre = new double[m_bins];
+    double *cqim = new double[m_bins];
 
     for (size_t i = 0; i < m_block/2; ++i) {
 	real[i] = inputBuffers[0][i*2];
@@ -320,25 +324,30 @@ ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
         imag[m_block - i] = imag[i];
     }
 
-    double *output = m_chromagram->process(real, imag);
+    m_cq->process(real, imag, cqre, cqim);
 
     delete[] real;
     delete[] imag;
 
     Feature feature;
     feature.hasTimestamp = false;
-    for (size_t i = 0; i < m_config.BPO; ++i) {
-	feature.values.push_back(output[i]);
+    for (size_t i = 0; i < m_bins; ++i) {
+	feature.values.push_back(sqrt(cqre[i] * cqre[i] +
+                                      cqim[i] * cqim[i]));
     }
     feature.label = "";
 
+    delete[] cqre;
+    delete[] cqim;
+
     FeatureSet returnFeatures;
-    returnFeatures[0].push_back(feature);
+    if (m_normalized) returnFeatures[0].push_back(normalize(feature));
+    else returnFeatures[0].push_back(feature);
     return returnFeatures;
 }
 
-ChromagramPlugin::FeatureSet
-ChromagramPlugin::getRemainingFeatures()
+ConstantQSpectrogram::FeatureSet
+ConstantQSpectrogram::getRemainingFeatures()
 {
     return FeatureSet();
 }
