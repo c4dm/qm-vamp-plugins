@@ -67,7 +67,7 @@ BeatDetector::getDescription() const
 string
 BeatDetector::getMaker() const
 {
-    return "Queen Mary, University of London";
+    return "Christian Landone and Matthew Davies, Queen Mary, University of London";
 }
 
 int
@@ -161,7 +161,9 @@ BeatDetector::reset()
 size_t
 BeatDetector::getPreferredStepSize() const
 {
-    return size_t(m_inputSampleRate * m_stepSecs + 0.0001);
+    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
+    std::cerr << "BeatDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
+    return step;
 }
 
 size_t
@@ -210,14 +212,25 @@ BeatDetector::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
 	return FeatureSet();
     }
 
-    // convert float* to double*
-    double *tempBuffer = new double[m_d->dfConfig.frameLength];
-    for (size_t i = 0; i < m_d->dfConfig.frameLength; ++i) {
-	tempBuffer[i] = inputBuffers[0][i];
+    size_t len = m_d->dfConfig.frameLength / 2;
+
+    double *magnitudes = new double[len];
+    double *phases = new double[len];
+
+    // We only support a single input channel
+
+    for (size_t i = 0; i < len; ++i) {
+
+        magnitudes[i] = sqrt(inputBuffers[0][i*2  ] * inputBuffers[0][i*2  ] +
+                             inputBuffers[0][i*2+1] * inputBuffers[0][i*2+1]);
+
+	phases[i] = atan2(-inputBuffers[0][i*2+1], inputBuffers[0][i*2]);
     }
 
-    double output = m_d->df->process(tempBuffer);
-    delete[] tempBuffer;
+    double output = m_d->df->process(magnitudes, phases);
+
+    delete[] magnitudes;
+    delete[] phases;
 
     m_d->dfOutput.push_back(output);
 
