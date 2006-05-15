@@ -21,8 +21,7 @@ ChromagramPlugin::ChromagramPlugin(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_chromagram(0),
     m_step(0),
-    m_block(0),
-    m_stepDelay(0)
+    m_block(0)
 {
     m_minMIDIPitch = 12;
     m_maxMIDIPitch = 96;
@@ -201,12 +200,8 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (stepSize != m_step) return false;
     if (blockSize != m_block) return false;
 
-//    m_stepDelay = (blockSize - stepSize) / 2;
-//    m_stepDelay = m_stepDelay / stepSize;
-    m_stepDelay = (blockSize - stepSize) / stepSize; //!!! why? seems about right to look at, but...
-
     std::cerr << "ChromagramPlugin::initialise: step " << stepSize << ", block "
-	      << blockSize << ", delay " << m_stepDelay << std::endl;
+	      << blockSize << std::endl;
 
     m_chromagram = new Chromagram(m_config);
     return true;
@@ -219,7 +214,6 @@ ChromagramPlugin::reset()
 	delete m_chromagram;
 	m_chromagram = new Chromagram(m_config);
     }
-    while (!m_pending.empty()) m_pending.pop();
 }
 
 size_t
@@ -252,7 +246,6 @@ ChromagramPlugin::getOutputDescriptors() const
     OutputList list;
 
     OutputDescriptor d;
-//    d.name = "unnormalized";
     d.name = "chromagram";
     d.unit = "";
     d.description = "Chromagram";
@@ -323,15 +316,21 @@ ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
 	return FeatureSet();
     }
 
-    // convert float* to double*
-    double *tempBuffer = new double[m_block];
-    for (size_t i = 0; i < m_block; ++i) {
-	tempBuffer[i] = inputBuffers[0][i];
+    double *real = new double[m_block];
+    double *imag = new double[m_block];
+
+    for (size_t i = 0; i < m_block/2; ++i) {
+	real[i] = inputBuffers[0][i*2];
+	real[m_block - i] = real[i];
+        imag[i] = inputBuffers[0][i*2+1];
+        imag[m_block - i] = imag[i];
     }
 
-    double *output = m_chromagram->process(tempBuffer);
-    delete[] tempBuffer;
-    
+    double *output = m_chromagram->process(real, imag);
+
+    delete[] real;
+    delete[] imag;
+
     Feature feature;
     feature.hasTimestamp = false;
     for (size_t i = 0; i < m_config.BPO; ++i) {
@@ -340,37 +339,13 @@ ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
     feature.label = "";
 
     FeatureSet returnFeatures;
-
-    if (m_stepDelay == 0) {
-	returnFeatures[0].push_back(feature);
-//	returnFeatures[1].push_back(normalize(feature));
-	return returnFeatures;
-    }
-	
-    if (m_pending.size() == m_stepDelay) {
-	returnFeatures[0].push_back(m_pending.front());
-//	returnFeatures[1].push_back(normalize(m_pending.front()));
-	m_pending.pop();
-    } else {
-	returnFeatures[0].push_back(Feature());
-//	returnFeatures[1].push_back(Feature());
-    }
-
-    m_pending.push(feature);
+    returnFeatures[0].push_back(feature);
     return returnFeatures;
 }
 
 ChromagramPlugin::FeatureSet
 ChromagramPlugin::getRemainingFeatures()
 {
-    FeatureSet returnFeatures;
-
-    while (!m_pending.empty()) {
-	returnFeatures[0].push_back(m_pending.front());
-//	returnFeatures[1].push_back(normalize(m_pending.front()));
-	m_pending.pop();
-    }
-	
-    return returnFeatures;
+    return FeatureSet();
 }
 

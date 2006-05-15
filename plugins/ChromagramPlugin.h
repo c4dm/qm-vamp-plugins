@@ -24,7 +24,7 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 
-    InputDomain getInputDomain() const { return TimeDomain; }
+    InputDomain getInputDomain() const { return FrequencyDomain; }
 
     std::string getName() const;
     std::string getDescription() const;
@@ -58,8 +58,6 @@ protected:
     Chromagram *m_chromagram;
     mutable size_t m_step;
     mutable size_t m_block;
-    size_t m_stepDelay;
-    std::queue<Feature> m_pending;
 
     Feature normalize(const Feature &);
 };
