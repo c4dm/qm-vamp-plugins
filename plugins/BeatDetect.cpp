@@ -296,7 +296,7 @@ BeatDetector::getRemainingFeatures()
 		bpm = (60.0 * m_inputSampleRate) / frameIncrement;
 		bpm = int(bpm * 100.0 + 0.5) / 100.0;
                 static char label[100];
-                sprintf(label, "%f bpm", bpm);
+                sprintf(label, "%.2f bpm", bpm);
                 feature.label = label;
 	    }
 	}
