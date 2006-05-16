@@ -152,6 +152,12 @@ BeatDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
         return false;
     }
 
+    if (stepSize != getPreferredStepSize()) {
+        std::cerr << "BeatDetector::initialise: Unsupported step size for this sample rate: "
+                  << stepSize << std::endl;
+        return false;
+    }
+
     DFConfig dfConfig;
     dfConfig.DFType = m_dfType;
     dfConfig.stepSecs = float(stepSize) / m_inputSampleRate;
