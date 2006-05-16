@@ -140,7 +140,17 @@ BeatDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     }
 
     if (channels < getMinChannelCount() ||
-	channels > getMaxChannelCount()) return false;
+	channels > getMaxChannelCount()) {
+        std::cerr << "BeatDetector::initialise: Unsupported channel count: "
+                  << channels << std::endl;
+        return false;
+    }
+
+    if (blockSize != getPreferredStepSize() * 2) {
+        std::cerr << "BeatDetector::initialise: Unsupported block size for this sample rate: "
+                  << blockSize << std::endl;
+        return false;
+    }
 
     DFConfig dfConfig;
     dfConfig.DFType = m_dfType;
@@ -162,7 +172,7 @@ size_t
 BeatDetector::getPreferredStepSize() const
 {
     size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
-    std::cerr << "BeatDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
+//    std::cerr << "BeatDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }
 
