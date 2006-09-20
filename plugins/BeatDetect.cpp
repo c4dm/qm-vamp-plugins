@@ -148,13 +148,13 @@ BeatDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     if (blockSize != getPreferredStepSize() * 2) {
         std::cerr << "BeatDetector::initialise: Unsupported block size for this sample rate: "
-                  << blockSize << std::endl;
+                  << blockSize << " (wanted " << (getPreferredStepSize() * 2) << ")" << std::endl;
         return false;
     }
 
     if (stepSize != getPreferredStepSize()) {
         std::cerr << "BeatDetector::initialise: Unsupported step size for this sample rate: "
-                  << stepSize << std::endl;
+                  << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
 

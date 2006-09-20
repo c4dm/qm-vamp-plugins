@@ -197,13 +197,21 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    if (stepSize != m_step) return false;
-    if (blockSize != m_block) return false;
-
     std::cerr << "ChromagramPlugin::initialise: step " << stepSize << ", block "
 	      << blockSize << std::endl;
 
     m_chromagram = new Chromagram(m_config);
+
+    m_step = m_chromagram->getHopSize();
+    m_block = m_chromagram->getFrameSize();
+
+    if (stepSize != m_step ||
+        blockSize != m_block) {
+        delete m_chromagram;
+        m_chromagram = 0;
+        return false;
+    }
+
     return true;
 }
 
