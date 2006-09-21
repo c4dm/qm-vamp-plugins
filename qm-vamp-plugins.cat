@@ -1,0 +1,4 @@
+vamp:qm-vamp-plugins:qm-tempotracker::Time > Tempo
+vamp:qm-vamp-plugins:qm-chromagram::Visualisation
+vamp:qm-vamp-plugins:qm-constantq::Visualisation
+vamp:qm-vamp-plugins:qm-tonalchange::Key and Tonality
