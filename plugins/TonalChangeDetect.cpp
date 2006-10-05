@@ -45,12 +45,20 @@ bool TonalChangeDetect::initialise(size_t channels, size_t stepSize, size_t bloc
         return false;
     }
 	
+    m_chromagram = new Chromagram(m_config);
+    m_step = m_chromagram->getHopSize();
+    m_block = m_chromagram->getFrameSize();
+
     if (stepSize != m_step) {
         std::cerr << "TonalChangeDetect::initialise: Given step size " << stepSize << " differs from only acceptable value " << m_step << std::endl;
+        delete m_chromagram;
+        m_chromagram = 0;
         return false;
     }
     if (blockSize != m_block) {
         std::cerr << "TonalChangeDetect::initialise: Given step size " << stepSize << " differs from only acceptable value " << m_step << std::endl;
+        delete m_chromagram;
+        m_chromagram = 0;
         return false;
     }
 	
@@ -60,8 +68,6 @@ bool TonalChangeDetect::initialise(size_t channels, size_t stepSize, size_t bloc
 	
     std::cerr << "TonalChangeDetect::initialise: step " << stepSize << ", block "
               << blockSize << ", delay " << m_stepDelay << std::endl;
-	
-    m_chromagram = new Chromagram(m_config);
 	
     m_vaCurrentVector.resize(12, 0.0);
 	
