@@ -336,7 +336,9 @@ ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
     Feature feature;
     feature.hasTimestamp = false;
     for (size_t i = 0; i < m_config.BPO; ++i) {
-	feature.values.push_back(output[i]);
+        double value = output[i];
+        if (isnan(value)) value = 0.0;
+	feature.values.push_back(value);
     }
     feature.label = "";
 

@@ -338,8 +338,12 @@ ConstantQSpectrogram::process(float **inputBuffers, Vamp::RealTime /* timestamp 
     Feature feature;
     feature.hasTimestamp = false;
     for (size_t i = 0; i < m_bins; ++i) {
-	feature.values.push_back(sqrt(cqre[i] * cqre[i] +
-                                      cqim[i] * cqim[i]));
+        double re = cqre[i];
+        double im = cqim[i];
+        if (isnan(re)) re = 0.0;
+        if (isnan(im)) im = 0.0;
+        double value = sqrt(re * re + im * im);
+	feature.values.push_back(value);
     }
     feature.label = "";
 

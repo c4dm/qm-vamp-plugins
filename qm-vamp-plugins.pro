@@ -12,7 +12,7 @@ MOC_DIR = tmp_moc
 INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
 LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
-LIBS += -lqm-dsp -lvamp-sdk
+LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -Wl,-Bdynamic
 
 DEPENDPATH += plugins
 INCLUDEPATH += . plugins
