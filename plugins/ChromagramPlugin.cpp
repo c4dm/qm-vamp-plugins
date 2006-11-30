@@ -268,7 +268,7 @@ ChromagramPlugin::getOutputDescriptors() const
             int ipc = m_minMIDIPitch % 12;
             int index = (i + ipc) % 12;
             d.binNames.push_back(names[index]);
-            for (int j = 0; j < d.binCount / 12 - 1; ++j) {
+            for (int j = 0; j < int(d.binCount) / 12 - 1; ++j) {
                 d.binNames.push_back("");
             }
         }
@@ -323,9 +323,9 @@ ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
 
     for (size_t i = 0; i < m_block/2; ++i) {
 	real[i] = inputBuffers[0][i*2];
-	real[m_block - i] = real[i];
+	if (i > 0) real[m_block - i] = real[i];
         imag[i] = inputBuffers[0][i*2+1];
-        imag[m_block - i] = imag[i];
+        if (i > 0) imag[m_block - i] = imag[i];
     }
 
     double *output = m_chromagram->process(real, imag);

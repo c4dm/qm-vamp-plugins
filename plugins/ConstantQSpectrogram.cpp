@@ -19,10 +19,10 @@ using std::endl;
 
 ConstantQSpectrogram::ConstantQSpectrogram(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
+    m_bins(1),
     m_cq(0),
     m_step(0),
-    m_block(0),
-    m_bins(1)
+    m_block(0)
 {
     m_minMIDIPitch = 12;
     m_maxMIDIPitch = 96;
@@ -267,7 +267,7 @@ ConstantQSpectrogram::getOutputDescriptors() const
 	{ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
 
     if (m_bpo == 12) {
-        for (int i = 0; i < d.binCount; ++i) {
+        for (int i = 0; i < int(d.binCount); ++i) {
             int ipc = m_minMIDIPitch % 12;
             int index = (i + ipc) % 12;
             d.binNames.push_back(names[index]);
@@ -325,9 +325,9 @@ ConstantQSpectrogram::process(float **inputBuffers, Vamp::RealTime /* timestamp 
 
     for (size_t i = 0; i < m_block/2; ++i) {
 	real[i] = inputBuffers[0][i*2];
-	real[m_block - i] = real[i];
+	if (i > 0) real[m_block - i] = real[i];
         imag[i] = inputBuffers[0][i*2+1];
-        imag[m_block - i] = imag[i];
+        if (i > 0) imag[m_block - i] = imag[i];
     }
 
     m_cq->process(real, imag, cqre, cqim);
@@ -337,7 +337,7 @@ ConstantQSpectrogram::process(float **inputBuffers, Vamp::RealTime /* timestamp 
 
     Feature feature;
     feature.hasTimestamp = false;
-    for (size_t i = 0; i < m_bins; ++i) {
+    for (int i = 0; i < m_bins; ++i) {
         double re = cqre[i];
         double im = cqim[i];
         if (isnan(re)) re = 0.0;
