@@ -309,7 +309,8 @@ ChromagramPlugin::normalize(const Feature &feature)
 }
 
 ChromagramPlugin::FeatureSet
-ChromagramPlugin::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
+ChromagramPlugin::process(const float *const *inputBuffers,
+                          Vamp::RealTime /* timestamp */)
 {
     if (!m_chromagram) {
 	cerr << "ERROR: ChromagramPlugin::process: "

@@ -289,7 +289,9 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     return list;
 }
 
-TonalChangeDetect::FeatureSet TonalChangeDetect::process(float **inputBuffers, Vamp::RealTime timestamp)
+TonalChangeDetect::FeatureSet
+TonalChangeDetect::process(const float *const *inputBuffers,
+                           Vamp::RealTime timestamp)
 {
     if (!m_chromagram) {
 	cerr << "ERROR: TonalChangeDetect::process: "

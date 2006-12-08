@@ -309,7 +309,8 @@ ConstantQSpectrogram::normalize(const Feature &feature)
 }
 
 ConstantQSpectrogram::FeatureSet
-ConstantQSpectrogram::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
+ConstantQSpectrogram::process(const float *const *inputBuffers,
+                              Vamp::RealTime /* timestamp */)
 {
     if (!m_cq) {
 	cerr << "ERROR: ConstantQSpectrogram::process: "

@@ -73,7 +73,7 @@ BeatDetector::getMaker() const
 int
 BeatDetector::getPluginVersion() const
 {
-    return 1;
+    return 2;
 }
 
 string
@@ -212,14 +212,25 @@ BeatDetector::getOutputDescriptors() const
     df.isQuantized = false;
     df.sampleType = OutputDescriptor::OneSamplePerStep;
 
+    OutputDescriptor tempo;
+    tempo.name = "tempo";
+    tempo.unit = "bpm";
+    tempo.description = "Tempo";
+    tempo.hasFixedBinCount = true;
+    tempo.binCount = 1;
+    tempo.sampleType = OutputDescriptor::VariableSampleRate;
+    tempo.sampleRate = 1.0 / m_stepSecs;
+
     list.push_back(beat);
     list.push_back(df);
+    list.push_back(tempo);
 
     return list;
 }
 
 BeatDetector::FeatureSet
-BeatDetector::process(float **inputBuffers, Vamp::RealTime /* timestamp */)
+BeatDetector::process(const float *const *inputBuffers,
+                      Vamp::RealTime /* timestamp */)
 {
     if (!m_d) {
 	cerr << "ERROR: BeatDetector::process: "
@@ -284,7 +295,8 @@ BeatDetector::getRemainingFeatures()
     ttParams.WinT.pre = 7;
 
     TempoTrack tempoTracker(ttParams);
-    vector<int> beats = tempoTracker.process(m_d->dfOutput);
+    vector<double> tempos;
+    vector<int> beats = tempoTracker.process(m_d->dfOutput, &tempos);
 
     FeatureSet returnFeatures;
 
@@ -318,6 +330,22 @@ BeatDetector::getRemainingFeatures()
 	}
 
 	returnFeatures[0].push_back(feature); // beats are output 0
+    }
+
+    double prevTempo = 0.0;
+
+    for (size_t i = 0; i < tempos.size(); ++i) {
+        
+        size_t frame = i * m_d->dfConfig.stepSize * ttParams.winLength;
+
+        if (tempos[i] > 1 && tempos[i] != prevTempo) {
+            Feature feature;
+            feature.hasTimestamp = true;
+            feature.timestamp = Vamp::RealTime::frame2RealTime
+                (frame, lrintf(m_inputSampleRate));
+            feature.values.push_back(tempos[i]);
+            returnFeatures[2].push_back(feature); // tempo is output 2
+        }
     }
 
     return returnFeatures;
