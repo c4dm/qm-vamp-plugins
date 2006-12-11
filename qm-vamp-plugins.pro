@@ -21,9 +21,11 @@ INCLUDEPATH += . plugins
 HEADERS += plugins/BeatDetect.h \
            plugins/ChromagramPlugin.h \
            plugins/ConstantQSpectrogram.h \
+           plugins/GetModePlugin.h \
            plugins/TonalChangeDetect.h
 SOURCES += plugins/BeatDetect.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/ConstantQSpectrogram.cpp \
+           plugins/GetModePlugin.cpp \
            plugins/TonalChangeDetect.cpp \
            ./libmain.cpp
