@@ -168,7 +168,7 @@ GetModePlugin::process(const float *const *inputBuffers,
 	}
 
 
-	int minor = m_GetMode->process( m_InputFrame );
+	int minor = m_GetMode->isModeMinor(m_GetMode->process( m_InputFrame ));
 
 	Feature feature;
 	feature.hasTimestamp = false;
