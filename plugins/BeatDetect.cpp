@@ -61,7 +61,7 @@ BeatDetector::getName() const
 string
 BeatDetector::getDescription() const
 {
-    return "Tempo Tracker";
+    return "Beat Tracker";
 }
 
 string

@@ -6,7 +6,7 @@
     An API for audio analysis and feature extraction plugins.
 
     Centre for Digital Music, Queen Mary, University of London.
-    Copyright 2006 Chris Cannam.
+    Copyright 2006-2007 QMUL.
   
     Permission is hereby granted, free of charge, to any person
     obtaining a copy of this software and associated documentation
@@ -41,11 +41,11 @@
 
 #include <dsp/keydetection/GetKeyMode.h>
 
-class GetModePlugin : public Vamp::Plugin
+class KeyDetector : public Vamp::Plugin
 {
 public:
-    GetModePlugin(float inputSampleRate);
-    virtual ~GetModePlugin();
+    KeyDetector(float inputSampleRate);
+    virtual ~KeyDetector();
 
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
@@ -58,6 +58,10 @@ public:
     int getPluginVersion() const;
     std::string getCopyright() const;
 
+    ParameterList getParameterDescriptors() const;
+    float getParameter(std::string) const;
+    void setParameter(std::string, float);
+
     OutputList getOutputDescriptors() const;
 
     FeatureSet process(const float *const *inputBuffers,
@@ -69,12 +73,16 @@ public:
     size_t getPreferredBlockSize() const;
 
 protected:
-    size_t m_stepSize;
-    size_t m_blockSize;
+    mutable size_t m_stepSize;
+    mutable size_t m_blockSize;
+    float m_tuningFrequency;
+    int m_length;
 
-    GetKeyMode* m_GetMode;
-    double* m_InputFrame;
-    unsigned int m_BlockandHopSize;
+    const char *getKeyName(int index);
+
+    GetKeyMode* m_getKeyMode;
+    double* m_inputFrame;
+    int m_prevKey;
 };
 
 

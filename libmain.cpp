@@ -14,13 +14,13 @@
 #include "plugins/ChromagramPlugin.h"
 #include "plugins/ConstantQSpectrogram.h"
 #include "plugins/TonalChangeDetect.h"
-#include "plugins/GetModePlugin.h"
+#include "plugins/KeyDetect.h"
 
 static Vamp::PluginAdapter<BeatDetector> beatDetectorAdapter;
 static Vamp::PluginAdapter<ChromagramPlugin> chromagramPluginAdapter;
 static Vamp::PluginAdapter<ConstantQSpectrogram> constantQAdapter;
 static Vamp::PluginAdapter<TonalChangeDetect> tonalChangeDetectorAdapter;
-static Vamp::PluginAdapter<GetModePlugin> keyModeAdapter;
+static Vamp::PluginAdapter<KeyDetector> keyDetectorAdapter;
 
 const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int index)
 {
@@ -29,7 +29,7 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int index)
     case  1: return chromagramPluginAdapter.getDescriptor();
     case  2: return constantQAdapter.getDescriptor();
     case  3: return tonalChangeDetectorAdapter.getDescriptor();
-    case  4: return keyModeAdapter.getDescriptor();
+    case  4: return keyDetectorAdapter.getDescriptor();
     default: return 0;
     }
 }
