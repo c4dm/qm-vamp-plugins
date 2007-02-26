@@ -53,15 +53,22 @@ BeatDetector::~BeatDetector()
 }
 
 string
-BeatDetector::getName() const
+BeatDetector::getIdentifier() const
 {
     return "qm-tempotracker";
 }
 
 string
-BeatDetector::getDescription() const
+BeatDetector::getName() const
 {
     return "Beat Tracker";
+}
+
+string
+BeatDetector::getDescription() const
+{
+    //!!!
+    return "";
 }
 
 string
@@ -88,8 +95,9 @@ BeatDetector::getParameterDescriptors() const
     ParameterList list;
 
     ParameterDescriptor desc;
-    desc.name = "dftype";
-    desc.description = "Onset Detection Function Type";
+    desc.identifier = "dftype";
+    desc.name = "Onset Detection Function Type";
+    desc.description = "";
     desc.minValue = 0;
     desc.maxValue = 3;
     desc.defaultValue = 3;
@@ -194,18 +202,18 @@ BeatDetector::getOutputDescriptors() const
     OutputList list;
 
     OutputDescriptor beat;
-    beat.name = "beats";
+    beat.identifier = "beats";
+    beat.name = "Detected Beats";
     beat.unit = "";
-    beat.description = "Detected Beats";
     beat.hasFixedBinCount = true;
     beat.binCount = 0;
     beat.sampleType = OutputDescriptor::VariableSampleRate;
     beat.sampleRate = 1.0 / m_stepSecs;
 
     OutputDescriptor df;
-    df.name = "detection_fn";
+    df.identifier = "detection_fn";
+    df.name = "Beat Detection Function";
     df.unit = "";
-    df.description = "Beat Detection Function";
     df.hasFixedBinCount = true;
     df.binCount = 1;
     df.hasKnownExtents = false;
@@ -213,9 +221,9 @@ BeatDetector::getOutputDescriptors() const
     df.sampleType = OutputDescriptor::OneSamplePerStep;
 
     OutputDescriptor tempo;
-    tempo.name = "tempo";
+    tempo.identifier = "tempo";
+    tempo.name = "Tempo";
     tempo.unit = "bpm";
-    tempo.description = "Tempo";
     tempo.hasFixedBinCount = true;
     tempo.binCount = 1;
     tempo.sampleType = OutputDescriptor::VariableSampleRate;

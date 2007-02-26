@@ -75,14 +75,20 @@ bool TonalChangeDetect::initialise(size_t channels, size_t stepSize, size_t bloc
 	
 }
 
-std::string TonalChangeDetect::getName() const
+std::string TonalChangeDetect::getIdentifier() const
 {
     return "qm-tonalchange";
 }
 
-std::string TonalChangeDetect::getDescription() const
+std::string TonalChangeDetect::getName() const
 {
     return "Tonal Change";
+}
+
+std::string TonalChangeDetect::getDescription() const
+{
+    //!!!
+    return "";
 }
 
 std::string TonalChangeDetect::getMaker() const

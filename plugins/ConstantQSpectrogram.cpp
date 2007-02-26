@@ -54,15 +54,21 @@ ConstantQSpectrogram::~ConstantQSpectrogram()
 }
 
 string
-ConstantQSpectrogram::getName() const
+ConstantQSpectrogram::getIdentifier() const
 {
     return "qm-constantq";
 }
 
 string
-ConstantQSpectrogram::getDescription() const
+ConstantQSpectrogram::getName() const
 {
     return "Constant-Q Spectrogram";
+}
+
+string
+ConstantQSpectrogram::getDescription() const
+{
+    return "";
 }
 
 string
@@ -89,8 +95,8 @@ ConstantQSpectrogram::getParameterDescriptors() const
     ParameterList list;
 
     ParameterDescriptor desc;
-    desc.name = "minpitch";
-    desc.description = "Minimum Pitch";
+    desc.identifier = "minpitch";
+    desc.name = "Minimum Pitch";
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
@@ -99,8 +105,8 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "maxpitch";
-    desc.description = "Maximum Pitch";
+    desc.identifier = "maxpitch";
+    desc.name = "Maximum Pitch";
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
@@ -109,8 +115,8 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "tuning";
-    desc.description = "Tuning Frequency";
+    desc.identifier = "tuning";
+    desc.name = "Tuning Frequency";
     desc.unit = "Hz";
     desc.minValue = 420;
     desc.maxValue = 460;
@@ -118,8 +124,8 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.isQuantized = false;
     list.push_back(desc);
     
-    desc.name = "bpo";
-    desc.description = "Bins per Octave";
+    desc.identifier = "bpo";
+    desc.name = "Bins per Octave";
     desc.unit = "bins";
     desc.minValue = 2;
     desc.maxValue = 36;
@@ -128,8 +134,8 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "normalized";
-    desc.description = "Normalized";
+    desc.identifier = "normalized";
+    desc.name = "Normalized";
     desc.unit = "";
     desc.minValue = 0;
     desc.maxValue = 1;
@@ -255,9 +261,9 @@ ConstantQSpectrogram::getOutputDescriptors() const
     OutputList list;
 
     OutputDescriptor d;
-    d.name = "constantq";
+    d.identifier = "constantq";
+    d.name = "Constant-Q Spectrogram";
     d.unit = "";
-    d.description = "Constant-Q Spectrogram";
     d.hasFixedBinCount = true;
     d.binCount = m_bins;
 

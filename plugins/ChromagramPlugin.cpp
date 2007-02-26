@@ -54,15 +54,22 @@ ChromagramPlugin::~ChromagramPlugin()
 }
 
 string
-ChromagramPlugin::getName() const
+ChromagramPlugin::getIdentifier() const
 {
     return "qm-chromagram";
 }
 
 string
-ChromagramPlugin::getDescription() const
+ChromagramPlugin::getName() const
 {
     return "Chromagram";
+}
+
+string
+ChromagramPlugin::getDescription() const
+{
+    //!!!
+    return "";
 }
 
 string
@@ -89,8 +96,8 @@ ChromagramPlugin::getParameterDescriptors() const
     ParameterList list;
 
     ParameterDescriptor desc;
-    desc.name = "minpitch";
-    desc.description = "Minimum Pitch";
+    desc.identifier = "minpitch";
+    desc.name = "Minimum Pitch";
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
@@ -99,8 +106,8 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "maxpitch";
-    desc.description = "Maximum Pitch";
+    desc.identifier = "maxpitch";
+    desc.name = "Maximum Pitch";
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
@@ -109,8 +116,8 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "tuning";
-    desc.description = "Tuning Frequency";
+    desc.identifier = "tuning";
+    desc.name = "Tuning Frequency";
     desc.unit = "Hz";
     desc.minValue = 420;
     desc.maxValue = 460;
@@ -118,8 +125,8 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.isQuantized = false;
     list.push_back(desc);
     
-    desc.name = "bpo";
-    desc.description = "Bins per Octave";
+    desc.identifier = "bpo";
+    desc.name = "Bins per Octave";
     desc.unit = "bins";
     desc.minValue = 2;
     desc.maxValue = 36;
@@ -128,8 +135,8 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "normalized";
-    desc.description = "Normalized";
+    desc.identifier = "normalized";
+    desc.name = "Normalized";
     desc.unit = "";
     desc.minValue = 0;
     desc.maxValue = 1;
@@ -254,9 +261,9 @@ ChromagramPlugin::getOutputDescriptors() const
     OutputList list;
 
     OutputDescriptor d;
-    d.name = "chromagram";
+    d.identifier = "chromagram";
+    d.name = "Chromagram";
     d.unit = "";
-    d.description = "Chromagram";
     d.hasFixedBinCount = true;
     d.binCount = m_config.BPO;
     

@@ -65,15 +65,22 @@ KeyDetector::~KeyDetector()
 }
 
 string
-KeyDetector::getName() const
+KeyDetector::getIdentifier() const
 {
     return "qm-keydetector";
 }
 
 string
-KeyDetector::getDescription() const
+KeyDetector::getName() const
 {
     return "Key Detector";
+}
+
+string
+KeyDetector::getDescription() const
+{
+    //!!!
+    return "";
 }
 
 string
@@ -100,8 +107,8 @@ KeyDetector::getParameterDescriptors() const
     ParameterList list;
 
     ParameterDescriptor desc;
-    desc.name = "tuning";
-    desc.description = "Tuning Frequency";
+    desc.identifier = "tuning";
+    desc.name = "Tuning Frequency";
     desc.unit = "Hz";
     desc.minValue = 420;
     desc.maxValue = 460;
@@ -109,8 +116,8 @@ KeyDetector::getParameterDescriptors() const
     desc.isQuantized = false;
     list.push_back(desc);
     
-    desc.name = "length";
-    desc.description = "Window Length";
+    desc.identifier = "length";
+    desc.name = "Window Length";
     desc.unit = "chroma frames";
     desc.minValue = 1;
     desc.maxValue = 30;
@@ -209,9 +216,9 @@ KeyDetector::getOutputDescriptors() const
     OutputList list;
 
     OutputDescriptor d;
-    d.name = "tonic";
+    d.identifier = "tonic";
+    d.name = "Tonic Pitch";
     d.unit = "";
-    d.description = "Tonic Pitch";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
@@ -222,9 +229,9 @@ KeyDetector::getOutputDescriptors() const
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 
-    d.name = "mode";
+    d.identifier = "mode";
+    d.name = "Key Mode";
     d.unit = "";
-    d.description = "Key Mode";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
@@ -236,9 +243,9 @@ KeyDetector::getOutputDescriptors() const
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 
-    d.name = "key";
+    d.identifier = "key";
+    d.name = "Key";
     d.unit = "";
-    d.description = "Key";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
