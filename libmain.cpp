@@ -22,8 +22,11 @@ static Vamp::PluginAdapter<ConstantQSpectrogram> constantQAdapter;
 static Vamp::PluginAdapter<TonalChangeDetect> tonalChangeDetectorAdapter;
 static Vamp::PluginAdapter<KeyDetector> keyDetectorAdapter;
 
-const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int index)
+const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
+                                                    unsigned int index)
 {
+    if (vampApiVersion < 1) return 0;
+
     switch (index) {
     case  0: return beatDetectorAdapter.getDescriptor();
     case  1: return chromagramPluginAdapter.getDescriptor();

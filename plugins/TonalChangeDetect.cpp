@@ -111,8 +111,8 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     ParameterList list;
 
     ParameterDescriptor desc;
-    desc.name = "smoothingwidth";
-    desc.description = "Gaussian smoothing";
+    desc.identifier = "smoothingwidth";
+    desc.name = "Gaussian smoothing";
     desc.unit = "frames";
     desc.minValue = 0;
     desc.maxValue = 20;
@@ -121,9 +121,8 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc;
-    desc.name = "minpitch";
-    desc.description = "Chromagram minimum pitch";
+    desc.identifier = "minpitch";
+    desc.name = "Chromagram minimum pitch";
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
@@ -132,8 +131,8 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "maxpitch";
-    desc.description = "Chromagram maximum pitch";
+    desc.identifier = "maxpitch";
+    desc.name = "Chromagram maximum pitch";
     desc.unit = "MIDI units";
     desc.minValue = 0;
     desc.maxValue = 127;
@@ -142,8 +141,8 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.name = "tuning";
-    desc.description = "Chromagram tuning frequency";
+    desc.identifier = "tuning";
+    desc.name = "Chromagram tuning frequency";
     desc.unit = "Hz";
     desc.minValue = 420;
     desc.maxValue = 460;
@@ -254,9 +253,9 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     OutputList list;
 	 
     OutputDescriptor hc;
-    hc.name = "tcstransform";
+    hc.identifier = "tcstransform";
+    hc.name = "Transform to 6D Tonal Content Space";
     hc.unit = "";
-    hc.description = "Transform to 6D Tonal Content Space";
     hc.hasFixedBinCount = true;
     hc.binCount = 6;
     hc.hasKnownExtents = true;
@@ -266,11 +265,11 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     hc.sampleType = OutputDescriptor::OneSamplePerStep;
 
     OutputDescriptor d;
-    d.name = "tcfunction";
+    d.identifier = "tcfunction";
+    d.name = "Tonal Change Detection Function";
     d.unit = "";
     d.minValue = 0;
     d.minValue = 2;
-    d.description = "Tonal Change Detection Function";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
@@ -280,9 +279,9 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     d.sampleRate = 1.0f / dStepSecs;
 	
     OutputDescriptor changes;
-    changes.name = "changepositions";
+    changes.identifier = "changepositions";
+    changes.name = "Tonal Change Positions";
     changes.unit = "";
-    changes.description = "Tonal Change Positions";
     changes.hasFixedBinCount = true;
     changes.binCount = 0;
     changes.sampleType = OutputDescriptor::VariableSampleRate;
