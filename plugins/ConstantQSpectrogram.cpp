@@ -206,8 +206,10 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     std::cerr << "ConstantQSpectrogram::initialise: step " << stepSize << ", block "
 	      << blockSize << std::endl;
 
+    setupConfig();
+
     m_cq = new ConstantQ(m_config);
-    m_bins = (int)ceil(m_bpo * log(m_config.max / m_config.min) / log(2.0));
+    m_bins = m_cq->getK(); //!!! (int)ceil(m_bpo * log(m_config.max / m_config.min) / log(2.0));
     m_cq->sparsekernel();
     m_step = m_cq->gethop();
     m_block = m_cq->getfftlength();
