@@ -343,9 +343,11 @@ BeatDetector::getRemainingFeatures()
     double prevTempo = 0.0;
 
     for (size_t i = 0; i < tempos.size(); ++i) {
-        
-        size_t frame = i * m_d->dfConfig.stepSize * ttParams.winLength;
 
+        size_t frame = i * m_d->dfConfig.stepSize * ttParams.lagLength;
+
+//        std::cerr << "unit " << i << ", step size " << m_d->dfConfig.stepSize << ", hop " << ttParams.lagLength << ", frame = " << frame << std::endl;
+        
         if (tempos[i] > 1 && tempos[i] != prevTempo) {
             Feature feature;
             feature.hasTimestamp = true;
