@@ -49,6 +49,7 @@ public:
 protected:
     BeatDetectorData *m_d;
     int m_dfType;
+    float m_sensitivity;
     static float m_stepSecs;
 };
 
