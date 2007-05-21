@@ -7,7 +7,7 @@
     All rights reserved.
 */
 
-#include "BeatDetect.h"
+#include "OnsetDetect.h"
 
 #include <dsp/onsets/DetectionFunction.h>
 #include <dsp/onsets/PeakPicking.h>
@@ -18,15 +18,15 @@ using std::vector;
 using std::cerr;
 using std::endl;
 
-float BeatDetector::m_stepSecs = 0.01161;
+float OnsetDetector::m_stepSecs = 0.01161;
 
-class BeatDetectorData
+class OnsetDetectorData
 {
 public:
-    BeatDetectorData(const DFConfig &config) : dfConfig(config) {
+    OnsetDetectorData(const DFConfig &config) : dfConfig(config) {
 	df = new DetectionFunction(config);
     }
-    ~BeatDetectorData() {
+    ~OnsetDetectorData() {
 	delete df;
     }
     void reset() {
@@ -41,7 +41,7 @@ public:
 };
     
 
-BeatDetector::BeatDetector(float inputSampleRate) :
+OnsetDetector::OnsetDetector(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
     m_dfType(DF_COMPLEXSD),
@@ -49,49 +49,49 @@ BeatDetector::BeatDetector(float inputSampleRate) :
 {
 }
 
-BeatDetector::~BeatDetector()
+OnsetDetector::~OnsetDetector()
 {
     delete m_d;
 }
 
 string
-BeatDetector::getIdentifier() const
+OnsetDetector::getIdentifier() const
 {
-    return "qm-tempotracker";
+    return "qm-onsetdetector";
 }
 
 string
-BeatDetector::getName() const
+OnsetDetector::getName() const
 {
-    return "Note Onset and Beat Tracker";
+    return "Note Onset Detector";
 }
 
 string
-BeatDetector::getDescription() const
+OnsetDetector::getDescription() const
 {
-    return "Estimate tempo, metrical beat locations, and individual note onset positions";
+    return "Estimate individual note onset positions";
 }
 
 string
-BeatDetector::getMaker() const
+OnsetDetector::getMaker() const
 {
-    return "Christian Landone and Matthew Davies, Queen Mary, University of London";
+    return "Christian Landone, Chris Duxbury and Juan Pablo Bello, Queen Mary, University of London";
 }
 
 int
-BeatDetector::getPluginVersion() const
+OnsetDetector::getPluginVersion() const
 {
-    return 2;
+    return 1;
 }
 
 string
-BeatDetector::getCopyright() const
+OnsetDetector::getCopyright() const
 {
-    return "Copyright (c) 2006 - All Rights Reserved";
+    return "Copyright (c) 2006-2007 - All Rights Reserved";
 }
 
-BeatDetector::ParameterList
-BeatDetector::getParameterDescriptors() const
+OnsetDetector::ParameterList
+OnsetDetector::getParameterDescriptors() const
 {
     ParameterList list;
 
@@ -127,7 +127,7 @@ BeatDetector::getParameterDescriptors() const
 }
 
 float
-BeatDetector::getParameter(std::string name) const
+OnsetDetector::getParameter(std::string name) const
 {
     if (name == "dftype") {
         switch (m_dfType) {
@@ -144,7 +144,7 @@ BeatDetector::getParameter(std::string name) const
 }
 
 void
-BeatDetector::setParameter(std::string name, float value)
+OnsetDetector::setParameter(std::string name, float value)
 {
     if (name == "dftype") {
         switch (lrintf(value)) {
@@ -160,7 +160,7 @@ BeatDetector::setParameter(std::string name, float value)
 }
 
 bool
-BeatDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
+OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
     if (m_d) {
 	delete m_d;
@@ -169,19 +169,19 @@ BeatDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) {
-        std::cerr << "BeatDetector::initialise: Unsupported channel count: "
+        std::cerr << "OnsetDetector::initialise: Unsupported channel count: "
                   << channels << std::endl;
         return false;
     }
 
     if (blockSize != getPreferredStepSize() * 2) {
-        std::cerr << "BeatDetector::initialise: Unsupported block size for this sample rate: "
+        std::cerr << "OnsetDetector::initialise: Unsupported block size for this sample rate: "
                   << blockSize << " (wanted " << (getPreferredStepSize() * 2) << ")" << std::endl;
         return false;
     }
 
     if (stepSize != getPreferredStepSize()) {
-        std::cerr << "BeatDetector::initialise: Unsupported step size for this sample rate: "
+        std::cerr << "OnsetDetector::initialise: Unsupported step size for this sample rate: "
                   << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
@@ -191,49 +191,51 @@ BeatDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.stepSecs = float(stepSize) / m_inputSampleRate;
     dfConfig.stepSize = stepSize;
     dfConfig.frameLength = blockSize;
-    dfConfig.dbRise = 6.0 - m_sensitivity / 20.0;
+    dfConfig.dbRise = 6.0 - m_sensitivity / 16.6667;
     
-    m_d = new BeatDetectorData(dfConfig);
+    m_d = new OnsetDetectorData(dfConfig);
     return true;
 }
 
 void
-BeatDetector::reset()
+OnsetDetector::reset()
 {
     if (m_d) m_d->reset();
 }
 
 size_t
-BeatDetector::getPreferredStepSize() const
+OnsetDetector::getPreferredStepSize() const
 {
     size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
-//    std::cerr << "BeatDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
+//    std::cerr << "OnsetDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }
 
 size_t
-BeatDetector::getPreferredBlockSize() const
+OnsetDetector::getPreferredBlockSize() const
 {
     return getPreferredStepSize() * 2;
 }
 
-BeatDetector::OutputList
-BeatDetector::getOutputDescriptors() const
+OnsetDetector::OutputList
+OnsetDetector::getOutputDescriptors() const
 {
     OutputList list;
 
-    OutputDescriptor beat;
-    beat.identifier = "beats";
-    beat.name = "Beats";
-    beat.unit = "";
-    beat.hasFixedBinCount = true;
-    beat.binCount = 0;
-    beat.sampleType = OutputDescriptor::VariableSampleRate;
-    beat.sampleRate = 1.0 / m_stepSecs;
+    OutputDescriptor onsets;
+    onsets.identifier = "onsets";
+    onsets.name = "Note Onsets";
+    onsets.description = "Perceived note onset positions";
+    onsets.unit = "";
+    onsets.hasFixedBinCount = true;
+    onsets.binCount = 0;
+    onsets.sampleType = OutputDescriptor::VariableSampleRate;
+    onsets.sampleRate = 1.0 / m_stepSecs;
 
     OutputDescriptor df;
     df.identifier = "detection_fn";
     df.name = "Onset Detection Function";
+    df.description = "Probability function of note onset likelihood";
     df.unit = "";
     df.hasFixedBinCount = true;
     df.binCount = 1;
@@ -241,27 +243,10 @@ BeatDetector::getOutputDescriptors() const
     df.isQuantized = false;
     df.sampleType = OutputDescriptor::OneSamplePerStep;
 
-    OutputDescriptor tempo;
-    tempo.identifier = "tempo";
-    tempo.name = "Tempo";
-    tempo.unit = "bpm";
-    tempo.hasFixedBinCount = true;
-    tempo.binCount = 1;
-    tempo.sampleType = OutputDescriptor::VariableSampleRate;
-    tempo.sampleRate = 1.0 / m_stepSecs;
-
-    OutputDescriptor onsets;
-    onsets.identifier = "onsets";
-    onsets.name = "Note Onsets";
-    onsets.unit = "";
-    onsets.hasFixedBinCount = true;
-    onsets.binCount = 0;
-    onsets.sampleType = OutputDescriptor::VariableSampleRate;
-    onsets.sampleRate = 1.0 / m_stepSecs;
-
     OutputDescriptor sdf;
     sdf.identifier = "smoothed_df";
     sdf.name = "Smoothed Detection Function";
+    sdf.description = "Smoothed probability function used for peak-picking";
     sdf.unit = "";
     sdf.hasFixedBinCount = true;
     sdf.binCount = 1;
@@ -274,22 +259,20 @@ BeatDetector::getOutputDescriptors() const
 //    sdf.sampleType = OutputDescriptor::FixedSampleRate;
     sdf.sampleRate = 1.0 / m_stepSecs;
 
-    list.push_back(beat);
-    list.push_back(df);
-    list.push_back(tempo);
     list.push_back(onsets);
+    list.push_back(df);
     list.push_back(sdf);
 
     return list;
 }
 
-BeatDetector::FeatureSet
-BeatDetector::process(const float *const *inputBuffers,
+OnsetDetector::FeatureSet
+OnsetDetector::process(const float *const *inputBuffers,
                       Vamp::RealTime /* timestamp */)
 {
     if (!m_d) {
-	cerr << "ERROR: BeatDetector::process: "
-	     << "BeatDetector has not been initialised"
+	cerr << "ERROR: OnsetDetector::process: "
+	     << "OnsetDetector has not been initialised"
 	     << endl;
 	return FeatureSet();
     }
@@ -326,98 +309,37 @@ BeatDetector::process(const float *const *inputBuffers,
     return returnFeatures;
 }
 
-BeatDetector::FeatureSet
-BeatDetector::getRemainingFeatures()
+OnsetDetector::FeatureSet
+OnsetDetector::getRemainingFeatures()
 {
     if (!m_d) {
-	cerr << "ERROR: BeatDetector::getRemainingFeatures: "
-	     << "BeatDetector has not been initialised"
+	cerr << "ERROR: OnsetDetector::getRemainingFeatures: "
+	     << "OnsetDetector has not been initialised"
 	     << endl;
 	return FeatureSet();
+    }
+
+    if (m_dfType == DF_BROADBAND) {
+        for (size_t i = 0; i < m_d->dfOutput.size(); ++i) {
+            if (m_d->dfOutput[i] < ((110 - m_sensitivity) *
+                                    m_d->dfConfig.frameLength) / 200) {
+                m_d->dfOutput[i] = 0;
+            }
+        }
     }
 
     double aCoeffs[] = { 1.0000, -0.5949, 0.2348 };
     double bCoeffs[] = { 0.1600,  0.3200, 0.1600 };
 
-    TTParams ttParams;
-    ttParams.winLength = 512;
-    ttParams.lagLength = 128;
-    ttParams.LPOrd = 2;
-    ttParams.LPACoeffs = aCoeffs;
-    ttParams.LPBCoeffs = bCoeffs;
-    ttParams.alpha = 9;
-    ttParams.WinT.post = 8;
-    ttParams.WinT.pre = 7;
-
-    TempoTrack tempoTracker(ttParams);
-
-    vector<double> tempos;
-    vector<int> beats = tempoTracker.process(m_d->dfOutput, &tempos);
-
     FeatureSet returnFeatures;
-
-    char label[100];
-
-    for (size_t i = 0; i < beats.size(); ++i) {
-
-	size_t frame = beats[i] * m_d->dfConfig.stepSize;
-
-	Feature feature;
-	feature.hasTimestamp = true;
-	feature.timestamp = Vamp::RealTime::frame2RealTime
-	    (frame, lrintf(m_inputSampleRate));
-
-	float bpm = 0.0;
-	int frameIncrement = 0;
-
-	if (i < beats.size() - 1) {
-
-	    frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
-
-	    // one beat is frameIncrement frames, so there are
-	    // samplerate/frameIncrement bps, so
-	    // 60*samplerate/frameIncrement bpm
-
-	    if (frameIncrement > 0) {
-		bpm = (60.0 * m_inputSampleRate) / frameIncrement;
-		bpm = int(bpm * 100.0 + 0.5) / 100.0;
-                sprintf(label, "%.2f bpm", bpm);
-                feature.label = label;
-	    }
-	}
-
-	returnFeatures[0].push_back(feature); // beats are output 0
-    }
-
-    double prevTempo = 0.0;
-
-    for (size_t i = 0; i < tempos.size(); ++i) {
-
-        size_t frame = i * m_d->dfConfig.stepSize * ttParams.lagLength;
-
-//        std::cerr << "unit " << i << ", step size " << m_d->dfConfig.stepSize << ", hop " << ttParams.lagLength << ", frame = " << frame << std::endl;
-        
-        if (tempos[i] > 1 && int(tempos[i] * 100) != int(prevTempo * 100)) {
-            Feature feature;
-            feature.hasTimestamp = true;
-            feature.timestamp = Vamp::RealTime::frame2RealTime
-                (frame, lrintf(m_inputSampleRate));
-            feature.values.push_back(tempos[i]);
-            sprintf(label, "%.2f bpm", tempos[i]);
-            feature.label = label;
-            returnFeatures[2].push_back(feature); // tempo is output 2
-        }
-    }
-
-    // Now a separate pass for onsets and smoothed detection function
 
     PPickParams ppParams;
     ppParams.length = m_d->dfOutput.size();
     // tau and cutoff appear to be unused in PeakPicking, but I've
     // inserted some moderately plausible values rather than leave
     // them unset.  The QuadThresh values come from trial and error.
-    // The rest of these are copied from ttParams: I don't claim to
-    // know whether they're good or not --cc
+    // The rest of these are copied from ttParams in the BeatTracker
+    // code: I don't claim to know whether they're good or not --cc
     ppParams.tau = m_d->dfConfig.stepSize / m_inputSampleRate;
     ppParams.alpha = 9;
     ppParams.cutoff = m_inputSampleRate/4;
@@ -433,7 +355,7 @@ BeatDetector::getRemainingFeatures()
     PeakPicking peakPicker(ppParams);
 
     double *ppSrc = new double[ppParams.length];
-    for (int i = 0; i < ppParams.length; ++i) {
+    for (unsigned int i = 0; i < ppParams.length; ++i) {
         ppSrc[i] = m_d->dfOutput[i];
     }
 
@@ -448,7 +370,7 @@ BeatDetector::getRemainingFeatures()
             double prevDiff = 0.0;
             while (index > 1) {
                 double diff = ppSrc[index] - ppSrc[index-1];
-                if (diff < prevDiff * 0.75) break;
+                if (diff < prevDiff * 0.9) break;
                 prevDiff = diff;
                 --index;
             }
@@ -461,7 +383,7 @@ BeatDetector::getRemainingFeatures()
 	feature.timestamp = Vamp::RealTime::frame2RealTime
 	    (frame, lrintf(m_inputSampleRate));
 
-	returnFeatures[3].push_back(feature); // onsets are output 3
+	returnFeatures[0].push_back(feature); // onsets are output 0
     }
 
     for (int i = 0; i < ppParams.length; ++i) {
@@ -474,7 +396,7 @@ BeatDetector::getRemainingFeatures()
 	    (frame, lrintf(m_inputSampleRate));
 
         feature.values.push_back(ppSrc[i]);
-        returnFeatures[4].push_back(feature); // smoothed df is output 4
+        returnFeatures[2].push_back(feature); // smoothed df is output 2
     }
 
     return returnFeatures;

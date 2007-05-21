@@ -18,12 +18,14 @@ DEPENDPATH += plugins
 INCLUDEPATH += . plugins
 
 # Input
-HEADERS += plugins/BeatDetect.h \
+HEADERS += plugins/BeatTrack.h \
+           plugins/OnsetDetect.h \
            plugins/ChromagramPlugin.h \
            plugins/ConstantQSpectrogram.h \
            plugins/KeyDetect.h \
            plugins/TonalChangeDetect.h
-SOURCES += plugins/BeatDetect.cpp \
+SOURCES += plugins/BeatTrack.cpp \
+           plugins/OnsetDetect.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/ConstantQSpectrogram.cpp \
            plugins/KeyDetect.cpp \

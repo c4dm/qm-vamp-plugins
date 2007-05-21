@@ -7,18 +7,18 @@
     All rights reserved.
 */
 
-#ifndef _BEAT_DETECT_PLUGIN_H_
-#define _BEAT_DETECT_PLUGIN_H_
+#ifndef _BEAT_TRACK_PLUGIN_H_
+#define _BEAT_TRACK_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
 
-class BeatDetectorData;
+class BeatTrackerData;
 
-class BeatDetector : public Vamp::Plugin
+class BeatTracker : public Vamp::Plugin
 {
 public:
-    BeatDetector(float inputSampleRate);
-    virtual ~BeatDetector();
+    BeatTracker(float inputSampleRate);
+    virtual ~BeatTracker();
 
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
@@ -47,9 +47,8 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    BeatDetectorData *m_d;
+    BeatTrackerData *m_d;
     int m_dfType;
-    float m_sensitivity;
     static float m_stepSecs;
 };
 
