@@ -157,16 +157,16 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
         return false;
     }
 
-    if (blockSize != getPreferredStepSize() * 2) {
-        std::cerr << "BeatTracker::initialise: Unsupported block size for this sample rate: "
-                  << blockSize << " (wanted " << (getPreferredStepSize() * 2) << ")" << std::endl;
+    if (stepSize != getPreferredStepSize()) {
+        std::cerr << "ERROR: BeatTracker::initialise: Unsupported step size for this sample rate: "
+                  << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
 
-    if (stepSize != getPreferredStepSize()) {
-        std::cerr << "BeatTracker::initialise: Unsupported step size for this sample rate: "
-                  << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
-        return false;
+    if (blockSize != getPreferredBlockSize()) {
+        std::cerr << "WARNING: BeatTracker::initialise: Unsupported block size for this sample rate: "
+                  << blockSize << " (wanted " << getPreferredBlockSize() << ")" << std::endl;
+//        return false;
     }
 
     DFConfig dfConfig;
@@ -197,7 +197,10 @@ BeatTracker::getPreferredStepSize() const
 size_t
 BeatTracker::getPreferredBlockSize() const
 {
-    return getPreferredStepSize() * 2;
+    size_t theoretical = getPreferredStepSize() * 2;
+
+    //!!! need power of 2
+    return theoretical;
 }
 
 BeatTracker::OutputList

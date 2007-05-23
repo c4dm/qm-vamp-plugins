@@ -174,16 +174,16 @@ OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
         return false;
     }
 
-    if (blockSize != getPreferredStepSize() * 2) {
-        std::cerr << "OnsetDetector::initialise: Unsupported block size for this sample rate: "
-                  << blockSize << " (wanted " << (getPreferredStepSize() * 2) << ")" << std::endl;
+    if (stepSize != getPreferredStepSize()) {
+        std::cerr << "ERROR: OnsetDetector::initialise: Unsupported step size for this sample rate: "
+                  << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
         return false;
     }
 
-    if (stepSize != getPreferredStepSize()) {
-        std::cerr << "OnsetDetector::initialise: Unsupported step size for this sample rate: "
-                  << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
-        return false;
+    if (blockSize != getPreferredBlockSize()) {
+        std::cerr << "WARNING: OnsetDetector::initialise: Unsupported block size for this sample rate: "
+                  << blockSize << " (wanted " << (getPreferredBlockSize()) << ")" << std::endl;
+//        return false;
     }
 
     DFConfig dfConfig;
