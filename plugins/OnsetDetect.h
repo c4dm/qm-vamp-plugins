@@ -36,6 +36,10 @@ public:
     float getParameter(std::string) const;
     void setParameter(std::string, float);
 
+    ProgramList getPrograms() const;
+    std::string getCurrentProgram() const;
+    void selectProgram(std::string program);
+
     size_t getPreferredStepSize() const;
     size_t getPreferredBlockSize() const;
 
@@ -50,6 +54,7 @@ protected:
     OnsetDetectorData *m_d;
     int m_dfType;
     float m_sensitivity;
+    std::string m_program;
     static float m_stepSecs;
 };
 

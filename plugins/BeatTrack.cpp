@@ -164,7 +164,7 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     }
 
     if (blockSize != getPreferredBlockSize()) {
-        std::cerr << "WARNING: BeatTracker::initialise: Unsupported block size for this sample rate: "
+        std::cerr << "WARNING: BeatTracker::initialise: Sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << getPreferredBlockSize() << ")" << std::endl;
 //        return false;
     }

@@ -159,6 +159,41 @@ OnsetDetector::setParameter(std::string name, float value)
     }
 }
 
+OnsetDetector::ProgramList
+OnsetDetector::getPrograms() const
+{
+    ProgramList programs;
+    programs.push_back("General purpose");
+    programs.push_back("Soft onsets");
+    programs.push_back("Percussive onsets");
+    return programs;
+}
+
+std::string
+OnsetDetector::getCurrentProgram() const
+{
+    if (m_program == "") return "General purpose";
+    else return m_program;
+}
+
+void
+OnsetDetector::selectProgram(std::string program)
+{
+    if (program == "General purpose") {
+        setParameter("dftype", 3); // complex
+        setParameter("sensitivity", 50);
+    } else if (program == "Soft onsets") {
+        setParameter("dftype", 2); // phase deviation
+        setParameter("sensitivity", 70);
+    } else if (program == "Percussive onsets") {
+        setParameter("dftype", 4); // broadband energy rise
+        setParameter("sensitivity", 40);
+    } else {
+        return;
+    }
+    m_program = program;
+}
+
 bool
 OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
@@ -181,7 +216,7 @@ OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     }
 
     if (blockSize != getPreferredBlockSize()) {
-        std::cerr << "WARNING: OnsetDetector::initialise: Unsupported block size for this sample rate: "
+        std::cerr << "WARNING: OnsetDetector::initialise: Sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << (getPreferredBlockSize()) << ")" << std::endl;
 //        return false;
     }
@@ -268,7 +303,7 @@ OnsetDetector::getOutputDescriptors() const
 
 OnsetDetector::FeatureSet
 OnsetDetector::process(const float *const *inputBuffers,
-                      Vamp::RealTime /* timestamp */)
+                       Vamp::RealTime timestamp)
 {
     if (!m_d) {
 	cerr << "ERROR: OnsetDetector::process: "
@@ -278,6 +313,18 @@ OnsetDetector::process(const float *const *inputBuffers,
     }
 
     size_t len = m_d->dfConfig.frameLength / 2;
+
+//    float mean = 0.f;
+//    for (size_t i = 0; i < len; ++i) {
+////        std::cerr << inputBuffers[0][i] << " ";
+//        mean += inputBuffers[0][i];
+//    }
+////    std::cerr << std::endl;
+//    mean /= len;
+
+//    std::cerr << "OnsetDetector::process(" << timestamp << "): "
+//              << "dftype " << m_dfType << ", sens " << m_sensitivity
+//              << ", len " << len << ", mean " << mean << std::endl;
 
     double *magnitudes = new double[len];
     double *phases = new double[len];
@@ -304,6 +351,8 @@ OnsetDetector::process(const float *const *inputBuffers,
     Feature feature;
     feature.hasTimestamp = false;
     feature.values.push_back(output);
+
+//    std::cerr << "df: " << output << std::endl;
 
     returnFeatures[1].push_back(feature); // detection function is output 1
     return returnFeatures;
