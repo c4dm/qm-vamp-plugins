@@ -269,7 +269,7 @@ ConstantQSpectrogram::getOutputDescriptors() const
     d.hasFixedBinCount = true;
     d.binCount = m_bins;
 
-    std::cerr << "Bin count " << d.binCount << std::endl;
+//    std::cerr << "Bin count " << d.binCount << std::endl;
     
     const char *names[] =
 	{ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };

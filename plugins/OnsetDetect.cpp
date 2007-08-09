@@ -45,7 +45,8 @@ OnsetDetector::OnsetDetector(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
     m_dfType(DF_COMPLEXSD),
-    m_sensitivity(50)
+    m_sensitivity(50),
+    m_whiten(false)
 {
 }
 
@@ -109,6 +110,7 @@ OnsetDetector::getParameterDescriptors() const
     desc.valueNames.push_back("Phase Deviation");
     desc.valueNames.push_back("Complex Domain");
     desc.valueNames.push_back("Broadband Energy Rise");
+    desc.valueNames.push_back("Spectral Magnitude");
     list.push_back(desc);
 
     desc.identifier = "sensitivity";
@@ -121,6 +123,17 @@ OnsetDetector::getParameterDescriptors() const
     desc.quantizeStep = 1;
     desc.unit = "%";
     desc.valueNames.clear();
+    list.push_back(desc);
+
+    desc.identifier = "whiten";
+    desc.name = "Adaptive Whitening";
+    desc.description = "Normalize frequency bin magnitudes relative to recent peak levels";
+    desc.minValue = 0;
+    desc.maxValue = 1;
+    desc.defaultValue = 0;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    desc.unit = "";
     list.push_back(desc);
 
     return list;
@@ -136,9 +149,12 @@ OnsetDetector::getParameter(std::string name) const
         case DF_PHASEDEV: return 2;
         default: case DF_COMPLEXSD: return 3;
         case DF_BROADBAND: return 4;
+        case DF_POWER: return 5;
         }
     } else if (name == "sensitivity") {
         return m_sensitivity;
+    } else if (name == "whiten") {
+        return m_whiten ? 1.0 : 0.0; 
     }
     return 0.0;
 }
@@ -147,15 +163,26 @@ void
 OnsetDetector::setParameter(std::string name, float value)
 {
     if (name == "dftype") {
+        int dfType = m_dfType;
         switch (lrintf(value)) {
-        case 0: m_dfType = DF_HFC; break;
-        case 1: m_dfType = DF_SPECDIFF; break;
-        case 2: m_dfType = DF_PHASEDEV; break;
-        default: case 3: m_dfType = DF_COMPLEXSD; break;
-        case 4: m_dfType = DF_BROADBAND; break;
+        case 0: dfType = DF_HFC; break;
+        case 1: dfType = DF_SPECDIFF; break;
+        case 2: dfType = DF_PHASEDEV; break;
+        default: case 3: dfType = DF_COMPLEXSD; break;
+        case 4: dfType = DF_BROADBAND; break;
+        case 5: dfType = DF_POWER; break;
         }
+        if (dfType == m_dfType) return;
+        m_dfType = dfType;
+        m_program = "";
     } else if (name == "sensitivity") {
+        if (m_sensitivity == value) return;
         m_sensitivity = value;
+        m_program = "";
+    } else if (name == "whiten") {
+        if (m_whiten == (value > 0.5)) return;
+        m_whiten = (value > 0.5);
+        m_program = "";
     }
 }
 
@@ -163,6 +190,7 @@ OnsetDetector::ProgramList
 OnsetDetector::getPrograms() const
 {
     ProgramList programs;
+    programs.push_back("");
     programs.push_back("General purpose");
     programs.push_back("Soft onsets");
     programs.push_back("Percussive onsets");
@@ -172,7 +200,7 @@ OnsetDetector::getPrograms() const
 std::string
 OnsetDetector::getCurrentProgram() const
 {
-    if (m_program == "") return "General purpose";
+    if (m_program == "") return "";
     else return m_program;
 }
 
@@ -182,12 +210,15 @@ OnsetDetector::selectProgram(std::string program)
     if (program == "General purpose") {
         setParameter("dftype", 3); // complex
         setParameter("sensitivity", 50);
+        setParameter("whiten", 0);
     } else if (program == "Soft onsets") {
         setParameter("dftype", 2); // phase deviation
         setParameter("sensitivity", 70);
+        setParameter("whiten", 0);
     } else if (program == "Percussive onsets") {
         setParameter("dftype", 4); // broadband energy rise
         setParameter("sensitivity", 40);
+        setParameter("whiten", 0);
     } else {
         return;
     }
@@ -227,6 +258,9 @@ OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.stepSize = stepSize;
     dfConfig.frameLength = blockSize;
     dfConfig.dbRise = 6.0 - m_sensitivity / 16.6667;
+    dfConfig.adaptiveWhitening = m_whiten;
+    dfConfig.whiteningRelaxCoeff = -1;
+    dfConfig.whiteningFloor = -1;
     
     m_d = new OnsetDetectorData(dfConfig);
     return true;
@@ -435,7 +469,7 @@ OnsetDetector::getRemainingFeatures()
 	returnFeatures[0].push_back(feature); // onsets are output 0
     }
 
-    for (int i = 0; i < ppParams.length; ++i) {
+    for (unsigned int i = 0; i < ppParams.length; ++i) {
         
         Feature feature;
 //        feature.hasTimestamp = false;

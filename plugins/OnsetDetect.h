@@ -54,6 +54,7 @@ protected:
     OnsetDetectorData *m_d;
     int m_dfType;
     float m_sensitivity;
+    bool m_whiten;
     std::string m_program;
     static float m_stepSecs;
 };

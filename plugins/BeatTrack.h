@@ -49,6 +49,7 @@ public:
 protected:
     BeatTrackerData *m_d;
     int m_dfType;
+    bool m_whiten;
     static float m_stepSecs;
 };
 

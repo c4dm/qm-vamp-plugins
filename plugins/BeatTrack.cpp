@@ -44,7 +44,8 @@ public:
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
-    m_dfType(DF_COMPLEXSD)
+    m_dfType(DF_COMPLEXSD),
+    m_whiten(false)
 {
 }
 
@@ -110,6 +111,18 @@ BeatTracker::getParameterDescriptors() const
     desc.valueNames.push_back("Broadband Energy Rise");
     list.push_back(desc);
 
+    desc.identifier = "whiten";
+    desc.name = "Adaptive Whitening";
+    desc.description = "Normalize frequency bin magnitudes relative to recent peak levels";
+    desc.minValue = 0;
+    desc.maxValue = 1;
+    desc.defaultValue = 0;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    desc.unit = "";
+    desc.valueNames.clear();
+    list.push_back(desc);
+
     return list;
 }
 
@@ -123,7 +136,10 @@ BeatTracker::getParameter(std::string name) const
         case DF_PHASEDEV: return 2;
         default: case DF_COMPLEXSD: return 3;
         case DF_BROADBAND: return 4;
+        case DF_POWER: return 5;
         }
+    } else if (name == "whiten") {
+        return m_whiten ? 1.0 : 0.0; 
     }
     return 0.0;
 }
@@ -138,7 +154,10 @@ BeatTracker::setParameter(std::string name, float value)
         case 2: m_dfType = DF_PHASEDEV; break;
         default: case 3: m_dfType = DF_COMPLEXSD; break;
         case 4: m_dfType = DF_BROADBAND; break;
+        case 5: m_dfType = DF_POWER; break;
         }
+    } else if (name == "whiten") {
+        m_whiten = (value > 0.5);
     }
 }
 
@@ -175,6 +194,9 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.stepSize = stepSize;
     dfConfig.frameLength = blockSize;
     dfConfig.dbRise = 3;
+    dfConfig.adaptiveWhitening = m_whiten;
+    dfConfig.whiteningRelaxCoeff = -1;
+    dfConfig.whiteningFloor = -1;
     
     m_d = new BeatTrackerData(dfConfig);
     return true;
