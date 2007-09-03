@@ -100,7 +100,7 @@ BeatTracker::getParameterDescriptors() const
     desc.name = "Onset Detection Function Type";
     desc.description = "Method used to calculate the onset detection function";
     desc.minValue = 0;
-    desc.maxValue = 3;
+    desc.maxValue = 4;
     desc.defaultValue = 3;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
@@ -136,7 +136,6 @@ BeatTracker::getParameter(std::string name) const
         case DF_PHASEDEV: return 2;
         default: case DF_COMPLEXSD: return 3;
         case DF_BROADBAND: return 4;
-        case DF_POWER: return 5;
         }
     } else if (name == "whiten") {
         return m_whiten ? 1.0 : 0.0; 
@@ -154,7 +153,6 @@ BeatTracker::setParameter(std::string name, float value)
         case 2: m_dfType = DF_PHASEDEV; break;
         default: case 3: m_dfType = DF_COMPLEXSD; break;
         case 4: m_dfType = DF_BROADBAND; break;
-        case 5: m_dfType = DF_POWER; break;
         }
     } else if (name == "whiten") {
         m_whiten = (value > 0.5);
@@ -258,6 +256,8 @@ BeatTracker::getOutputDescriptors() const
     tempo.unit = "bpm";
     tempo.hasFixedBinCount = true;
     tempo.binCount = 1;
+    tempo.hasKnownExtents = false;
+    tempo.isQuantized = false;
     tempo.sampleType = OutputDescriptor::VariableSampleRate;
     tempo.sampleRate = 1.0 / m_stepSecs;
 

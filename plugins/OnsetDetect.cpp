@@ -101,7 +101,7 @@ OnsetDetector::getParameterDescriptors() const
     desc.name = "Onset Detection Function Type";
     desc.description = "Method used to calculate the onset detection function";
     desc.minValue = 0;
-    desc.maxValue = 3;
+    desc.maxValue = 4;
     desc.defaultValue = 3;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
@@ -110,7 +110,6 @@ OnsetDetector::getParameterDescriptors() const
     desc.valueNames.push_back("Phase Deviation");
     desc.valueNames.push_back("Complex Domain");
     desc.valueNames.push_back("Broadband Energy Rise");
-    desc.valueNames.push_back("Spectral Magnitude");
     list.push_back(desc);
 
     desc.identifier = "sensitivity";
@@ -149,7 +148,6 @@ OnsetDetector::getParameter(std::string name) const
         case DF_PHASEDEV: return 2;
         default: case DF_COMPLEXSD: return 3;
         case DF_BROADBAND: return 4;
-        case DF_POWER: return 5;
         }
     } else if (name == "sensitivity") {
         return m_sensitivity;
@@ -170,7 +168,6 @@ OnsetDetector::setParameter(std::string name, float value)
         case 2: dfType = DF_PHASEDEV; break;
         default: case 3: dfType = DF_COMPLEXSD; break;
         case 4: dfType = DF_BROADBAND; break;
-        case 5: dfType = DF_POWER; break;
         }
         if (dfType == m_dfType) return;
         m_dfType = dfType;
@@ -212,9 +209,9 @@ OnsetDetector::selectProgram(std::string program)
         setParameter("sensitivity", 50);
         setParameter("whiten", 0);
     } else if (program == "Soft onsets") {
-        setParameter("dftype", 2); // phase deviation
-        setParameter("sensitivity", 70);
-        setParameter("whiten", 0);
+        setParameter("dftype", 3); // complex
+        setParameter("sensitivity", 40);
+        setParameter("whiten", 1);
     } else if (program == "Percussive onsets") {
         setParameter("dftype", 4); // broadband energy rise
         setParameter("sensitivity", 40);
