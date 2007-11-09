@@ -18,7 +18,7 @@ using std::vector;
 using std::cerr;
 using std::endl;
 
-float OnsetDetector::m_stepSecs = 0.01161;
+float OnsetDetector::m_preferredStepSecs = 0.01161;
 
 class OnsetDetectorData
 {
@@ -238,15 +238,13 @@ OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     }
 
     if (stepSize != getPreferredStepSize()) {
-        std::cerr << "ERROR: OnsetDetector::initialise: Unsupported step size for this sample rate: "
+        std::cerr << "WARNING: OnsetDetector::initialise: Possibly sub-optimal step size for this sample rate: "
                   << stepSize << " (wanted " << (getPreferredStepSize()) << ")" << std::endl;
-        return false;
     }
 
     if (blockSize != getPreferredBlockSize()) {
-        std::cerr << "WARNING: OnsetDetector::initialise: Sub-optimal block size for this sample rate: "
+        std::cerr << "WARNING: OnsetDetector::initialise: Possibly sub-optimal block size for this sample rate: "
                   << blockSize << " (wanted " << (getPreferredBlockSize()) << ")" << std::endl;
-//        return false;
     }
 
     DFConfig dfConfig;
@@ -272,7 +270,7 @@ OnsetDetector::reset()
 size_t
 OnsetDetector::getPreferredStepSize() const
 {
-    size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
+    size_t step = size_t(m_inputSampleRate * m_preferredStepSecs + 0.0001);
 //    std::cerr << "OnsetDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }
@@ -288,6 +286,9 @@ OnsetDetector::getOutputDescriptors() const
 {
     OutputList list;
 
+    float stepSecs = m_preferredStepSecs;
+    if (m_d) stepSecs = m_d->dfConfig.stepSecs;
+
     OutputDescriptor onsets;
     onsets.identifier = "onsets";
     onsets.name = "Note Onsets";
@@ -296,7 +297,7 @@ OnsetDetector::getOutputDescriptors() const
     onsets.hasFixedBinCount = true;
     onsets.binCount = 0;
     onsets.sampleType = OutputDescriptor::VariableSampleRate;
-    onsets.sampleRate = 1.0 / m_stepSecs;
+    onsets.sampleRate = 1.0 / stepSecs;
 
     OutputDescriptor df;
     df.identifier = "detection_fn";
@@ -323,7 +324,7 @@ OnsetDetector::getOutputDescriptors() const
 
 //!!! SV doesn't seem to handle these correctly in getRemainingFeatures
 //    sdf.sampleType = OutputDescriptor::FixedSampleRate;
-    sdf.sampleRate = 1.0 / m_stepSecs;
+    sdf.sampleRate = 1.0 / stepSecs;
 
     list.push_back(onsets);
     list.push_back(df);

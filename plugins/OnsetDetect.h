@@ -56,7 +56,7 @@ protected:
     float m_sensitivity;
     bool m_whiten;
     std::string m_program;
-    static float m_stepSecs;
+    static float m_preferredStepSecs;
 };
 
 
