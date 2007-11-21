@@ -279,6 +279,7 @@ KeyDetector::process(const float *const *inputBuffers,
     int tonic = key;
     if (tonic > 12) tonic -= 12;
 
+
     int prevTonic = m_prevKey;
     if (prevTonic > 12) prevTonic -= 12;
 
@@ -309,6 +310,9 @@ KeyDetector::process(const float *const *inputBuffers,
         if (minor) feature.label += " minor";
         else feature.label += " major";
         returnFeatures[2].push_back(feature); // key
+		cerr << "int key = "<<key<<endl;
+		cerr << "int tonic = "<<tonic<<endl;
+		cerr << "feature label = "<<feature.label<<endl;
     }
 
     m_prevKey = key;
@@ -350,6 +354,8 @@ KeyDetector::getPreferredBlockSize() const
 const char *
 KeyDetector::getKeyName(int index)
 {
+	// Keys are numbered with 1 => C, 12 => B
+	// This is based on chromagram base set to a C in qm-dsp's GetKeyMode.cpp
     static const char *names[] = {
         "C", "C# / Db", "D", "D# / Eb",
         "E", "F", "F# / Gb", "G",
@@ -358,6 +364,6 @@ KeyDetector::getKeyName(int index)
     if (index < 1 || index > 12) {
         return "(unknown)";
     }
-    return names[index - 1];
+    return names[index - 1]; //'-1' because our names array starts from 0 
 }
 
