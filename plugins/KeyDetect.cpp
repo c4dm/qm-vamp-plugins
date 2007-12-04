@@ -253,6 +253,7 @@ KeyDetector::getOutputDescriptors() const
     d.minValue = 0;
     d.maxValue = 23;
     d.quantizeStep = 1;
+    d.binNames.erase(d.binNames.begin(),d.binNames.end());
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 
