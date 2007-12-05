@@ -92,7 +92,7 @@ KeyDetector::getMaker() const
 int
 KeyDetector::getPluginVersion() const
 {
-    return 2;
+    return 3;
 }
 
 string
