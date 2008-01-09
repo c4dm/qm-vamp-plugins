@@ -12,8 +12,8 @@
 
 #include <vamp-sdk/Plugin.h>
 #include <vamp-sdk/RealTime.h>
-#include "Segmenter.h"
-#include "segment.h"
+#include "dsp/segmentation/Segmenter.h"
+#include "dsp/segmentation/segment.h"
 
 class SegmenterPlugin : public Vamp::Plugin
 {
@@ -24,7 +24,7 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 	
-	std::string getIdentifier() const { return "segmenter"; }
+	std::string getIdentifier() const { return "qm-segmenter"; }
 	std::string getName() const { return "Segmenter"; }
     std::string getDescription() const { return "Divide the track into a sequence of consistent segments"; }
     std::string getMaker() const;

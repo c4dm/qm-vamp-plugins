@@ -4,3 +4,4 @@ vamp:qm-vamp-plugins:qm-chromagram::Visualisation
 vamp:qm-vamp-plugins:qm-constantq::Visualisation
 vamp:qm-vamp-plugins:qm-tonalchange::Key and Tonality
 vamp:qm-vamp-plugins:qm-keydetector::Key and Tonality
+vamp:qm-vamp-plugins:qm-segmenter::Key and Tonality

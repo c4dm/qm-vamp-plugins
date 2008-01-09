@@ -12,7 +12,8 @@ MOC_DIR = tmp_moc
 INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
 LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
-LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -Wl,-Bdynamic
+linux-g++:LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -llapack -lblas -lg2c -Wl,-Bdynamic
+#LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -lg2c -Wl,-Bdynamic
 
 DEPENDPATH += plugins
 INCLUDEPATH += . plugins
@@ -23,11 +24,14 @@ HEADERS += plugins/BeatTrack.h \
            plugins/ChromagramPlugin.h \
            plugins/ConstantQSpectrogram.h \
            plugins/KeyDetect.h \
+           plugins/SegmenterPlugin.h \
            plugins/TonalChangeDetect.h
 SOURCES += plugins/BeatTrack.cpp \
            plugins/OnsetDetect.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/ConstantQSpectrogram.cpp \
            plugins/KeyDetect.cpp \
+           plugins/SegmenterPlugin.cpp \
            plugins/TonalChangeDetect.cpp \
            ./libmain.cpp
+

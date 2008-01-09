@@ -11,7 +11,7 @@
 #include <sstream>
 
 #include "SegmenterPlugin.h"
-#include "ClusterMeltSegmenter.h"
+#include "dsp/segmentation/ClusterMeltSegmenter.h"
 
 using std::string;
 using std::vector;
@@ -46,7 +46,7 @@ SegmenterPlugin::getPluginVersion() const
 string
 SegmenterPlugin::getCopyright() const
 {
-    return "All rights reserved";
+    return "Copyright (c) 2006-2008 - All Rights Reserved";
 }
 
 bool
@@ -163,7 +163,7 @@ SegmenterPlugin::makeSegmenter() const
 	if (params.featureType == FEATURE_TYPE_CONSTQ)
 	{
 		params.ncomponents = 20;
-		params.neighbourhoodLimit = 30;					
+		params.neighbourhoodLimit = 30; 
 	}
 	if (params.featureType == FEATURE_TYPE_CHROMA)
 	{
