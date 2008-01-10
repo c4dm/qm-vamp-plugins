@@ -1,10 +1,11 @@
+/* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
+
 /*
- *  SegmenterPlugin.cpp
- *  soundbite
+ * SegmenterPlugin.cpp
  *
- *  Created by Mark Levy on 24/03/2006.
- *  Copyright 2006 Centre for Digital Music, Queen Mary, University of London. All rights reserved.
- *
+ * Created by Mark Levy on 24/03/2006.
+ * Copyright 2006 Centre for Digital Music, Queen Mary, University of London.
+ * All rights reserved.
  */
 
 #include <iostream>
@@ -20,15 +21,17 @@ using std::endl;
 using std::ostringstream;
 
 SegmenterPlugin::SegmenterPlugin(float inputSampleRate) :
-	Plugin(inputSampleRate), segmenter(0), nSegmentTypes(10), featureType(feature_types(1))
+    Plugin(inputSampleRate),
+    segmenter(0),
+    nSegmentTypes(10),
+    featureType(feature_types(1))
 {
 	
 }
 
 SegmenterPlugin::~SegmenterPlugin()
 {
-	if (segmenter)
-		delete segmenter;
+    delete segmenter;
 }
 
 string
@@ -68,20 +71,21 @@ SegmenterPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 void
 SegmenterPlugin::reset()
 {
+    //!!!
 }
 
 size_t
 SegmenterPlugin::getPreferredStepSize() const
 {
-	if (!segmenter) makeSegmenter();
-	return hopsize;
+    if (!segmenter) makeSegmenter();
+    return hopsize;
 }
 
 size_t
 SegmenterPlugin::getPreferredBlockSize() const
 {
-	if (!segmenter) makeSegmenter();
-	return windowsize;
+    if (!segmenter) makeSegmenter();
+    return windowsize;
 }
 
 SegmenterPlugin::ParameterList SegmenterPlugin::getParameterDescriptors() const
@@ -124,12 +128,12 @@ SegmenterPlugin::getParameter(std::string param) const
         return nSegmentTypes;
     }
 	
-	if (param == "featureType") {
-		return featureType;
-	}
+    if (param == "featureType") {
+        return featureType;
+    }
     
-	std::cerr << "WARNING: SegmenterPlugin::getParameter: unknown parameter \""
-	<< param << "\"" << std::endl;
+    std::cerr << "WARNING: SegmenterPlugin::getParameter: unknown parameter \""
+              << param << "\"" << std::endl;
     return 0.0;
 }
 
@@ -137,47 +141,54 @@ void
 SegmenterPlugin::setParameter(std::string param, float value)
 {
     if (param == "nSegmentTypes") {
+
         nSegmentTypes = int(value);
-    } else 
-	{
-		if (param == "featureType") {
-			if (featureType != feature_types(value))	// feature type changed, create a new segmenter
-			{
-				featureType = feature_types(value);
-				makeSegmenter();
-			}
-		}
-		else
-		{
-			std::cerr << "WARNING: SegmenterPlugin::setParameter: unknown parameter \""
-			<< param << "\"" << std::endl;
-		}
-	}
+
+    } else {
+
+        if (param == "featureType") {
+            if (featureType != feature_types(value))	// feature type changed, create a new segmenter
+            {
+                featureType = feature_types(value);
+                makeSegmenter();
+            }
+        }
+        else
+        {
+            std::cerr << "WARNING: SegmenterPlugin::setParameter: unknown parameter \""
+                      << param << "\"" << std::endl;
+        }
+    }
 }
 
 void
 SegmenterPlugin::makeSegmenter() const
 {
-	ClusterMeltSegmenterParams params = ClusterMeltSegmenterParams();
-	params.featureType = (feature_types) featureType;
-	if (params.featureType == FEATURE_TYPE_CONSTQ)
-	{
-		params.ncomponents = 20;
-		params.neighbourhoodLimit = 30; 
-	}
-	if (params.featureType == FEATURE_TYPE_CHROMA)
-	{
-		params.hopSize = 0.1;
-		params.windowSize = 0.372;
-		params.nbins = 12;
-		params.histogramLength = 20;
-		params.neighbourhoodLimit = 40;
-	}
-	delete segmenter;
-	segmenter = new ClusterMeltSegmenter(params);
-	segmenter->initialise(static_cast<int>(m_inputSampleRate));
-	hopsize = segmenter->getHopsize();
-	windowsize = segmenter->getWindowsize();
+    ClusterMeltSegmenterParams params = ClusterMeltSegmenterParams();
+    params.featureType = (feature_types) featureType;
+
+    if (params.featureType == FEATURE_TYPE_CONSTQ)
+    {
+        params.ncomponents = 20;
+        params.neighbourhoodLimit = 30; 
+    }
+    if (params.featureType == FEATURE_TYPE_CHROMA)
+    {
+        params.hopSize = 0.1;
+        params.windowSize = 0.372;
+        params.nbins = 12;
+        params.histogramLength = 20;
+        params.neighbourhoodLimit = 40;
+    }
+    delete segmenter;
+
+    segmenter = new ClusterMeltSegmenter(params);
+    segmenter->initialise(m_inputSampleRate);
+    hopsize = segmenter->getHopsize();
+    windowsize = segmenter->getWindowsize();
+
+    std::cerr << "segmenter window size: " << segmenter->getWindowsize()
+              << std::endl;
 }
 
 SegmenterPlugin::OutputList
@@ -185,23 +196,23 @@ SegmenterPlugin::getOutputDescriptors() const
 {
     OutputList list;
 	
-	OutputDescriptor segmentation;
-	segmentation.identifier = "segmentation";
+    OutputDescriptor segmentation;
+    segmentation.identifier = "segmentation";
     segmentation.name = "Segmentation";
     segmentation.description = "Segmentation";
     segmentation.unit = "segment-type";
     segmentation.hasFixedBinCount = true;
     segmentation.binCount = 1;
-	segmentation.minValue = 1;
-	segmentation.maxValue = nSegmentTypes;
-	segmentation.isQuantized = true;
-	segmentation.quantizeStep = 1;
+    segmentation.minValue = 1;
+    segmentation.maxValue = nSegmentTypes;
+    segmentation.isQuantized = true;
+    segmentation.quantizeStep = 1;
     segmentation.sampleType = OutputDescriptor::VariableSampleRate;
     segmentation.sampleRate = m_inputSampleRate / getPreferredStepSize();
 	
     list.push_back(segmentation);
     
-	return list;
+    return list;
 }
 
 SegmenterPlugin::FeatureSet
@@ -210,41 +221,41 @@ SegmenterPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* tim
     // convert float* to double*
     double *tempBuffer = new double[windowsize];
     for (size_t i = 0; i < windowsize; ++i) {
-		tempBuffer[i] = inputBuffers[0][i];
+        tempBuffer[i] = inputBuffers[0][i];
     }
+
+    segmenter->extractFeatures(tempBuffer, segmenter->getWindowsize());
+
+    delete [] tempBuffer;
 	
-    segmenter->extractFeatures(tempBuffer, windowsize);
-	
-	delete [] tempBuffer;
-	
-	return FeatureSet();
+    return FeatureSet();
 }
 
 SegmenterPlugin::FeatureSet
 SegmenterPlugin::getRemainingFeatures()
 {
     segmenter->segment(nSegmentTypes);
-	Segmentation segm = segmenter->getSegmentation();
+    Segmentation segm = segmenter->getSegmentation();
 	
-	FeatureSet returnFeatures;
+    FeatureSet returnFeatures;
 	
     for (int i = 0; i < segm.segments.size(); ++i) {
 		
-		Segment s = segm.segments[i];
+        Segment s = segm.segments[i];
 		
-		Feature feature;
-		feature.hasTimestamp = true;
-		feature.timestamp = Vamp::RealTime::frame2RealTime(s.start, static_cast<unsigned int>(m_inputSampleRate));
+        Feature feature;
+        feature.hasTimestamp = true;
+        feature.timestamp = Vamp::RealTime::frame2RealTime(s.start, static_cast<unsigned int>(m_inputSampleRate));
 		
-		vector<float> floatval;
-		floatval.push_back(s.type);
-		feature.values = floatval;
+        vector<float> floatval;
+        floatval.push_back(s.type);
+        feature.values = floatval;
 		
-		ostringstream oss;
-		oss << s.type;
-		feature.label = oss.str();
+        ostringstream oss;
+        oss << s.type;
+        feature.label = oss.str();
 		
-		returnFeatures[0].push_back(feature);
+        returnFeatures[0].push_back(feature);
     }
 	
     return returnFeatures;
