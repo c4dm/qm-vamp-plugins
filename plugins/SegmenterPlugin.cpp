@@ -60,8 +60,6 @@ SegmenterPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     if (!segmenter) makeSegmenter();
 
-    //!!! TODO: print out a helpful error message
-    
     if (stepSize != hopsize) {
         std::cerr << "SegmenterPlugin::initialise: supplied step size "
                   << stepSize << " differs from required step size " << hopsize
@@ -220,6 +218,7 @@ SegmenterPlugin::getOutputDescriptors() const
     segmentation.unit = "segment-type";
     segmentation.hasFixedBinCount = true;
     segmentation.binCount = 1;
+    segmentation.hasKnownExtents = true;
     segmentation.minValue = 1;
     segmentation.maxValue = nSegmentTypes;
     segmentation.isQuantized = true;
