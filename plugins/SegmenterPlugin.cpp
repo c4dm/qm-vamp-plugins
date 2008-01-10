@@ -62,8 +62,19 @@ SegmenterPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     //!!! TODO: print out a helpful error message
     
-    if (stepSize != hopsize) return false;
-    if (blockSize != windowsize) return false;
+    if (stepSize != hopsize) {
+        std::cerr << "SegmenterPlugin::initialise: supplied step size "
+                  << stepSize << " differs from required step size " << hopsize
+                  << std::endl;
+        return false;
+    }
+
+    if (blockSize != windowsize) {
+        std::cerr << "SegmenterPlugin::initialise: supplied block size "
+                  << blockSize << " differs from required block size " << windowsize
+                  << std::endl;
+        return false;
+    }        
 		
     return true;
 }
@@ -107,15 +118,16 @@ SegmenterPlugin::ParameterList SegmenterPlugin::getParameterDescriptors() const
     ParameterDescriptor desc2;
     desc2.identifier = "featureType";
     desc2.name = "Feature Type";
-    desc2.description = "Try Chroma for acoustic or pre-1980 recordings, otherwise use Constant-Q";
+    desc2.description = "Try Chromatic for acoustic or pre-1980 recordings, otherwise use Hybrid";
     desc2.unit = "";
     desc2.minValue = 1;
-    desc2.maxValue = 2;
+    desc2.maxValue = 3;
     desc2.defaultValue = 1;
     desc2.isQuantized = true;
     desc2.quantizeStep = 1;
-    desc2.valueNames.push_back("Constant-Q");
-    desc2.valueNames.push_back("Chroma");
+    desc2.valueNames.push_back("Hybrid (Constant-Q)");
+    desc2.valueNames.push_back("Chromatic (Chroma)");
+    desc2.valueNames.push_back("Timbral (MFCC)");
     list.push_back(desc2);	
 	
     return list;
@@ -179,6 +191,11 @@ SegmenterPlugin::makeSegmenter() const
         params.nbins = 12;
         params.histogramLength = 20;
         params.neighbourhoodLimit = 40;
+    }
+    if (params.featureType == FEATURE_TYPE_MFCC)
+    {
+        params.ncomponents = 20;
+        params.neighbourhoodLimit = 30; 
     }
     delete segmenter;
 
