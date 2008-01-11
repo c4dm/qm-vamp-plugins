@@ -4,7 +4,7 @@ TEMPLATE = lib
 CONFIG += plugin warn_on release
 CONFIG -= qt
 
-linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O2 -march=pentium3 -mfpmath=sse -ffast-math
+linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O2 -march=pentium3 -msse 
 
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
@@ -25,6 +25,7 @@ HEADERS += plugins/BeatTrack.h \
            plugins/ConstantQSpectrogram.h \
            plugins/KeyDetect.h \
            plugins/SegmenterPlugin.h \
+           plugins/SimilarityPlugin.h \
            plugins/TonalChangeDetect.h
 SOURCES += plugins/BeatTrack.cpp \
            plugins/OnsetDetect.cpp \
@@ -32,6 +33,7 @@ SOURCES += plugins/BeatTrack.cpp \
            plugins/ConstantQSpectrogram.cpp \
            plugins/KeyDetect.cpp \
            plugins/SegmenterPlugin.cpp \
+           plugins/SimilarityPlugin.cpp \
            plugins/TonalChangeDetect.cpp \
            ./libmain.cpp
 

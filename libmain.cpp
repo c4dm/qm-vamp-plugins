@@ -17,6 +17,7 @@
 #include "plugins/TonalChangeDetect.h"
 #include "plugins/KeyDetect.h"
 #include "plugins/SegmenterPlugin.h"
+#include "plugins/SimilarityPlugin.h"
 
 static Vamp::PluginAdapter<BeatTracker> beatTrackerAdapter;
 static Vamp::PluginAdapter<OnsetDetector> onsetDetectorAdapter;
@@ -25,6 +26,7 @@ static Vamp::PluginAdapter<ConstantQSpectrogram> constantQAdapter;
 static Vamp::PluginAdapter<TonalChangeDetect> tonalChangeDetectorAdapter;
 static Vamp::PluginAdapter<KeyDetector> keyDetectorAdapter;
 static Vamp::PluginAdapter<SegmenterPlugin> segmenterPluginAdapter;
+static Vamp::PluginAdapter<SimilarityPlugin> similarityPluginAdapter;
 
 const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
                                                     unsigned int index)
@@ -39,6 +41,7 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
     case  4: return tonalChangeDetectorAdapter.getDescriptor();
     case  5: return keyDetectorAdapter.getDescriptor();
     case  6: return segmenterPluginAdapter.getDescriptor();
+    case  7: return similarityPluginAdapter.getDescriptor();
     default: return 0;
     }
 }
