@@ -11,7 +11,9 @@
 #include <sstream>
 
 #include "SimilarityPlugin.h"
+#include "base/Pitch.h"
 #include "dsp/mfcc/MFCC.h"
+#include "dsp/chromagram/Chromagram.h"
 #include "dsp/rateconversion/Decimator.h"
 
 using std::string;
@@ -22,9 +24,11 @@ using std::ostringstream;
 
 SimilarityPlugin::SimilarityPlugin(float inputSampleRate) :
     Plugin(inputSampleRate),
+    m_type(TypeMFCC),
     m_mfcc(0),
+    m_chromagram(0),
     m_decimator(0),
-    m_K(20),
+    m_featureColumnSize(20),
     m_blockSize(0),
     m_channels(0)
 {
@@ -34,6 +38,7 @@ SimilarityPlugin::SimilarityPlugin(float inputSampleRate) :
 SimilarityPlugin::~SimilarityPlugin()
 {
     delete m_mfcc;
+    delete m_chromagram;
     delete m_decimator;
 }
 
@@ -52,7 +57,7 @@ SimilarityPlugin::getName() const
 string
 SimilarityPlugin::getDescription() const
 {
-    return "Return a distance metric for overall timbral similarity between the input audio channels";
+    return "Return a distance matrix for similarity between the input audio channels";
 }
 
 string
@@ -110,18 +115,45 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     int decimationFactor = getDecimationFactor();
     if (decimationFactor > 1) {
-        m_decimator = new Decimator(getPreferredBlockSize(), decimationFactor);
+        m_decimator = new Decimator(m_blockSize, decimationFactor);
     }
 
-    MFCCConfig config;
-    config.FS = lrintf(m_inputSampleRate) / decimationFactor;
-    config.fftsize = 2048;
-    config.nceps = m_K - 1;
-    config.want_c0 = true;
-    m_mfcc = new MFCC(config);
+    if (m_type == TypeMFCC) {
+
+        m_featureColumnSize = 20;
+
+        MFCCConfig config;
+        config.FS = lrintf(m_inputSampleRate) / decimationFactor;
+        config.fftsize = 2048;
+        config.nceps = m_featureColumnSize - 1;
+        config.want_c0 = true;
+        m_mfcc = new MFCC(config);
+        m_fftSize = m_mfcc->getfftlength();
+
+    } else if (m_type == TypeChroma) {
+
+        m_featureColumnSize = 12;
+
+        ChromaConfig config;
+        config.FS = lrintf(m_inputSampleRate) / decimationFactor;
+        config.min = Pitch::getFrequencyForPitch(24, 0, 440);
+        config.max = Pitch::getFrequencyForPitch(96, 0, 440);
+        config.BPO = 12;
+        config.CQThresh = 0.0054;
+        config.isNormalised = true;
+        m_chromagram = new Chromagram(config);
+        m_fftSize = m_chromagram->getFrameSize();
+
+        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
+
+    } else {
+
+        std::cerr << "SimilarityPlugin::initialise: internal error: unknown type " << m_type << std::endl;
+        return false;
+    }
     
     for (int i = 0; i < m_channels; ++i) {
-        m_mfeatures.push_back(MFCCFeatureVector());
+        m_values.push_back(FeatureMatrix());
     }
 
     return true;
@@ -150,24 +182,69 @@ SimilarityPlugin::getDecimationFactor() const
 size_t
 SimilarityPlugin::getPreferredStepSize() const
 {
-    return 1024 * getDecimationFactor();
+    if (m_blockSize == 0) calculateBlockSize();
+    return m_blockSize/2;
 }
 
 size_t
 SimilarityPlugin::getPreferredBlockSize() const
 {
-    return 2048 * getDecimationFactor();
+    if (m_blockSize == 0) calculateBlockSize();
+    return m_blockSize;
+}
+
+void
+SimilarityPlugin::calculateBlockSize() const
+{
+    if (m_blockSize != 0) return;
+    int decimationFactor = getDecimationFactor();
+    if (m_type == TypeChroma) {
+        ChromaConfig config;
+        config.FS = lrintf(m_inputSampleRate) / decimationFactor;
+        config.min = Pitch::getFrequencyForPitch(24, 0, 440);
+        config.max = Pitch::getFrequencyForPitch(96, 0, 440);
+        config.BPO = 12;
+        config.CQThresh = 0.0054;
+        config.isNormalised = false;
+        Chromagram *c = new Chromagram(config);
+        size_t sz = c->getFrameSize();
+        delete c;
+        m_blockSize = sz * decimationFactor;
+    } else {
+        m_blockSize = 2048 * decimationFactor;
+    }
 }
 
 SimilarityPlugin::ParameterList SimilarityPlugin::getParameterDescriptors() const
 {
     ParameterList list;
+
+    ParameterDescriptor desc;
+    desc.identifier = "featureType";
+    desc.name = "Feature Type";
+    desc.description = "";//!!!
+    desc.unit = "";
+    desc.minValue = 0;
+    desc.maxValue = 1;
+    desc.defaultValue = 0;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    desc.valueNames.push_back("Timbral (MFCC)");
+    desc.valueNames.push_back("Chromatic (Chroma)");
+    list.push_back(desc);	
+	
     return list;
 }
 
 float
 SimilarityPlugin::getParameter(std::string param) const
 {
+    if (param == "featureType") {
+        if (m_type == TypeMFCC) return 0;
+        else if (m_type == TypeChroma) return 1;
+        else return 0;
+    }
+
     std::cerr << "WARNING: SimilarityPlugin::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
     return 0.0;
@@ -176,6 +253,15 @@ SimilarityPlugin::getParameter(std::string param) const
 void
 SimilarityPlugin::setParameter(std::string param, float value)
 {
+    if (param == "featureType") {
+        int v = int(value + 0.1);
+        Type prevType = m_type;
+        if (v == 0) m_type = TypeMFCC;
+        else if (v == 1) m_type = TypeChroma;
+        if (m_type != prevType) m_blockSize = 0;
+        return;
+    }
+
     std::cerr << "WARNING: SimilarityPlugin::setParameter: unknown parameter \""
               << param << "\"" << std::endl;
 }
@@ -188,7 +274,7 @@ SimilarityPlugin::getOutputDescriptors() const
     OutputDescriptor similarity;
     similarity.identifier = "distance";
     similarity.name = "Distance";
-    similarity.description = "Distance Metric for Timbral Similarity (smaller = more similar)";
+    similarity.description = "Distance Metric for Similarity (smaller = more similar)";
     similarity.unit = "";
     similarity.hasFixedBinCount = true;
     similarity.binCount = m_channels;
@@ -201,7 +287,7 @@ SimilarityPlugin::getOutputDescriptors() const
 	
     OutputDescriptor means;
     means.identifier = "means";
-    means.name = "MFCC Means";
+    means.name = "Feature Means";
     means.description = "";
     means.unit = "";
     means.hasFixedBinCount = true;
@@ -215,7 +301,7 @@ SimilarityPlugin::getOutputDescriptors() const
     
     OutputDescriptor variances;
     variances.identifier = "variances";
-    variances.name = "MFCC Variances";
+    variances.name = "Feature Variances";
     variances.description = "";
     variances.unit = "";
     variances.hasFixedBinCount = true;
@@ -235,8 +321,15 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
 {
     double *dblbuf = new double[m_blockSize];
     double *decbuf = dblbuf;
-    if (m_decimator) decbuf = new double[m_mfcc->getfftlength()];
-    double *ceps = new double[m_K];
+    if (m_decimator) decbuf = new double[m_fftSize];
+
+    double *raw = 0;
+    bool ownRaw = false;
+
+    if (m_type == TypeMFCC) {
+        raw = new double[m_featureColumnSize];
+        ownRaw = true;
+    }
 
     for (size_t c = 0; c < m_channels; ++c) {
 
@@ -247,18 +340,23 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
         if (m_decimator) {
             m_decimator->process(dblbuf, decbuf);
         }
-        
-        m_mfcc->process(m_mfcc->getfftlength(), decbuf, ceps);
-        
-        MFCCFeature mf(m_K);
-        for (int i = 0; i < m_K; ++i) mf[i] = ceps[i];
 
-        m_mfeatures[c].push_back(mf);
+        if (m_type == TypeMFCC) {
+            m_mfcc->process(m_fftSize, decbuf, raw);
+        } else if (m_type == TypeChroma) {
+            raw = m_chromagram->process(decbuf);
+        }                
+        
+        FeatureColumn mf(m_featureColumnSize);
+        for (int i = 0; i < m_featureColumnSize; ++i) mf[i] = raw[i];
+
+        m_values[c].push_back(mf);
     }
 
     if (m_decimator) delete[] decbuf;
     delete[] dblbuf;
-    delete[] ceps;
+
+    if (ownRaw) delete[] raw;
 	
     return FeatureSet();
 }
@@ -266,36 +364,36 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
 SimilarityPlugin::FeatureSet
 SimilarityPlugin::getRemainingFeatures()
 {
-    std::vector<MFCCFeature> m(m_channels);
-    std::vector<MFCCFeature> v(m_channels);
+    std::vector<FeatureColumn> m(m_channels);
+    std::vector<FeatureColumn> v(m_channels);
     
-    //!!! bail if m_mfeatures vectors are empty
-
     for (int i = 0; i < m_channels; ++i) {
 
-        MFCCFeature mean(m_K), variance(m_K);
+        FeatureColumn mean(m_featureColumnSize), variance(m_featureColumnSize);
 
-        for (int j = 0; j < m_K; ++j) {
+        for (int j = 0; j < m_featureColumnSize; ++j) {
 
             mean[j] = variance[j] = 0.0;
             int count;
 
+//            std::cout << i << "," << j << ":" << std::endl;
+
             count = 0;
-            for (int k = 0; k < m_mfeatures[i].size(); ++k) {
-                double val = m_mfeatures[i][k][j];
-//                std::cout << "val = " << val << std::endl;
+            for (int k = 0; k < m_values[i].size(); ++k) {
+                double val = m_values[i][k][j];
+//                std::cout << val << " ";
                 if (isnan(val) || isinf(val)) continue;
                 mean[j] += val;
-//                std::cout << "mean now = " << mean[j] << std::endl;
                 ++count;
             }
             if (count > 0) mean[j] /= count;
-//            std::cout << "divided by " << count << ", mean now " << mean[j] << std::endl;
+
+//            std::cout << std::endl;
 
             count = 0;
-            for (int k = 0; k < m_mfeatures[i].size(); ++k) {
-                double val = ((m_mfeatures[i][k][j] - mean[j]) *
-                              (m_mfeatures[i][k][j] - mean[j]));
+            for (int k = 0; k < m_values[i].size(); ++k) {
+                double val = ((m_values[i][k][j] - mean[j]) *
+                              (m_values[i][k][j] - mean[j]));
                 if (isnan(val) || isinf(val)) continue;
                 variance[j] += val;
                 ++count;
@@ -307,21 +405,31 @@ SimilarityPlugin::getRemainingFeatures()
         v[i] = variance;
     }
 
-//    std::cout << "m[0][0] = " << m[0][0] << std::endl;
-
-    // so we sorta return a matrix of the distances between channels,
+    // we want to return a matrix of the distances between channels,
     // but Vamp doesn't have a matrix return type so we actually
     // return a series of vectors
 
     std::vector<std::vector<double> > distances;
 
+    // "Despite the fact that MFCCs extracted from music are clearly
+    // not Gaussian, [14] showed, somewhat surprisingly, that a
+    // similarity function comparing single Gaussians modelling MFCCs
+    // for each track can perform as well as mixture models.  A great
+    // advantage of using single Gaussians is that a simple closed
+    // form exists for the KL divergence." -- Mark Levy, "Lightweight
+    // measures for timbral similarity of musical audio"
+    // (http://www.elec.qmul.ac.uk/easaier/papers/mlevytimbralsimilarity.pdf)
+    //
+    // This code calculates a symmetrised distance metric based on the
+    // KL divergence of Gaussian models of the MFCC values.
+
     for (int i = 0; i < m_channels; ++i) {
         distances.push_back(std::vector<double>());
         for (int j = 0; j < m_channels; ++j) {
-            double d = -2.0 * m_K;
-            for (int k = 0; k < m_K; ++k) {
-                // m[i][k] is the mean of mfcc k for channel i
-                // v[i][k] is the variance of mfcc k for channel i
+            double d = -2.0 * m_featureColumnSize;
+            for (int k = 0; k < m_featureColumnSize; ++k) {
+                // m[i][k] is the mean of feature bin k for channel i
+                // v[i][k] is the variance of feature bin k for channel i
                 d += v[i][k] / v[j][k] + v[j][k] / v[i][k];
                 d += (m[i][k] - m[j][k])
                     * (1.0 / v[i][k] + 1.0 / v[j][k])
@@ -341,14 +449,14 @@ SimilarityPlugin::getRemainingFeatures()
         feature.timestamp = Vamp::RealTime(i, 0);
 
         feature.values.clear();
-        for (int k = 0; k < m_K; ++k) {
+        for (int k = 0; k < m_featureColumnSize; ++k) {
             feature.values.push_back(m[i][k]);
         }
 
         returnFeatures[1].push_back(feature);
 
         feature.values.clear();
-        for (int k = 0; k < m_K; ++k) {
+        for (int k = 0; k < m_featureColumnSize; ++k) {
             feature.values.push_back(v[i][k]);
         }
 

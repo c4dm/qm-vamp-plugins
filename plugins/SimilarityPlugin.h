@@ -14,6 +14,7 @@
 #include <vamp-sdk/RealTime.h>
 
 class MFCC;
+class Chromagram;
 class Decimator;
 
 class SimilarityPlugin : public Vamp::Plugin
@@ -52,17 +53,27 @@ public:
 protected:
     int getDecimationFactor() const;
     
+    enum Type {
+        TypeMFCC,
+        TypeChroma
+    };
+
+    void calculateBlockSize() const;
+
+    Type m_type;
     MFCC *m_mfcc;
+    Chromagram *m_chromagram;
     Decimator *m_decimator;
-    int m_K; // number of mfcc ceps inc DC
-    size_t m_blockSize;
+    int m_featureColumnSize;
+    mutable size_t m_blockSize;
+    size_t m_fftSize;
     int m_channels;
 
-    typedef std::vector<double> MFCCFeature;
-    typedef std::vector<MFCCFeature> MFCCFeatureVector;
-    typedef std::vector<MFCCFeatureVector> MFCCFeatureSet;
+    typedef std::vector<double> FeatureColumn;
+    typedef std::vector<FeatureColumn> FeatureMatrix;
+    typedef std::vector<FeatureMatrix> FeatureMatrixSet;
 
-    MFCCFeatureSet m_mfeatures;
+    FeatureMatrixSet m_values;
 };
 
 #endif

@@ -152,7 +152,7 @@ SegmenterPlugin::setParameter(std::string param, float value)
 {
     if (param == "nSegmentTypes") {
 
-        nSegmentTypes = int(value);
+        nSegmentTypes = int(value + 0.0001);
 
     } else {
 
