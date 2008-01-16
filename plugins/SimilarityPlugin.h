@@ -69,6 +69,11 @@ protected:
     size_t m_fftSize;
     int m_channels;
 
+    mutable int m_distanceMatrixOutput;
+    mutable int m_distanceVectorOutput;
+    mutable int m_meansOutput;
+    mutable int m_variancesOutput;
+
     typedef std::vector<double> FeatureColumn;
     typedef std::vector<FeatureColumn> FeatureMatrix;
     typedef std::vector<FeatureMatrix> FeatureMatrixSet;

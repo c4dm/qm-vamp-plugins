@@ -81,7 +81,7 @@ SimilarityPlugin::getCopyright() const
 size_t
 SimilarityPlugin::getMinChannelCount() const
 {
-    return 2;
+    return 1;
 }
 
 size_t
@@ -97,6 +97,8 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 	channels > getMaxChannelCount()) return false;
 
     if (stepSize != getPreferredStepSize()) {
+        //!!! actually this perhaps shouldn't be an error... similarly
+        //using more than getMaxChannelCount channels
         std::cerr << "SimilarityPlugin::initialise: supplied step size "
                   << stepSize << " differs from required step size "
                   << getPreferredStepSize() << std::endl;
@@ -129,6 +131,8 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         config.want_c0 = true;
         m_mfcc = new MFCC(config);
         m_fftSize = m_mfcc->getfftlength();
+
+        std::cerr << "MFCC FS = " << config.FS << ", FFT size = " << m_fftSize<< std::endl;
 
     } else if (m_type == TypeChroma) {
 
@@ -183,7 +187,13 @@ size_t
 SimilarityPlugin::getPreferredStepSize() const
 {
     if (m_blockSize == 0) calculateBlockSize();
-    return m_blockSize/2;
+    if (m_type == TypeChroma) {
+        return m_blockSize/2;
+    } else {
+        // for compatibility with old-skool Soundbite, which doesn't
+        // overlap blocks on input
+        return m_blockSize;
+    }
 }
 
 size_t
@@ -272,9 +282,9 @@ SimilarityPlugin::getOutputDescriptors() const
     OutputList list;
 	
     OutputDescriptor similarity;
-    similarity.identifier = "distance";
-    similarity.name = "Distance";
-    similarity.description = "Distance Metric for Similarity (smaller = more similar)";
+    similarity.identifier = "distancematrix";
+    similarity.name = "Distance Matrix";
+    similarity.description = "Distance matrix for similarity metric.  Smaller = more similar.  Should be symmetrical.";
     similarity.unit = "";
     similarity.hasFixedBinCount = true;
     similarity.binCount = m_channels;
@@ -283,34 +293,52 @@ SimilarityPlugin::getOutputDescriptors() const
     similarity.sampleType = OutputDescriptor::FixedSampleRate;
     similarity.sampleRate = 1;
 	
+    m_distanceMatrixOutput = list.size();
     list.push_back(similarity);
+	
+    OutputDescriptor simvec;
+    simvec.identifier = "distancevector";
+    simvec.name = "Distance from First Channel";
+    simvec.description = "Distance vector for similarity of each channel to the first channel.  Smaller = more similar.";
+    simvec.unit = "";
+    simvec.hasFixedBinCount = true;
+    simvec.binCount = m_channels;
+    simvec.hasKnownExtents = false;
+    simvec.isQuantized = false;
+    simvec.sampleType = OutputDescriptor::FixedSampleRate;
+    simvec.sampleRate = 1;
+	
+    m_distanceVectorOutput = list.size();
+    list.push_back(simvec);
 	
     OutputDescriptor means;
     means.identifier = "means";
     means.name = "Feature Means";
-    means.description = "";
+    means.description = "Means of the feature bins.  Feature time (sec) corresponds to input channel.  Number of bins depends on selected feature type.";
     means.unit = "";
     means.hasFixedBinCount = true;
-    means.binCount = m_channels;
+    means.binCount = m_featureColumnSize;
     means.hasKnownExtents = false;
     means.isQuantized = false;
-    means.sampleType = OutputDescriptor::VariableSampleRate;
-    means.sampleRate = m_inputSampleRate / getPreferredStepSize();
+    means.sampleType = OutputDescriptor::FixedSampleRate;
+    means.sampleRate = 1;
 	
+    m_meansOutput = list.size();
     list.push_back(means);
     
     OutputDescriptor variances;
     variances.identifier = "variances";
     variances.name = "Feature Variances";
-    variances.description = "";
+    variances.description = "Variances of the feature bins.  Feature time (sec) corresponds to input channel.  Number of bins depends on selected feature type.";
     variances.unit = "";
     variances.hasFixedBinCount = true;
-    variances.binCount = m_channels;
+    variances.binCount = m_featureColumnSize;
     variances.hasKnownExtents = false;
     variances.isQuantized = false;
-    variances.sampleType = OutputDescriptor::VariableSampleRate;
-    variances.sampleRate = m_inputSampleRate / getPreferredStepSize();
+    variances.sampleType = OutputDescriptor::FixedSampleRate;
+    variances.sampleRate = 1;
 	
+    m_variancesOutput = list.size();
     list.push_back(variances);
     
     return list;
@@ -331,11 +359,19 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
         ownRaw = true;
     }
 
+    float threshold = 1e-10;
+
     for (size_t c = 0; c < m_channels; ++c) {
 
+        bool empty = true;
+
         for (int i = 0; i < m_blockSize; ++i) {
-            dblbuf[i] = inputBuffers[c][i];
+            float val = inputBuffers[c][i];
+            if (fabs(val) > threshold) empty = false;
+            dblbuf[i] = val;
         }
+
+        if (empty) continue;
 
         if (m_decimator) {
             m_decimator->process(dblbuf, decbuf);
@@ -373,13 +409,21 @@ SimilarityPlugin::getRemainingFeatures()
 
         for (int j = 0; j < m_featureColumnSize; ++j) {
 
-            mean[j] = variance[j] = 0.0;
+            mean[j] = 0.0;
+            variance[j] = 0.0;
             int count;
 
-//            std::cout << i << "," << j << ":" << std::endl;
+            // we need to use at least one value, but we want to
+            // disregard the final value because it may have come from
+            // incomplete data
+
+            int sz = m_values[i].size();
+            if (sz > 1) --sz;
+
+//            std::cout << "\nBin " << j << ":" << std::endl;
 
             count = 0;
-            for (int k = 0; k < m_values[i].size(); ++k) {
+            for (int k = 0; k < sz; ++k) {
                 double val = m_values[i][k][j];
 //                std::cout << val << " ";
                 if (isnan(val) || isinf(val)) continue;
@@ -387,11 +431,10 @@ SimilarityPlugin::getRemainingFeatures()
                 ++count;
             }
             if (count > 0) mean[j] /= count;
-
-//            std::cout << std::endl;
+//            std::cout << "\n" << count << " non-NaN non-inf values, so mean = " << mean[j] << std::endl;
 
             count = 0;
-            for (int k = 0; k < m_values[i].size(); ++k) {
+            for (int k = 0; k < sz; ++k) {
                 double val = ((m_values[i][k][j] - mean[j]) *
                               (m_values[i][k][j] - mean[j]));
                 if (isnan(val) || isinf(val)) continue;
@@ -399,6 +442,7 @@ SimilarityPlugin::getRemainingFeatures()
                 ++count;
             }
             if (count > 0) variance[j] /= count;
+//            std::cout << "... and variance = " << variance[j] << std::endl;
         }
 
         m[i] = mean;
@@ -442,6 +486,9 @@ SimilarityPlugin::getRemainingFeatures()
 
     FeatureSet returnFeatures;
 
+    Feature distanceVectorFeature;
+    distanceVectorFeature.label = "Distance from first channel";
+
     for (int i = 0; i < m_channels; ++i) {
 
         Feature feature;
@@ -453,25 +500,30 @@ SimilarityPlugin::getRemainingFeatures()
             feature.values.push_back(m[i][k]);
         }
 
-        returnFeatures[1].push_back(feature);
+        returnFeatures[m_meansOutput].push_back(feature);
 
         feature.values.clear();
         for (int k = 0; k < m_featureColumnSize; ++k) {
             feature.values.push_back(v[i][k]);
         }
 
-        returnFeatures[2].push_back(feature);
+        returnFeatures[m_variancesOutput].push_back(feature);
 
         feature.values.clear();
         for (int j = 0; j < m_channels; ++j) {
             feature.values.push_back(distances[i][j]);
         }
+
         ostringstream oss;
         oss << "Distance from " << (i + 1);
         feature.label = oss.str();
 		
-        returnFeatures[0].push_back(feature);
+        returnFeatures[m_distanceMatrixOutput].push_back(feature);
+
+        distanceVectorFeature.values.push_back(distances[0][i]);
     }
+
+    returnFeatures[m_distanceVectorOutput].push_back(distanceVectorFeature);
 
     return returnFeatures;
 }

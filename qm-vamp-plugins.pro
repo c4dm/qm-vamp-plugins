@@ -4,7 +4,7 @@ TEMPLATE = lib
 CONFIG += plugin warn_on release
 CONFIG -= qt
 
-linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O2 -march=pentium3 -msse 
+linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -march=pentium4 -msse -msse2
 
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
