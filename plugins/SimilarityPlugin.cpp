@@ -8,7 +8,7 @@
  */
 
 #include <iostream>
-#include <sstream>
+#include <cstdio>
 
 #include "SimilarityPlugin.h"
 #include "base/Pitch.h"
@@ -88,6 +88,7 @@ size_t
 SimilarityPlugin::getMaxChannelCount() const
 {
     return 1024;
+//    return 1;
 }
 
 bool
@@ -114,6 +115,10 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     
     m_blockSize = blockSize;
     m_channels = channels;
+
+    m_lastNonEmptyFrame = std::vector<int>(m_channels);
+    for (int i = 0; i < m_channels; ++i) m_lastNonEmptyFrame[i] = -1;
+    m_frameNo = 0;
 
     int decimationFactor = getDecimationFactor();
     if (decimationFactor > 1) {
@@ -311,6 +316,21 @@ SimilarityPlugin::getOutputDescriptors() const
     m_distanceVectorOutput = list.size();
     list.push_back(simvec);
 	
+    OutputDescriptor sortvec;
+    sortvec.identifier = "sorteddistancevector";
+    sortvec.name = "Ordered Distances from First Channel";
+    sortvec.description = "Vector of the order of other channels in similarity to the first, followed by distance vector for similarity of each to the first.  Smaller = more similar.";
+    sortvec.unit = "";
+    sortvec.hasFixedBinCount = true;
+    sortvec.binCount = m_channels;
+    sortvec.hasKnownExtents = false;
+    sortvec.isQuantized = false;
+    sortvec.sampleType = OutputDescriptor::FixedSampleRate;
+    sortvec.sampleRate = 1;
+	
+    m_sortedVectorOutput = list.size();
+    list.push_back(sortvec);
+	
     OutputDescriptor means;
     means.identifier = "means";
     means.name = "Feature Means";
@@ -372,6 +392,7 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
         }
 
         if (empty) continue;
+        m_lastNonEmptyFrame[c] = m_frameNo;
 
         if (m_decimator) {
             m_decimator->process(dblbuf, decbuf);
@@ -384,7 +405,12 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
         }                
         
         FeatureColumn mf(m_featureColumnSize);
-        for (int i = 0; i < m_featureColumnSize; ++i) mf[i] = raw[i];
+//        std::cout << m_frameNo << ":" << c << ": ";
+        for (int i = 0; i < m_featureColumnSize; ++i) {
+            mf[i] = raw[i];
+//            std::cout << raw[i] << " ";
+        }
+//        std::cout << std::endl;
 
         m_values[c].push_back(mf);
     }
@@ -394,6 +420,8 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
 
     if (ownRaw) delete[] raw;
 	
+    ++m_frameNo;
+
     return FeatureSet();
 }
 
@@ -413,12 +441,11 @@ SimilarityPlugin::getRemainingFeatures()
             variance[j] = 0.0;
             int count;
 
-            // we need to use at least one value, but we want to
-            // disregard the final value because it may have come from
-            // incomplete data
+            // We want to take values up to, but not including, the
+            // last non-empty frame (which may be partial)
 
-            int sz = m_values[i].size();
-            if (sz > 1) --sz;
+            int sz = m_lastNonEmptyFrame[i];
+            if (sz < 0) sz = 0;
 
 //            std::cout << "\nBin " << j << ":" << std::endl;
 
@@ -484,16 +511,29 @@ SimilarityPlugin::getRemainingFeatures()
         }
     }
 
+    // We give all features a timestamp, otherwise hosts will tend to
+    // stamp them at the end of the file, which is annoying
+
     FeatureSet returnFeatures;
+
+    Feature feature;
+    feature.hasTimestamp = true;
 
     Feature distanceVectorFeature;
     distanceVectorFeature.label = "Distance from first channel";
+    distanceVectorFeature.hasTimestamp = true;
+    distanceVectorFeature.timestamp = Vamp::RealTime::zeroTime;
+
+    std::map<double, int> sorted;
+
+    char labelBuffer[100];
 
     for (int i = 0; i < m_channels; ++i) {
 
-        Feature feature;
-        feature.hasTimestamp = true; // otherwise hosts will tend to stamp them at the end of the file, which is annoying
         feature.timestamp = Vamp::RealTime(i, 0);
+
+        sprintf(labelBuffer, "Means for channel %d", i+1);
+        feature.label = labelBuffer;
 
         feature.values.clear();
         for (int k = 0; k < m_featureColumnSize; ++k) {
@@ -501,6 +541,9 @@ SimilarityPlugin::getRemainingFeatures()
         }
 
         returnFeatures[m_meansOutput].push_back(feature);
+
+        sprintf(labelBuffer, "Variances for channel %d", i+1);
+        feature.label = labelBuffer;
 
         feature.values.clear();
         for (int k = 0; k < m_featureColumnSize; ++k) {
@@ -514,16 +557,39 @@ SimilarityPlugin::getRemainingFeatures()
             feature.values.push_back(distances[i][j]);
         }
 
-        ostringstream oss;
-        oss << "Distance from " << (i + 1);
-        feature.label = oss.str();
+        sprintf(labelBuffer, "Distances from channel %d", i+1);
+        feature.label = labelBuffer;
 		
         returnFeatures[m_distanceMatrixOutput].push_back(feature);
 
         distanceVectorFeature.values.push_back(distances[0][i]);
+
+        sorted[distances[0][i]] = i;
     }
 
     returnFeatures[m_distanceVectorOutput].push_back(distanceVectorFeature);
+
+    feature.label = "Order of channels by similarity to first channel";
+    feature.values.clear();
+    feature.timestamp = Vamp::RealTime(0, 0);
+
+    for (std::map<double, int>::iterator i = sorted.begin();
+         i != sorted.end(); ++i) {
+        feature.values.push_back(i->second);
+    }
+
+    returnFeatures[m_sortedVectorOutput].push_back(feature);
+
+    feature.label = "Ordered distances of channels from first channel";
+    feature.values.clear();
+    feature.timestamp = Vamp::RealTime(1, 0);
+
+    for (std::map<double, int>::iterator i = sorted.begin();
+         i != sorted.end(); ++i) {
+        feature.values.push_back(i->first);
+    }
+
+    returnFeatures[m_sortedVectorOutput].push_back(feature);
 
     return returnFeatures;
 }

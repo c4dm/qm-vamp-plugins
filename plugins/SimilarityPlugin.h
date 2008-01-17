@@ -68,9 +68,13 @@ protected:
     mutable size_t m_blockSize;
     size_t m_fftSize;
     int m_channels;
+    int m_frameNo;
+
+    std::vector<int> m_lastNonEmptyFrame; // per channel
 
     mutable int m_distanceMatrixOutput;
     mutable int m_distanceVectorOutput;
+    mutable int m_sortedVectorOutput;
     mutable int m_meansOutput;
     mutable int m_variancesOutput;
 
