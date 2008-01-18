@@ -24,6 +24,7 @@ HEADERS += plugins/BeatTrack.h \
            plugins/ChromagramPlugin.h \
            plugins/ConstantQSpectrogram.h \
            plugins/KeyDetect.h \
+           plugins/MFCCPlugin.h \
            plugins/SegmenterPlugin.h \
            plugins/SimilarityPlugin.h \
            plugins/TonalChangeDetect.h
@@ -32,6 +33,7 @@ SOURCES += plugins/BeatTrack.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/ConstantQSpectrogram.cpp \
            plugins/KeyDetect.cpp \
+           plugins/MFCCPlugin.cpp \
            plugins/SegmenterPlugin.cpp \
            plugins/SimilarityPlugin.cpp \
            plugins/TonalChangeDetect.cpp \

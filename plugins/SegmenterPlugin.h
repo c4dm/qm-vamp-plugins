@@ -27,9 +27,9 @@ public:
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
 	
-    std::string getIdentifier() const { return "qm-segmenter"; }
-    std::string getName() const { return "Segmenter"; }
-    std::string getDescription() const { return "Divide the track into a sequence of consistent segments"; }
+    std::string getIdentifier() const;
+    std::string getName() const;
+    std::string getDescription() const;
     std::string getMaker() const;
     int getPluginVersion() const;
     std::string getCopyright() const;

@@ -16,6 +16,7 @@
 #include "plugins/ConstantQSpectrogram.h"
 #include "plugins/TonalChangeDetect.h"
 #include "plugins/KeyDetect.h"
+#include "plugins/MFCCPlugin.h"
 #include "plugins/SegmenterPlugin.h"
 #include "plugins/SimilarityPlugin.h"
 
@@ -25,6 +26,7 @@ static Vamp::PluginAdapter<ChromagramPlugin> chromagramPluginAdapter;
 static Vamp::PluginAdapter<ConstantQSpectrogram> constantQAdapter;
 static Vamp::PluginAdapter<TonalChangeDetect> tonalChangeDetectorAdapter;
 static Vamp::PluginAdapter<KeyDetector> keyDetectorAdapter;
+static Vamp::PluginAdapter<MFCCPlugin> mfccPluginAdapter;
 static Vamp::PluginAdapter<SegmenterPlugin> segmenterPluginAdapter;
 static Vamp::PluginAdapter<SimilarityPlugin> similarityPluginAdapter;
 
@@ -42,6 +44,7 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
     case  5: return keyDetectorAdapter.getDescriptor();
     case  6: return segmenterPluginAdapter.getDescriptor();
     case  7: return similarityPluginAdapter.getDescriptor();
+    case  8: return mfccPluginAdapter.getDescriptor();
     default: return 0;
     }
 }

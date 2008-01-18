@@ -7,17 +7,19 @@
     All rights reserved.
 */
 
-#ifndef _CHROMAGRAM_PLUGIN_H_
-#define _CHROMAGRAM_PLUGIN_H_
+#ifndef _MFCC_PLUGIN_H_
+#define _MFCC_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
-#include <dsp/chromagram/Chromagram.h>
+#include <dsp/mfcc/MFCC.h>
 
-class ChromagramPlugin : public Vamp::Plugin
+#include <vector>
+
+class MFCCPlugin : public Vamp::Plugin
 {
 public:
-    ChromagramPlugin(float inputSampleRate);
-    virtual ~ChromagramPlugin();
+    MFCCPlugin(float inputSampleRate);
+    virtual ~MFCCPlugin();
 
     bool initialise(size_t channels, size_t stepSize, size_t blockSize);
     void reset();
@@ -46,20 +48,18 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    int m_minMIDIPitch;
-    int m_maxMIDIPitch;
-    float m_tuningFrequency;
-    bool m_normalized;
-    int m_bpo;
+    int m_bins; // == nceps is m_wantC0 false or nceps+1 if m_wantC0 true
+    bool m_wantC0;
+    float m_logpower;
 
     void setupConfig();
 
-    ChromaConfig m_config;
-    Chromagram *m_chromagram;
+    MFCCConfig m_config;
+    MFCC *m_mfcc;
     mutable size_t m_step;
     mutable size_t m_block;
 
-    vector<double> m_binsums;
+    std::vector<double> m_binsums;
     size_t m_count;
 
     Feature normalize(const Feature &);

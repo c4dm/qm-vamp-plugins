@@ -34,6 +34,21 @@ SegmenterPlugin::~SegmenterPlugin()
     delete segmenter;
 }
 
+std::string SegmenterPlugin::getIdentifier() const
+{
+    return "qm-segmenter";
+}
+
+std::string SegmenterPlugin::getName() const
+{
+    return "Segmenter";
+}
+
+std::string SegmenterPlugin::getDescription() const
+{
+    return "Divide the track into a sequence of consistent segments";
+}
+
 string
 SegmenterPlugin::getMaker() const
 {
@@ -202,8 +217,8 @@ SegmenterPlugin::makeSegmenter() const
     hopsize = segmenter->getHopsize();
     windowsize = segmenter->getWindowsize();
 
-    std::cerr << "segmenter window size: " << segmenter->getWindowsize()
-              << std::endl;
+//    std::cerr << "segmenter window size: " << segmenter->getWindowsize()
+//              << std::endl;
 }
 
 SegmenterPlugin::OutputList

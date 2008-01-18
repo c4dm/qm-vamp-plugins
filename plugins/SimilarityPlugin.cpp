@@ -63,7 +63,7 @@ SimilarityPlugin::getDescription() const
 string
 SimilarityPlugin::getMaker() const
 {
-    return "Chris Cannam, Queen Mary, University of London";
+    return "Mark Levy and Chris Cannam, Queen Mary, University of London";
 }
 
 int
@@ -88,7 +88,6 @@ size_t
 SimilarityPlugin::getMaxChannelCount() const
 {
     return 1024;
-//    return 1;
 }
 
 bool
@@ -129,11 +128,11 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
         m_featureColumnSize = 20;
 
-        MFCCConfig config;
-        config.FS = lrintf(m_inputSampleRate) / decimationFactor;
+        MFCCConfig config(lrintf(m_inputSampleRate) / decimationFactor);
         config.fftsize = 2048;
         config.nceps = m_featureColumnSize - 1;
         config.want_c0 = true;
+        config.logpower = 1;
         m_mfcc = new MFCC(config);
         m_fftSize = m_mfcc->getfftlength();
 
@@ -192,13 +191,7 @@ size_t
 SimilarityPlugin::getPreferredStepSize() const
 {
     if (m_blockSize == 0) calculateBlockSize();
-    if (m_type == TypeChroma) {
-        return m_blockSize/2;
-    } else {
-        // for compatibility with old-skool Soundbite, which doesn't
-        // overlap blocks on input
-        return m_blockSize;
-    }
+    return m_blockSize/2;
 }
 
 size_t
@@ -237,7 +230,7 @@ SimilarityPlugin::ParameterList SimilarityPlugin::getParameterDescriptors() cons
     ParameterDescriptor desc;
     desc.identifier = "featureType";
     desc.name = "Feature Type";
-    desc.description = "";//!!!
+    desc.description = "Audio feature used for similarity measure.  Timbral: use the first 20 MFCCs (19 plus C0).  Chromatic: use 12 bin-per-octave chroma.";
     desc.unit = "";
     desc.minValue = 0;
     desc.maxValue = 1;
@@ -399,7 +392,7 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
         }
 
         if (m_type == TypeMFCC) {
-            m_mfcc->process(m_fftSize, decbuf, raw);
+            m_mfcc->process(decbuf, raw);
         } else if (m_type == TypeChroma) {
             raw = m_chromagram->process(decbuf);
         }                
@@ -575,7 +568,7 @@ SimilarityPlugin::getRemainingFeatures()
 
     for (std::map<double, int>::iterator i = sorted.begin();
          i != sorted.end(); ++i) {
-        feature.values.push_back(i->second);
+        feature.values.push_back(i->second + 1);
     }
 
     returnFeatures[m_sortedVectorOutput].push_back(feature);

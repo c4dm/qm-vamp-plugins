@@ -81,12 +81,13 @@ ChromagramPlugin::getMaker() const
 int
 ChromagramPlugin::getPluginVersion() const
 {
-    return 2;
+    return 3;
 }
 
 string
 ChromagramPlugin::getCopyright() const
 {
+    //!!! update
     return "Copyright (c) 2006 - All Rights Reserved";
 }
 
@@ -99,6 +100,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.identifier = "minpitch";
     desc.name = "Minimum Pitch";
     desc.unit = "MIDI units";
+    //!!! descriptions
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 12;
@@ -208,6 +210,13 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 	      << blockSize << std::endl;
 
     m_chromagram = new Chromagram(m_config);
+    m_binsums = vector<double>(m_config.BPO);
+
+    for (int i = 0; i < m_config.BPO; ++i) {
+        m_binsums[i] = 0.0;
+    }
+
+    m_count = 0;
 
     m_step = m_chromagram->getHopSize();
     m_block = m_chromagram->getFrameSize();
@@ -290,6 +299,13 @@ ChromagramPlugin::getOutputDescriptors() const
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 
+    d.identifier = "chromameans";
+    d.name = "Chroma Means";
+    //!!! descriptions
+    d.sampleType = OutputDescriptor::FixedSampleRate;
+    d.sampleRate = 1;
+    list.push_back(d);
+
     return list;
 }
 
@@ -346,9 +362,11 @@ ChromagramPlugin::process(const float *const *inputBuffers,
     for (size_t i = 0; i < m_config.BPO; ++i) {
         double value = output[i];
         if (isnan(value)) value = 0.0;
+        m_binsums[i] += value;
 	feature.values.push_back(value);
     }
     feature.label = "";
+    ++m_count;
 
     FeatureSet returnFeatures;
     returnFeatures[0].push_back(feature);
@@ -358,6 +376,19 @@ ChromagramPlugin::process(const float *const *inputBuffers,
 ChromagramPlugin::FeatureSet
 ChromagramPlugin::getRemainingFeatures()
 {
-    return FeatureSet();
+    Feature feature;
+    feature.hasTimestamp = true;
+    feature.timestamp = Vamp::RealTime::zeroTime;
+  
+    for (size_t i = 0; i < m_config.BPO; ++i) {
+        double v = m_binsums[i];
+        if (m_count > 0) v /= m_count;
+        feature.values.push_back(v);
+    }
+    feature.label = "Chromagram bin means";
+
+    FeatureSet returnFeatures;
+    returnFeatures[1].push_back(feature);
+    return returnFeatures;
 }
 
