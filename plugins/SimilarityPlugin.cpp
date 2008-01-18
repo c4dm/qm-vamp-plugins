@@ -15,6 +15,7 @@
 #include "dsp/mfcc/MFCC.h"
 #include "dsp/chromagram/Chromagram.h"
 #include "dsp/rateconversion/Decimator.h"
+#include "maths/KLDivergence.cpp"
 
 using std::string;
 using std::vector;
@@ -483,23 +484,13 @@ SimilarityPlugin::getRemainingFeatures()
     // form exists for the KL divergence." -- Mark Levy, "Lightweight
     // measures for timbral similarity of musical audio"
     // (http://www.elec.qmul.ac.uk/easaier/papers/mlevytimbralsimilarity.pdf)
-    //
-    // This code calculates a symmetrised distance metric based on the
-    // KL divergence of Gaussian models of the MFCC values.
+
+    KLDivergence kld;
 
     for (int i = 0; i < m_channels; ++i) {
         distances.push_back(std::vector<double>());
         for (int j = 0; j < m_channels; ++j) {
-            double d = -2.0 * m_featureColumnSize;
-            for (int k = 0; k < m_featureColumnSize; ++k) {
-                // m[i][k] is the mean of feature bin k for channel i
-                // v[i][k] is the variance of feature bin k for channel i
-                d += v[i][k] / v[j][k] + v[j][k] / v[i][k];
-                d += (m[i][k] - m[j][k])
-                    * (1.0 / v[i][k] + 1.0 / v[j][k])
-                    * (m[i][k] - m[j][k]);
-            }
-            d /= 2.0;
+            double d = kld.distance(m[i], v[i], m[j], v[j]);
             distances[i].push_back(d);
         }
     }
