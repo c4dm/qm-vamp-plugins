@@ -13,6 +13,9 @@
 #include <vamp-sdk/Plugin.h>
 #include <vamp-sdk/RealTime.h>
 
+#include <vector>
+#include <deque>
+
 class MFCC;
 class Chromagram;
 class Decimator;
@@ -59,16 +62,30 @@ protected:
     };
 
     void calculateBlockSize() const;
+    bool needRhythm() const { return m_rhythmWeighting > m_noRhythm; }
+    bool needTimbre() const { return m_rhythmWeighting < m_allRhythm; }
 
     Type m_type;
     MFCC *m_mfcc;
+    MFCC *m_rhythmfcc;
     Chromagram *m_chromagram;
     Decimator *m_decimator;
     int m_featureColumnSize;
-    mutable size_t m_blockSize;
-    size_t m_fftSize;
+    float m_rhythmWeighting;
+    float m_rhythmClipDuration;
+    float m_rhythmClipOrigin;
+    int m_rhythmClipFrameSize;
+    int m_rhythmClipFrames;
+    int m_rhythmColumnSize;
+    mutable size_t m_blockSize; // before decimation
+    size_t m_fftSize; // after decimation
     int m_channels;
+    int m_processRate;
     int m_frameNo;
+    bool m_done;
+
+    static const float m_noRhythm;
+    static const float m_allRhythm;
 
     std::vector<int> m_lastNonEmptyFrame; // per channel
 
@@ -77,12 +94,23 @@ protected:
     mutable int m_sortedVectorOutput;
     mutable int m_meansOutput;
     mutable int m_variancesOutput;
+    mutable int m_beatSpectraOutput;
 
     typedef std::vector<double> FeatureColumn;
     typedef std::vector<FeatureColumn> FeatureMatrix;
     typedef std::vector<FeatureMatrix> FeatureMatrixSet;
 
+    typedef std::deque<FeatureColumn> FeatureColumnQueue;
+    typedef std::vector<FeatureColumnQueue> FeatureQueueSet;
+
     FeatureMatrixSet m_values;
+    FeatureQueueSet m_rhythmValues;
+
+    FeatureMatrix calculateTimbral(FeatureSet &returnFeatures);
+    FeatureMatrix calculateRhythmic(FeatureSet &returnFeatures);
+    double getDistance(const FeatureMatrix &timbral,
+                       const FeatureMatrix &rhythmic,
+                       int i, int j);
 };
 
 #endif

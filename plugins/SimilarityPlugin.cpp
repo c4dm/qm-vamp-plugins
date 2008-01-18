@@ -15,7 +15,9 @@
 #include "dsp/mfcc/MFCC.h"
 #include "dsp/chromagram/Chromagram.h"
 #include "dsp/rateconversion/Decimator.h"
-#include "maths/KLDivergence.cpp"
+#include "dsp/rhythm/BeatSpectrum.h"
+#include "maths/KLDivergence.h"
+#include "maths/CosineDistance.h"
 
 using std::string;
 using std::vector;
@@ -23,22 +25,47 @@ using std::cerr;
 using std::endl;
 using std::ostringstream;
 
+const float
+SimilarityPlugin::m_noRhythm = 0.009;
+
+const float
+SimilarityPlugin::m_allRhythm = 0.991;
+
 SimilarityPlugin::SimilarityPlugin(float inputSampleRate) :
     Plugin(inputSampleRate),
     m_type(TypeMFCC),
     m_mfcc(0),
+    m_rhythmfcc(0),
     m_chromagram(0),
     m_decimator(0),
     m_featureColumnSize(20),
+    m_rhythmWeighting(0.f),
+    m_rhythmClipDuration(4.f), // seconds
+    m_rhythmClipOrigin(40.f), // seconds
+    m_rhythmClipFrameSize(0),
+    m_rhythmClipFrames(0),
+    m_rhythmColumnSize(20),
     m_blockSize(0),
-    m_channels(0)
+    m_channels(0),
+    m_processRate(0),
+    m_frameNo(0),
+    m_done(false)
 {
-	
+    int rate = lrintf(m_inputSampleRate);
+    int internalRate = 22050;
+    int decimationFactor = rate / internalRate;
+    if (decimationFactor < 1) decimationFactor = 1;
+
+    // must be a power of two
+    while (decimationFactor & (decimationFactor - 1)) ++decimationFactor;
+
+    m_processRate = rate / decimationFactor; // may be 22050, 24000 etc
 }
 
 SimilarityPlugin::~SimilarityPlugin()
 {
     delete m_mfcc;
+    delete m_rhythmfcc;
     delete m_chromagram;
     delete m_decimator;
 }
@@ -64,7 +91,7 @@ SimilarityPlugin::getDescription() const
 string
 SimilarityPlugin::getMaker() const
 {
-    return "Mark Levy and Chris Cannam, Queen Mary, University of London";
+    return "Mark Levy, Kurt Jacobson and Chris Cannam, Queen Mary, University of London";
 }
 
 int
@@ -129,13 +156,14 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
         m_featureColumnSize = 20;
 
-        MFCCConfig config(lrintf(m_inputSampleRate) / decimationFactor);
+        MFCCConfig config(m_processRate);
         config.fftsize = 2048;
         config.nceps = m_featureColumnSize - 1;
         config.want_c0 = true;
         config.logpower = 1;
         m_mfcc = new MFCC(config);
         m_fftSize = m_mfcc->getfftlength();
+        m_rhythmClipFrameSize = m_fftSize / 4;
 
         std::cerr << "MFCC FS = " << config.FS << ", FFT size = " << m_fftSize<< std::endl;
 
@@ -144,7 +172,7 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_featureColumnSize = 12;
 
         ChromaConfig config;
-        config.FS = lrintf(m_inputSampleRate) / decimationFactor;
+        config.FS = m_processRate;
         config.min = Pitch::getFrequencyForPitch(24, 0, 440);
         config.max = Pitch::getFrequencyForPitch(96, 0, 440);
         config.BPO = 12;
@@ -152,6 +180,12 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         config.isNormalised = true;
         m_chromagram = new Chromagram(config);
         m_fftSize = m_chromagram->getFrameSize();
+
+        std::cerr << "fftsize = " << m_fftSize << std::endl;
+
+        m_rhythmClipFrameSize = m_fftSize / 16;
+        while (m_rhythmClipFrameSize < 512) m_rhythmClipFrameSize *= 2;
+        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
 
         std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
 
@@ -161,9 +195,36 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         return false;
     }
     
-    for (int i = 0; i < m_channels; ++i) {
-        m_values.push_back(FeatureMatrix());
+    if (needRhythm()) {
+        m_rhythmClipFrames =
+            int(ceil((m_rhythmClipDuration * m_processRate) 
+                     / m_rhythmClipFrameSize));
+        std::cerr << "SimilarityPlugin::initialise: rhythm clip is "
+                  << m_rhythmClipFrames << " frames of size "
+                  << m_rhythmClipFrameSize << " at process rate "
+                  << m_processRate << " ( = "
+                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
+                  << std::endl;
+
+        MFCCConfig config(m_processRate);
+        config.fftsize = m_rhythmClipFrameSize;
+        config.nceps = m_featureColumnSize - 1;
+        config.want_c0 = true;
+        config.logpower = 1;
+        config.window = RectangularWindow; // because no overlap
+        m_rhythmfcc = new MFCC(config);
     }
+
+    for (int i = 0; i < m_channels; ++i) {
+
+        m_values.push_back(FeatureMatrix());
+
+        if (needRhythm()) {
+            m_rhythmValues.push_back(FeatureColumnQueue());
+        }
+    }
+
+    m_done = false;
 
     return true;
 }
@@ -172,26 +233,24 @@ void
 SimilarityPlugin::reset()
 {
     //!!!
+    m_done = false;
 }
 
 int
 SimilarityPlugin::getDecimationFactor() const
 {
     int rate = lrintf(m_inputSampleRate);
-    int internalRate = 22050;
-    int decimationFactor = rate / internalRate;
-    if (decimationFactor < 1) decimationFactor = 1;
-
-    // must be a power of two
-    while (decimationFactor & (decimationFactor - 1)) ++decimationFactor;
-
-    return decimationFactor;
+    return rate / m_processRate;
 }
 
 size_t
 SimilarityPlugin::getPreferredStepSize() const
 {
     if (m_blockSize == 0) calculateBlockSize();
+
+    // there is also an assumption to this effect in process()
+    // (referring to m_fftSize/2 instead of a literal post-decimation
+    // step size):
     return m_blockSize/2;
 }
 
@@ -209,7 +268,7 @@ SimilarityPlugin::calculateBlockSize() const
     int decimationFactor = getDecimationFactor();
     if (m_type == TypeChroma) {
         ChromaConfig config;
-        config.FS = lrintf(m_inputSampleRate) / decimationFactor;
+        config.FS = m_processRate;
         config.min = Pitch::getFrequencyForPitch(24, 0, 440);
         config.max = Pitch::getFrequencyForPitch(96, 0, 440);
         config.BPO = 12;
@@ -242,6 +301,18 @@ SimilarityPlugin::ParameterList SimilarityPlugin::getParameterDescriptors() cons
     desc.valueNames.push_back("Chromatic (Chroma)");
     list.push_back(desc);	
 	
+    desc.identifier = "rhythmWeighting";
+    desc.name = "Influence of Rhythm";
+    desc.description = "Proportion of similarity measure made up from rhythmic similarity component, from 0 (entirely timbral or chromatic) to 100 (entirely rhythmic).";
+    desc.unit = "%";
+    desc.minValue = 0;
+    desc.maxValue = 100;
+    desc.defaultValue = 0;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    desc.valueNames.clear();
+    list.push_back(desc);	
+	
     return list;
 }
 
@@ -252,6 +323,8 @@ SimilarityPlugin::getParameter(std::string param) const
         if (m_type == TypeMFCC) return 0;
         else if (m_type == TypeChroma) return 1;
         else return 0;
+    } else if (param == "rhythmWeighting") {
+        return nearbyint(m_rhythmWeighting * 100.0);
     }
 
     std::cerr << "WARNING: SimilarityPlugin::getParameter: unknown parameter \""
@@ -268,6 +341,9 @@ SimilarityPlugin::setParameter(std::string param, float value)
         if (v == 0) m_type = TypeMFCC;
         else if (v == 1) m_type = TypeChroma;
         if (m_type != prevType) m_blockSize = 0;
+        return;
+    } else if (param == "rhythmWeighting") {
+        m_rhythmWeighting = value / 100;
         return;
     }
 
@@ -355,25 +431,45 @@ SimilarityPlugin::getOutputDescriptors() const
     m_variancesOutput = list.size();
     list.push_back(variances);
     
+    OutputDescriptor beatspectrum;
+    beatspectrum.identifier = "beatspectrum";
+    beatspectrum.name = "Beat Spectra";
+    beatspectrum.description = "Rhythmic self-similarity vectors (beat spectra) for the input channels.  Feature time (sec) corresponds to input channel.  Not returned if rhythm weighting is zero.";
+    beatspectrum.unit = "";
+    if (m_rhythmClipFrames > 0) {
+        beatspectrum.hasFixedBinCount = true;
+        beatspectrum.binCount = m_rhythmClipFrames / 2;
+    } else {
+        beatspectrum.hasFixedBinCount = false;
+    }
+    beatspectrum.hasKnownExtents = false;
+    beatspectrum.isQuantized = false;
+    beatspectrum.sampleType = OutputDescriptor::FixedSampleRate;
+    beatspectrum.sampleRate = 1;
+	
+    m_beatSpectraOutput = list.size();
+    list.push_back(beatspectrum);
+    
     return list;
 }
 
 SimilarityPlugin::FeatureSet
 SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* timestamp */)
 {
+    if (m_done) {
+        return FeatureSet();
+    }
+
     double *dblbuf = new double[m_blockSize];
     double *decbuf = dblbuf;
     if (m_decimator) decbuf = new double[m_fftSize];
 
-    double *raw = 0;
-    bool ownRaw = false;
-
-    if (m_type == TypeMFCC) {
-        raw = new double[m_featureColumnSize];
-        ownRaw = true;
-    }
+    double *raw = new double[std::max(m_featureColumnSize,
+                                      m_rhythmColumnSize)];
 
     float threshold = 1e-10;
+
+    bool someRhythmFrameNeeded = false;
 
     for (size_t c = 0; c < m_channels; ++c) {
 
@@ -385,45 +481,113 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
             dblbuf[i] = val;
         }
 
-        if (empty) continue;
+        if (empty) {
+            if (needRhythm() && ((m_frameNo % 2) == 0)) {
+                for (int i = 0; i < m_fftSize / m_rhythmClipFrameSize; ++i) {
+                    if (m_rhythmValues[c].size() < m_rhythmClipFrames) {
+                        FeatureColumn mf(m_rhythmColumnSize);
+                        for (int i = 0; i < m_rhythmColumnSize; ++i) {
+                            mf[i] = 0.0;
+                        }
+                        m_rhythmValues[c].push_back(mf);
+                    }
+                }
+            }
+            continue;
+        }
+
         m_lastNonEmptyFrame[c] = m_frameNo;
 
         if (m_decimator) {
             m_decimator->process(dblbuf, decbuf);
         }
 
-        if (m_type == TypeMFCC) {
-            m_mfcc->process(decbuf, raw);
-        } else if (m_type == TypeChroma) {
-            raw = m_chromagram->process(decbuf);
-        }                
-        
-        FeatureColumn mf(m_featureColumnSize);
-//        std::cout << m_frameNo << ":" << c << ": ";
-        for (int i = 0; i < m_featureColumnSize; ++i) {
-            mf[i] = raw[i];
-//            std::cout << raw[i] << " ";
-        }
-//        std::cout << std::endl;
+        if (needTimbre()) {
 
-        m_values[c].push_back(mf);
+            if (m_type == TypeMFCC) {
+                m_mfcc->process(decbuf, raw);
+            } else if (m_type == TypeChroma) {
+                raw = m_chromagram->process(decbuf);
+            }
+        
+            FeatureColumn mf(m_featureColumnSize);
+            for (int i = 0; i < m_featureColumnSize; ++i) {
+                mf[i] = raw[i];
+            }
+            
+            m_values[c].push_back(mf);
+        }
+
+//        std::cerr << "needRhythm = " << needRhythm() << ", frame = " << m_frameNo << std::endl;
+
+        if (needRhythm() && ((m_frameNo % 2) == 0)) {
+
+            // The incoming frames are overlapping; we only use every
+            // other one, because we don't want the overlap (it would
+            // screw up the rhythm)
+
+            int frameOffset = 0;
+
+            while (frameOffset + m_rhythmClipFrameSize <= m_fftSize) {
+
+                bool needRhythmFrame = true;
+
+                if (m_rhythmValues[c].size() >= m_rhythmClipFrames) {
+
+                    needRhythmFrame = false;
+
+                    // assumes hopsize = framesize/2
+                    float current = m_frameNo * (m_fftSize/2) + frameOffset;
+                    current = current / m_processRate;
+                    if (current - m_rhythmClipDuration < m_rhythmClipOrigin) {
+                        needRhythmFrame = true;
+                        m_rhythmValues[c].pop_front();
+                    }
+
+                    if (needRhythmFrame) {
+                        std::cerr << "at current = " <<current << " (frame = " << m_frameNo << "), have " << m_rhythmValues[c].size() << ", need rhythm = " << needRhythmFrame << std::endl;
+                    }
+
+                }
+                
+                if (needRhythmFrame) {
+
+                    someRhythmFrameNeeded = true;
+
+                    m_rhythmfcc->process(decbuf + frameOffset, raw);
+                    
+                    FeatureColumn mf(m_rhythmColumnSize);
+                    for (int i = 0; i < m_rhythmColumnSize; ++i) {
+                        mf[i] = raw[i];
+                    }
+
+                    m_rhythmValues[c].push_back(mf);
+                }
+
+                frameOffset += m_rhythmClipFrameSize;
+            }
+        }
+    }
+
+    if (!needTimbre() && !someRhythmFrameNeeded && ((m_frameNo % 2) == 0)) {
+        std::cerr << "done!" << std::endl;
+        m_done = true;
     }
 
     if (m_decimator) delete[] decbuf;
     delete[] dblbuf;
-
-    if (ownRaw) delete[] raw;
+    delete[] raw;
 	
     ++m_frameNo;
 
     return FeatureSet();
 }
 
-SimilarityPlugin::FeatureSet
-SimilarityPlugin::getRemainingFeatures()
+SimilarityPlugin::FeatureMatrix
+SimilarityPlugin::calculateTimbral(FeatureSet &returnFeatures)
 {
-    std::vector<FeatureColumn> m(m_channels);
-    std::vector<FeatureColumn> v(m_channels);
+    FeatureMatrix m(m_channels); // means
+    FeatureMatrix v(m_channels); // variances
     
     for (int i = 0; i < m_channels; ++i) {
 
@@ -441,18 +605,14 @@ SimilarityPlugin::getRemainingFeatures()
             int sz = m_lastNonEmptyFrame[i];
             if (sz < 0) sz = 0;
 
-//            std::cout << "\nBin " << j << ":" << std::endl;
-
             count = 0;
             for (int k = 0; k < sz; ++k) {
                 double val = m_values[i][k][j];
-//                std::cout << val << " ";
                 if (isnan(val) || isinf(val)) continue;
                 mean[j] += val;
                 ++count;
             }
             if (count > 0) mean[j] /= count;
-//            std::cout << "\n" << count << " non-NaN non-inf values, so mean = " << mean[j] << std::endl;
 
             count = 0;
             for (int k = 0; k < sz; ++k) {
@@ -463,18 +623,11 @@ SimilarityPlugin::getRemainingFeatures()
                 ++count;
             }
             if (count > 0) variance[j] /= count;
-//            std::cout << "... and variance = " << variance[j] << std::endl;
         }
 
         m[i] = mean;
         v[i] = variance;
     }
-
-    // we want to return a matrix of the distances between channels,
-    // but Vamp doesn't have a matrix return type so we actually
-    // return a series of vectors
-
-    std::vector<std::vector<double> > distances;
 
     // "Despite the fact that MFCCs extracted from music are clearly
     // not Gaussian, [14] showed, somewhat surprisingly, that a
@@ -486,29 +639,17 @@ SimilarityPlugin::getRemainingFeatures()
     // (http://www.elec.qmul.ac.uk/easaier/papers/mlevytimbralsimilarity.pdf)
 
     KLDivergence kld;
+    FeatureMatrix distances(m_channels);
 
     for (int i = 0; i < m_channels; ++i) {
-        distances.push_back(std::vector<double>());
         for (int j = 0; j < m_channels; ++j) {
             double d = kld.distance(m[i], v[i], m[j], v[j]);
             distances[i].push_back(d);
         }
     }
-
-    // We give all features a timestamp, otherwise hosts will tend to
-    // stamp them at the end of the file, which is annoying
-
-    FeatureSet returnFeatures;
-
+    
     Feature feature;
     feature.hasTimestamp = true;
-
-    Feature distanceVectorFeature;
-    distanceVectorFeature.label = "Distance from first channel";
-    distanceVectorFeature.hasTimestamp = true;
-    distanceVectorFeature.timestamp = Vamp::RealTime::zeroTime;
-
-    std::map<double, int> sorted;
 
     char labelBuffer[100];
 
@@ -535,10 +676,119 @@ SimilarityPlugin::getRemainingFeatures()
         }
 
         returnFeatures[m_variancesOutput].push_back(feature);
+    }
+
+    return distances;
+}
+
+SimilarityPlugin::FeatureMatrix
+SimilarityPlugin::calculateRhythmic(FeatureSet &returnFeatures)
+{
+    if (!needRhythm()) return FeatureMatrix();
+
+    BeatSpectrum bscalc;
+    CosineDistance cd;
+
+    // Our rhythm feature matrix is a deque of vectors for practical
+    // reasons, but BeatSpectrum::process wants a vector of vectors
+    // (which is what FeatureMatrix happens to be).
+
+    FeatureMatrixSet bsinput(m_channels);
+    for (int i = 0; i < m_channels; ++i) {
+        for (int j = 0; j < m_rhythmValues[i].size(); ++j) {
+            bsinput[i].push_back(m_rhythmValues[i][j]);
+        }
+    }
+
+    FeatureMatrix bs(m_channels);
+    for (int i = 0; i < m_channels; ++i) {
+        bs[i] = bscalc.process(bsinput[i]);
+    }
+
+    FeatureMatrix distances(m_channels);
+    for (int i = 0; i < m_channels; ++i) {
+        for (int j = 0; j < m_channels; ++j) {
+            double d = cd.distance(bs[i], bs[j]);
+            distances[i].push_back(d);
+        }
+    }
+
+    Feature feature;
+    feature.hasTimestamp = true;
+
+    char labelBuffer[100];
+
+    for (int i = 0; i < m_channels; ++i) {
+
+        feature.timestamp = Vamp::RealTime(i, 0);
+
+        sprintf(labelBuffer, "Beat spectrum for channel %d", i+1);
+        feature.label = labelBuffer;
+
+        feature.values.clear();
+        for (int j = 0; j < bs[i].size(); ++j) {
+            feature.values.push_back(bs[i][j]);
+        }
+
+        returnFeatures[m_beatSpectraOutput].push_back(feature);
+    }
+
+    return distances;
+}
+
+double
+SimilarityPlugin::getDistance(const FeatureMatrix &timbral,
+                              const FeatureMatrix &rhythmic,
+                              int i, int j)
+{
+    double distance = 1.0;
+    if (needTimbre()) distance *= timbral[i][j];
+    if (needRhythm()) distance *= rhythmic[i][j];
+    return distance;
+}
+
+SimilarityPlugin::FeatureSet
+SimilarityPlugin::getRemainingFeatures()
+{
+    FeatureSet returnFeatures;
+
+    // We want to return a matrix of the distances between channels,
+    // but Vamp doesn't have a matrix return type so we will actually
+    // return a series of vectors
+
+    FeatureMatrix timbralDistances, rhythmicDistances;
+
+    if (needTimbre()) {
+        timbralDistances = calculateTimbral(returnFeatures);
+    }
+
+    if (needRhythm()) {
+        rhythmicDistances = calculateRhythmic(returnFeatures);
+    }
+    
+    // We give all features a timestamp, otherwise hosts will tend to
+    // stamp them at the end of the file, which is annoying
+
+    Feature feature;
+    feature.hasTimestamp = true;
+
+    Feature distanceVectorFeature;
+    distanceVectorFeature.label = "Distance from first channel";
+    distanceVectorFeature.hasTimestamp = true;
+    distanceVectorFeature.timestamp = Vamp::RealTime::zeroTime;
+
+    std::map<double, int> sorted;
+
+    char labelBuffer[100];
+
+    for (int i = 0; i < m_channels; ++i) {
+
+        feature.timestamp = Vamp::RealTime(i, 0);
 
         feature.values.clear();
         for (int j = 0; j < m_channels; ++j) {
-            feature.values.push_back(distances[i][j]);
+            double dist = getDistance(timbralDistances, rhythmicDistances, i, j);
+            feature.values.push_back(dist);
         }
 
         sprintf(labelBuffer, "Distances from channel %d", i+1);
@@ -546,9 +796,11 @@ SimilarityPlugin::getRemainingFeatures()
 		
         returnFeatures[m_distanceMatrixOutput].push_back(feature);
 
-        distanceVectorFeature.values.push_back(distances[0][i]);
+        double fromFirst = 
+            getDistance(timbralDistances, rhythmicDistances, 0, i);
 
-        sorted[distances[0][i]] = i;
+        distanceVectorFeature.values.push_back(fromFirst);
+        sorted[fromFirst] = i;
     }
 
     returnFeatures[m_distanceVectorOutput].push_back(distanceVectorFeature);
