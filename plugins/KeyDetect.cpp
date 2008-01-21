@@ -196,8 +196,8 @@ KeyDetector::getOutputDescriptors() const
     d.binCount = 1;
     d.hasKnownExtents = true;
     d.isQuantized = true;
-    d.minValue = 0;
-    d.maxValue = 11;
+    d.minValue = 1;
+    d.maxValue = 12;
     d.quantizeStep = 1;
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
@@ -223,8 +223,8 @@ KeyDetector::getOutputDescriptors() const
     d.binCount = 1;
     d.hasKnownExtents = true;
     d.isQuantized = true;
-    d.minValue = 0;
-    d.maxValue = 23;
+    d.minValue = 1;
+    d.maxValue = 24;
     d.quantizeStep = 1;
     d.binNames.erase(d.binNames.begin(),d.binNames.end());
     d.sampleType = OutputDescriptor::OneSamplePerStep;
@@ -328,8 +328,8 @@ KeyDetector::getPreferredBlockSize() const
 const char *
 KeyDetector::getKeyName(int index)
 {
-	// Keys are numbered with 1 => C, 12 => B
-	// This is based on chromagram base set to a C in qm-dsp's GetKeyMode.cpp
+    // Keys are numbered with 1 => C, 12 => B
+    // This is based on chromagram base set to a C in qm-dsp's GetKeyMode.cpp
     static const char *names[] = {
         "C", "C# / Db", "D", "D# / Eb",
         "E", "F", "F# / Gb", "G",

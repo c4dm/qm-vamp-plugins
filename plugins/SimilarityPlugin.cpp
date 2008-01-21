@@ -39,7 +39,7 @@ SimilarityPlugin::SimilarityPlugin(float inputSampleRate) :
     m_chromagram(0),
     m_decimator(0),
     m_featureColumnSize(20),
-    m_rhythmWeighting(0.f),
+    m_rhythmWeighting(0.5f),
     m_rhythmClipDuration(4.f), // seconds
     m_rhythmClipOrigin(40.f), // seconds
     m_rhythmClipFrameSize(0),
@@ -290,17 +290,20 @@ SimilarityPlugin::ParameterList SimilarityPlugin::getParameterDescriptors() cons
     ParameterDescriptor desc;
     desc.identifier = "featureType";
     desc.name = "Feature Type";
-    desc.description = "Audio feature used for similarity measure.  Timbral: use the first 20 MFCCs (19 plus C0).  Chromatic: use 12 bin-per-octave chroma.";
+    desc.description = "Audio feature used for similarity measure.  Timbral: use the first 20 MFCCs (19 plus C0).  Chromatic: use 12 bin-per-octave chroma.  Rhythmic: compare beat spectra of short regions.";
     desc.unit = "";
     desc.minValue = 0;
-    desc.maxValue = 1;
-    desc.defaultValue = 0;
+    desc.maxValue = 4;
+    desc.defaultValue = 1;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
-    desc.valueNames.push_back("Timbral (MFCC)");
-    desc.valueNames.push_back("Chromatic (Chroma)");
+    desc.valueNames.push_back("Timbre");
+    desc.valueNames.push_back("Timbre and Rhythm");
+    desc.valueNames.push_back("Chroma");
+    desc.valueNames.push_back("Chroma and Rhythm");
+    desc.valueNames.push_back("Rhythm only");
     list.push_back(desc);	
-	
+/*
     desc.identifier = "rhythmWeighting";
     desc.name = "Influence of Rhythm";
     desc.description = "Proportion of similarity measure made up from rhythmic similarity component, from 0 (entirely timbral or chromatic) to 100 (entirely rhythmic).";
@@ -308,11 +311,10 @@ SimilarityPlugin::ParameterList SimilarityPlugin::getParameterDescriptors() cons
     desc.minValue = 0;
     desc.maxValue = 100;
     desc.defaultValue = 0;
-    desc.isQuantized = true;
-    desc.quantizeStep = 1;
+    desc.isQuantized = false;
     desc.valueNames.clear();
     list.push_back(desc);	
-	
+*/
     return list;
 }
 
@@ -320,11 +322,28 @@ float
 SimilarityPlugin::getParameter(std::string param) const
 {
     if (param == "featureType") {
-        if (m_type == TypeMFCC) return 0;
-        else if (m_type == TypeChroma) return 1;
-        else return 0;
-    } else if (param == "rhythmWeighting") {
-        return nearbyint(m_rhythmWeighting * 100.0);
+
+        if (m_rhythmWeighting > m_allRhythm) {
+            return 4;
+        }
+
+        switch (m_type) {
+
+        case TypeMFCC:
+            if (m_rhythmWeighting < m_noRhythm) return 0;
+            else return 1;
+            break;
+
+        case TypeChroma:
+            if (m_rhythmWeighting < m_noRhythm) return 2;
+            else return 3;
+            break;
+        }            
+
+        return 1;
+
+//    } else if (param == "rhythmWeighting") {
+//        return nearbyint(m_rhythmWeighting * 100.0);
     }
 
     std::cerr << "WARNING: SimilarityPlugin::getParameter: unknown parameter \""
@@ -336,15 +355,27 @@ void
 SimilarityPlugin::setParameter(std::string param, float value)
 {
     if (param == "featureType") {
+
         int v = int(value + 0.1);
-        Type prevType = m_type;
-        if (v == 0) m_type = TypeMFCC;
-        else if (v == 1) m_type = TypeChroma;
-        if (m_type != prevType) m_blockSize = 0;
+
+        Type newType = m_type;
+
+        switch (v) {
+        case 0: newType = TypeMFCC; m_rhythmWeighting = 0.0f; break;
+        case 1: newType = TypeMFCC; m_rhythmWeighting = 0.5f; break;
+        case 2: newType = TypeChroma; m_rhythmWeighting = 0.0f; break;
+        case 3: newType = TypeChroma; m_rhythmWeighting = 0.5f; break;
+        case 4: newType = TypeMFCC; m_rhythmWeighting = 1.f; break;
+        }
+
+        if (newType != m_type) m_blockSize = 0;
+
+        m_type = newType;
         return;
-    } else if (param == "rhythmWeighting") {
-        m_rhythmWeighting = value / 100;
-        return;
+
+//    } else if (param == "rhythmWeighting") {
+//        m_rhythmWeighting = value / 100;
+//        return;
     }
 
     std::cerr << "WARNING: SimilarityPlugin::setParameter: unknown parameter \""
@@ -629,22 +660,40 @@ SimilarityPlugin::calculateTimbral(FeatureSet &returnFeatures)
         v[i] = variance;
     }
 
-    // "Despite the fact that MFCCs extracted from music are clearly
-    // not Gaussian, [14] showed, somewhat surprisingly, that a
-    // similarity function comparing single Gaussians modelling MFCCs
-    // for each track can perform as well as mixture models.  A great
-    // advantage of using single Gaussians is that a simple closed
-    // form exists for the KL divergence." -- Mark Levy, "Lightweight
-    // measures for timbral similarity of musical audio"
-    // (http://www.elec.qmul.ac.uk/easaier/papers/mlevytimbralsimilarity.pdf)
-
-    KLDivergence kld;
     FeatureMatrix distances(m_channels);
 
-    for (int i = 0; i < m_channels; ++i) {
-        for (int j = 0; j < m_channels; ++j) {
-            double d = kld.distance(m[i], v[i], m[j], v[j]);
-            distances[i].push_back(d);
+    if (m_type == TypeMFCC) {
+
+        // "Despite the fact that MFCCs extracted from music are
+        // clearly not Gaussian, [14] showed, somewhat surprisingly,
+        // that a similarity function comparing single Gaussians
+        // modelling MFCCs for each track can perform as well as
+        // mixture models.  A great advantage of using single
+        // Gaussians is that a simple closed form exists for the KL
+        // divergence." -- Mark Levy, "Lightweight measures for
+        // timbral similarity of musical audio"
+        // (http://www.elec.qmul.ac.uk/easaier/papers/mlevytimbralsimilarity.pdf)
+
+        KLDivergence kld;
+
+        for (int i = 0; i < m_channels; ++i) {
+            for (int j = 0; j < m_channels; ++j) {
+                double d = kld.distanceGaussian(m[i], v[i], m[j], v[j]);
+                distances[i].push_back(d);
+            }
+        }
+
+    } else {
+
+        // Chroma are histograms already
+
+        KLDivergence kld;
+
+        for (int i = 0; i < m_channels; ++i) {
+            for (int j = 0; j < m_channels; ++j) {
+                double d = kld.distanceDistribution(m[i], m[j], true);
+                distances[i].push_back(d);
+            }
         }
     }
     

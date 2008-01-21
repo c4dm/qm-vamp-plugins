@@ -87,7 +87,7 @@ BeatTracker::getPluginVersion() const
 string
 BeatTracker::getCopyright() const
 {
-    return "Copyright (c) 2006-2007 - All Rights Reserved";
+    return "Copyright (c) 2006-2008 - All Rights Reserved";
 }
 
 BeatTracker::ParameterList
