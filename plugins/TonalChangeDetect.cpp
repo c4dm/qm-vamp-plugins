@@ -204,7 +204,7 @@ void TonalChangeDetect::setupConfig()
         (m_maxMIDIPitch, 0, m_tuningFrequency);
     m_config.BPO = 12;
     m_config.CQThresh = 0.0054;
-    m_config.isNormalised = false;
+    m_config.normalise = MathUtilities::NormaliseNone;
 
     m_step = 0;
     m_block = 0;

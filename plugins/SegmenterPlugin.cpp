@@ -24,6 +24,7 @@ SegmenterPlugin::SegmenterPlugin(float inputSampleRate) :
     Plugin(inputSampleRate),
     segmenter(0),
     nSegmentTypes(10),
+    neighbourhoodLimit(4),
     featureType(feature_types(1))
 {
 	
@@ -143,6 +144,18 @@ SegmenterPlugin::ParameterList SegmenterPlugin::getParameterDescriptors() const
     desc2.valueNames.push_back("Timbral (MFCC)");
     list.push_back(desc2);	
 	
+    ParameterDescriptor desc3;
+    desc3.identifier = "neighbourhoodLimit";
+    desc3.name = "Minimum segment duration";
+    desc3.description = "Approximate expected minimum duration for each segment";
+    desc3.unit = "s";
+    desc3.minValue = 1;
+    desc3.maxValue = 15;
+    desc3.defaultValue = 4;
+    desc3.isQuantized = true;
+    desc3.quantizeStep = 0.2;
+    list.push_back(desc3);
+
     return list;
 }
 
@@ -156,6 +169,10 @@ SegmenterPlugin::getParameter(std::string param) const
     if (param == "featureType") {
         return featureType;
     }
+
+    if (param == "neighbourhoodLimit") {
+        return neighbourhoodLimit;
+    }
     
     std::cerr << "WARNING: SegmenterPlugin::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
@@ -168,22 +185,28 @@ SegmenterPlugin::setParameter(std::string param, float value)
     if (param == "nSegmentTypes") {
 
         nSegmentTypes = int(value + 0.0001);
-
-    } else {
-
-        if (param == "featureType") {
-            if (featureType != feature_types(value))	// feature type changed, create a new segmenter
-            {
-                featureType = feature_types(value);
-                makeSegmenter();
-            }
-        }
-        else
-        {
-            std::cerr << "WARNING: SegmenterPlugin::setParameter: unknown parameter \""
-                      << param << "\"" << std::endl;
-        }
+        return;
     }
+
+    if (param == "featureType") {
+        if (featureType != feature_types(value)) // feature type changed, create a new segmenter
+        {
+            featureType = feature_types(value);
+            makeSegmenter();
+        }
+        return;
+    }
+
+    if (param == "neighbourhoodLimit") {
+        if (neighbourhoodLimit != value) {
+            neighbourhoodLimit = value;
+            makeSegmenter();
+        }
+        return;
+    }
+    
+    std::cerr << "WARNING: SegmenterPlugin::setParameter: unknown parameter \""
+              << param << "\"" << std::endl;
 }
 
 void
@@ -195,7 +218,6 @@ SegmenterPlugin::makeSegmenter() const
     if (params.featureType == FEATURE_TYPE_CONSTQ)
     {
         params.ncomponents = 20;
-        params.neighbourhoodLimit = 30; 
     }
     if (params.featureType == FEATURE_TYPE_CHROMA)
     {
@@ -203,14 +225,15 @@ SegmenterPlugin::makeSegmenter() const
         params.windowSize = 0.372;
         params.nbins = 12;
         params.histogramLength = 20;
-        params.neighbourhoodLimit = 40;
     }
     if (params.featureType == FEATURE_TYPE_MFCC)
     {
         params.ncomponents = 20;
-        params.neighbourhoodLimit = 30; 
     }
     delete segmenter;
+
+    params.neighbourhoodLimit =
+        int(neighbourhoodLimit / params.hopSize + 0.0001);
 
     segmenter = new ClusterMeltSegmenter(params);
     segmenter->initialise(m_inputSampleRate);

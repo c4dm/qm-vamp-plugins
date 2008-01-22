@@ -9,6 +9,22 @@ For more information about Vamp plugins, see http://www.vamp-plugins.org/
 and http://www.sonicvisualiser.org/.
 
 
+License
+=======
+
+These plugins are provided in binary form only.  You may install and
+use the plugin binaries without fee for any purpose commercial or
+non-commercial.  You may redistribute the plugin binaries provided you
+do so without fee and you retain this README file with your
+distribution.  You may not bundle these plugins with a commercial
+product or distribute them on commercial terms.  If you wish to
+arrange commercial licensing terms, please contact the Centre for
+Digital Music at Queen Mary, University of London.
+
+Copyright (c) 2006-2008 Queen Mary, University of London.  All rights
+reserved.
+
+
 New In This Release
 ===================
 
@@ -80,8 +96,12 @@ References:	C. Duxbury, J. P. Bello, M. Davies and M. Sandler.
 		Detection and Spectral Modulation.
 		ISSC 2005
 
-This plugin analyses a single channel of audio and estimates the
-locations of note onsets within the music.
+The Note Onset Detector plugin analyses a single channel of audio and
+estimates the locations of note onsets within the music.
+
+It calculates an onset likelihood function for each spectral frame,
+and picks peaks in a smoothed version of this function.  The plugin is
+non-causal, returning all results at the end of processing.
 
 It has three outputs: the note onset positions, the onset detection
 function used in estimating onset positions, and a smoothed version of
@@ -105,8 +125,8 @@ References:	M. E. P. Davies and M. D. Plumbley.
 		on Acoustics, Speech and Signal Processing (ICASSP 2005),
 		Vol. 3, pp241-244 Philadelphia, USA, March 19-23, 2005.
 
-This plugin analyses a single channel of audio and estimates the
-locations of metrical beats and the resulting tempo of the music.
+The Tempo and Beat Tracker plugin analyses a single channel of audio
+and estimates the locations of metrical beats and the resulting tempo.
 
 It has three outputs: the beat positions, an ongoing estimate of tempo
 where available, and the onset detection function used in estimating
@@ -126,8 +146,8 @@ References:	K. Noland and M. Sandler.
 		In Proceedings of Audio Engineering Society 122nd Convention,
 		Vienna, 2007.
 
-This plugin analyses a single channel of audio and continuously
-estimates the key of the music.
+The Key Detector plugin analyses a single channel of audio and
+continuously estimates the key of the music.
 
 It has three outputs: the tonic pitch of the key; a major or minor
 mode flag; and key (combining the tonic and major/minor into a single
@@ -169,6 +189,8 @@ References:	M. Levy and M. Sandler.
 
 
 
+
+
 Similarity
 ----------
 
@@ -183,8 +205,8 @@ References:	M. Levy and M. Sandler.
 
 		K. Jacobson.
 		A Multifaceted Approach to Music Similarity.
-		In Proceedings of the Seventh International Conference on Music
-		Information Retrieval (ISMIR), 2006.
+		In Proceedings of the Seventh International Conference on
+		Music Information Retrieval (ISMIR), 2006.
 
 
 Constant-Q Spectrogram

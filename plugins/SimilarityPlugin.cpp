@@ -18,6 +18,7 @@
 #include "dsp/rhythm/BeatSpectrum.h"
 #include "maths/KLDivergence.h"
 #include "maths/CosineDistance.h"
+#include "maths/MathUtilities.h"
 
 using std::string;
 using std::vector;
@@ -177,7 +178,9 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         config.max = Pitch::getFrequencyForPitch(96, 0, 440);
         config.BPO = 12;
         config.CQThresh = 0.0054;
-        config.isNormalised = true;
+        // We don't normalise the chromagram's columns individually;
+        // we normalise the mean at the end instead
+        config.normalise = MathUtilities::NormaliseNone;
         m_chromagram = new Chromagram(config);
         m_fftSize = m_chromagram->getFrameSize();
 
@@ -273,7 +276,7 @@ SimilarityPlugin::calculateBlockSize() const
         config.max = Pitch::getFrequencyForPitch(96, 0, 440);
         config.BPO = 12;
         config.CQThresh = 0.0054;
-        config.isNormalised = false;
+        config.normalise = MathUtilities::NormaliseNone;
         Chromagram *c = new Chromagram(config);
         size_t sz = c->getFrameSize();
         delete c;
@@ -685,7 +688,12 @@ SimilarityPlugin::calculateTimbral(FeatureSet &returnFeatures)
 
     } else {
 
-        // Chroma are histograms already
+        // We use the KL divergence for distributions of discrete
+        // variables, as chroma are histograms already.  Or at least,
+        // they will be when we've normalised them like this:
+        for (int i = 0; i < m_channels; ++i) {
+            MathUtilities::normalise(m[i], MathUtilities::NormaliseUnitSum);
+        }
 
         KLDivergence kld;
 

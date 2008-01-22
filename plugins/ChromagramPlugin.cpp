@@ -26,7 +26,7 @@ ChromagramPlugin::ChromagramPlugin(float inputSampleRate) :
     m_minMIDIPitch = 12;
     m_maxMIDIPitch = 96;
     m_tuningFrequency = 440;
-    m_normalized = true;
+    m_normalise = MathUtilities::NormaliseUnitMax;
     m_bpo = 12;
 
     setupConfig();
@@ -42,7 +42,7 @@ ChromagramPlugin::setupConfig()
         (m_maxMIDIPitch, 0, m_tuningFrequency);
     m_config.BPO = m_bpo;
     m_config.CQThresh = 0.0054;
-    m_config.isNormalised = m_normalized;
+    m_config.normalise = m_normalise;
 
     m_step = 0;
     m_block = 0;
@@ -137,14 +137,17 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.identifier = "normalized";
-    desc.name = "Normalized";
+    desc.identifier = "normalization";
+    desc.name = "Normalization";
     desc.unit = "";
     desc.minValue = 0;
-    desc.maxValue = 1;
-    desc.defaultValue = 1;
+    desc.maxValue = 2;
+    desc.defaultValue = 2;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
+    desc.valueNames.push_back("None");
+    desc.valueNames.push_back("Unit Sum");
+    desc.valueNames.push_back("Unit Maximum");
     list.push_back(desc);
 
     return list;
@@ -165,8 +168,8 @@ ChromagramPlugin::getParameter(std::string param) const
     if (param == "bpo") {
         return m_bpo;
     }
-    if (param == "normalized") {
-        return m_normalized;
+    if (param == "normalization") {
+        return int(m_normalise);
     }
     std::cerr << "WARNING: ChromagramPlugin::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
@@ -184,8 +187,8 @@ ChromagramPlugin::setParameter(std::string param, float value)
         m_tuningFrequency = value;
     } else if (param == "bpo") {
         m_bpo = lrintf(value);
-    } else if (param == "normalized") {
-        m_normalized = (value > 0.0001);
+    } else if (param == "normalization") {
+        m_normalise = MathUtilities::NormaliseType(int(value + 0.0001));
     } else {
         std::cerr << "WARNING: ChromagramPlugin::setParameter: unknown parameter \""
                   << param << "\"" << std::endl;
@@ -292,9 +295,9 @@ ChromagramPlugin::getOutputDescriptors() const
         d.binNames.push_back(names[m_minMIDIPitch % 12]);
     }
 
-    d.hasKnownExtents = m_normalized;
+    d.hasKnownExtents = (m_normalise != MathUtilities::NormaliseNone);
     d.minValue = 0.0;
-    d.maxValue = (m_normalized ? 1.0 : 0.0);
+    d.maxValue = (d.hasKnownExtents ? 1.0 : 0.0);
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
@@ -307,28 +310,6 @@ ChromagramPlugin::getOutputDescriptors() const
     list.push_back(d);
 
     return list;
-}
-
-ChromagramPlugin::Feature
-ChromagramPlugin::normalize(const Feature &feature)
-{
-    float min = 0.0, max = 0.0;
-
-    for (size_t i = 0; i < feature.values.size(); ++i) {
-	if (i == 0 || feature.values[i] < min) min = feature.values[i];
-	if (i == 0 || feature.values[i] > max) max = feature.values[i];
-    }
-	
-    if (max == 0.0 || max == min) return feature;
-
-    Feature normalized;
-    normalized.hasTimestamp = false;
-
-    for (size_t i = 0; i < feature.values.size(); ++i) {
-	normalized.values.push_back((feature.values[i] - min) / (max - min));
-    }
-
-    return normalized;
 }
 
 ChromagramPlugin::FeatureSet

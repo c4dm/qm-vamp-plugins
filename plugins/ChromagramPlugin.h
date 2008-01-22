@@ -49,7 +49,7 @@ protected:
     int m_minMIDIPitch;
     int m_maxMIDIPitch;
     float m_tuningFrequency;
-    bool m_normalized;
+    MathUtilities::NormaliseType m_normalise;
     int m_bpo;
 
     void setupConfig();
@@ -61,8 +61,6 @@ protected:
 
     vector<double> m_binsums;
     size_t m_count;
-
-    Feature normalize(const Feature &);
 };
 
 
