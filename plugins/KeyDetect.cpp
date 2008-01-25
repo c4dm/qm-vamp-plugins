@@ -52,14 +52,13 @@ KeyDetector::getName() const
 string
 KeyDetector::getDescription() const
 {
-    //!!!
-    return "";
+    return "Estimate the key of the music";
 }
 
 string
 KeyDetector::getMaker() const
 {
-    return "Katy Noland and Christian Landone, Queen Mary, University of London";
+    return "Queen Mary, University of London";
 }
 
 int
@@ -71,7 +70,7 @@ KeyDetector::getPluginVersion() const
 string
 KeyDetector::getCopyright() const
 {
-    return "Copyright (c) 2006-2008 - All Rights Reserved";
+    return "Plugin by Katy Noland and Christian Landone.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 KeyDetector::ParameterList

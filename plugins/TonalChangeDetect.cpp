@@ -93,7 +93,7 @@ std::string TonalChangeDetect::getDescription() const
 
 std::string TonalChangeDetect::getMaker() const
 {
-    return "Martin Gasser and Christopher Harte, Queen Mary, University of London";
+    return "Queen Mary, University of London";
 }
 
 int TonalChangeDetect::getPluginVersion() const
@@ -103,7 +103,7 @@ int TonalChangeDetect::getPluginVersion() const
 
 std::string TonalChangeDetect::getCopyright() const
 {
-    return "Copyright (c) 2006 - All Rights Reserved";
+    return "Plugin by Martin Gasser and Christopher Harte.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() const

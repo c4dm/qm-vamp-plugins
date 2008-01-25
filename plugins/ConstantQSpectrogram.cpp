@@ -68,7 +68,7 @@ ConstantQSpectrogram::getName() const
 string
 ConstantQSpectrogram::getDescription() const
 {
-    return "";
+    return "Extract a constant pitch bin spectrogram from the input audio";
 }
 
 string
@@ -80,13 +80,13 @@ ConstantQSpectrogram::getMaker() const
 int
 ConstantQSpectrogram::getPluginVersion() const
 {
-    return 1;
+    return 2;
 }
 
 string
 ConstantQSpectrogram::getCopyright() const
 {
-    return "Copyright (c) 2006 - All Rights Reserved";
+    return "Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 ConstantQSpectrogram::ParameterList
@@ -209,7 +209,7 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     setupConfig();
 
     m_cq = new ConstantQ(m_config);
-    m_bins = m_cq->getK(); //!!! (int)ceil(m_bpo * log(m_config.max / m_config.min) / log(2.0));
+    m_bins = m_cq->getK();
     m_cq->sparsekernel();
     m_step = m_cq->gethop();
     m_block = m_cq->getfftlength();

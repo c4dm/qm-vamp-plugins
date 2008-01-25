@@ -76,7 +76,7 @@ OnsetDetector::getDescription() const
 string
 OnsetDetector::getMaker() const
 {
-    return "Christian Landone, Chris Duxbury and Juan Pablo Bello, Queen Mary, University of London";
+    return "Queen Mary, University of London";
 }
 
 int
@@ -88,7 +88,7 @@ OnsetDetector::getPluginVersion() const
 string
 OnsetDetector::getCopyright() const
 {
-    return "Copyright (c) 2006-2007 - All Rights Reserved";
+    return "Plugin by Christian Landone, Chris Duxbury and Juan Pablo Bello.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 OnsetDetector::ParameterList

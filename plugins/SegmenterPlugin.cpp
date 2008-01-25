@@ -53,7 +53,7 @@ std::string SegmenterPlugin::getDescription() const
 string
 SegmenterPlugin::getMaker() const
 {
-    return "Mark Levy, Queen Mary, University of London";
+    return "Queen Mary, University of London";
 }
 
 int
@@ -65,7 +65,7 @@ SegmenterPlugin::getPluginVersion() const
 string
 SegmenterPlugin::getCopyright() const
 {
-    return "Copyright (c) 2006-2008 - All Rights Reserved";
+    return "Plugin by Mark Levy.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 bool

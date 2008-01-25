@@ -75,7 +75,7 @@ BeatTracker::getDescription() const
 string
 BeatTracker::getMaker() const
 {
-    return "Christian Landone and Matthew Davies, Queen Mary, University of London";
+    return "Queen Mary, University of London";
 }
 
 int
@@ -87,7 +87,7 @@ BeatTracker::getPluginVersion() const
 string
 BeatTracker::getCopyright() const
 {
-    return "Copyright (c) 2006-2008 - All Rights Reserved";
+    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 BeatTracker::ParameterList

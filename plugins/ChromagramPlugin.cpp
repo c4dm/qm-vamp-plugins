@@ -68,8 +68,7 @@ ChromagramPlugin::getName() const
 string
 ChromagramPlugin::getDescription() const
 {
-    //!!!
-    return "";
+    return "Extract a series of tonal chroma vectors from the audio";
 }
 
 string
@@ -87,8 +86,7 @@ ChromagramPlugin::getPluginVersion() const
 string
 ChromagramPlugin::getCopyright() const
 {
-    //!!! update
-    return "Copyright (c) 2006 - All Rights Reserved";
+    return "Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
 }
 
 ChromagramPlugin::ParameterList

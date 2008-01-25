@@ -22,7 +22,7 @@ arrange commercial licensing terms, please contact the Centre for
 Digital Music at Queen Mary, University of London.
 
 Copyright (c) 2006-2008 Queen Mary, University of London.  All rights
-reserved.
+reserved except as described above.
 
 
 New In This Release
@@ -33,8 +33,8 @@ similarity between multiple audio tracks, a plugin for structural
 segmentation of music audio, and a Mel-frequency cepstral coefficients
 calculation plugin.
 
-This release also includes fixes to the existing key detector and
-chromagram plugins.
+This release also includes significant fixes to the existing key
+detector and chromagram plugins.
 
 
 To Install
@@ -133,7 +133,6 @@ where available, and the onset detection function used in estimating
 beat positions.
 
 
-
 Key Detector
 ------------
 
@@ -168,10 +167,24 @@ Identifier:	qm-tonalchange
 Authors:	Chris Harte and Martin Gasser
 Category:	Key and Tonality
 
-References:	C. A. Harte and M. Sandler.
+References:	C. A. Harte, M. Gasser, and M. Sandler.
+		Detecting harmonic change in musical audio.
+		In Proceedings of the 1st ACM workshop on Audio and Music
+		Computing Multimedia, Santa Barbara, 2006.
+
+		C. A. Harte and M. Sandler.
 		Automatic chord identification using a quantised chromagram.
 		In Proceedings of the 118th Convention of the Audio
 		Engineering Society, Barcelona, Spain, May 28-31 2005.
+
+The Tonal Change plugin analyses a single channel of audio, detecting
+harmonic changes such as chord boundaries.
+
+It has three outputs: a representation of the musical content in a
+six-dimensional tonal space onto which the algorithm maps 12-bin
+chroma vectors extracted from the audio; a function representing the
+estimated likelihood of a tonal change occurring in each spectral
+frame; and the resulting estimated positions of tonal changes.
 
 
 Segmenter
@@ -187,8 +200,17 @@ References:	M. Levy and M. Sandler.
 		IEEE Transactions on Audio, Speech, and Language Processing,
 		February 2008.
 
+The Segmenter plugin divides a single channel of music up into
+structurally consistent segments.  Its single output contains a
+numeric value (the segment classifier) for each moment at which a new
+segment starts.  For music with clearly tonally distinguishable
+sections such as verse, chorus, etc., the segments with the same
+classifier number are expected to be similar to one another in some
+structural sense (e.g. all repetitions of the chorus).
 
-
+Note that this plugin consumes a significant amount of processing time
+after receiving all of the input audio data, before it produces any
+result.
 
 
 Similarity

@@ -92,7 +92,7 @@ SimilarityPlugin::getDescription() const
 string
 SimilarityPlugin::getMaker() const
 {
-    return "Mark Levy, Kurt Jacobson and Chris Cannam, Queen Mary, University of London";
+    return "Queen Mary, University of London";
 }
 
 int
@@ -104,7 +104,7 @@ SimilarityPlugin::getPluginVersion() const
 string
 SimilarityPlugin::getCopyright() const
 {
-    return "Copyright (c) 2008 - All Rights Reserved";
+    return "Plugin by Mark Levy, Kurt Jacobson and Chris Cannam.  Copyright (c) 2008 QMUL - All Rights Reserved";
 }
 
 size_t

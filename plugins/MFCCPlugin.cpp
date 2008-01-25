@@ -60,8 +60,7 @@ MFCCPlugin::getName() const
 string
 MFCCPlugin::getDescription() const
 {
-    //!!!
-    return "";
+    return "Calculate a series of MFCC vectors from the audio";
 }
 
 string
@@ -79,8 +78,7 @@ MFCCPlugin::getPluginVersion() const
 string
 MFCCPlugin::getCopyright() const
 {
-    //!!! update
-    return "Copyright (c) 2008 - All Rights Reserved";
+    return "Plugin by Nicolas Chetry and Chris Cannam.  Copyright (c) 2008 QMUL - All Rights Reserved";
 }
 
 MFCCPlugin::ParameterList
