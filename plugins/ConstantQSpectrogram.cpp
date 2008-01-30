@@ -68,7 +68,7 @@ ConstantQSpectrogram::getName() const
 string
 ConstantQSpectrogram::getDescription() const
 {
-    return "Extract a constant pitch bin spectrogram from the input audio";
+    return "Extract a spectrogram with constant ratio of centre frequency to resolution from the input audio";
 }
 
 string
@@ -139,7 +139,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.unit = "";
     desc.minValue = 0;
     desc.maxValue = 1;
-    desc.defaultValue = 1;
+    desc.defaultValue = 0;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
     list.push_back(desc);
@@ -213,6 +213,8 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     m_cq->sparsekernel();
     m_step = m_cq->gethop();
     m_block = m_cq->getfftlength();
+
+    //!!! stepSize != m_step should not be an error
 
     if (stepSize != m_step ||
         blockSize != m_block) {

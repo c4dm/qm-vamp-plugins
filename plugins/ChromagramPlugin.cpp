@@ -222,6 +222,8 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     m_step = m_chromagram->getHopSize();
     m_block = m_chromagram->getFrameSize();
 
+    //!!! stepSize != m_step should not be an error
+
     if (stepSize != m_step ||
         blockSize != m_block) {
         delete m_chromagram;
