@@ -11,10 +11,14 @@
 
 #include <dsp/mfcc/MFCC.h>
 
+#include <cmath>
+
 using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
+
+using std::isnan;
 
 MFCCPlugin::MFCCPlugin(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
