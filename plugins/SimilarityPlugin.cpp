@@ -168,7 +168,7 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_fftSize = m_mfcc->getfftlength();
         m_rhythmClipFrameSize = m_fftSize / 4;
 
-        std::cerr << "MFCC FS = " << config.FS << ", FFT size = " << m_fftSize<< std::endl;
+//        std::cerr << "MFCC FS = " << config.FS << ", FFT size = " << m_fftSize<< std::endl;
 
     } else if (m_type == TypeChroma) {
 
@@ -186,13 +186,13 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_chromagram = new Chromagram(config);
         m_fftSize = m_chromagram->getFrameSize();
 
-        std::cerr << "fftsize = " << m_fftSize << std::endl;
+//        std::cerr << "fftsize = " << m_fftSize << std::endl;
 
         m_rhythmClipFrameSize = m_fftSize / 16;
         while (m_rhythmClipFrameSize < 512) m_rhythmClipFrameSize *= 2;
-        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
+//        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
 
-        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
+//        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
 
     } else {
 
@@ -580,9 +580,9 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
                         m_rhythmValues[c].pop_front();
                     }
 
-                    if (needRhythmFrame) {
-                        std::cerr << "at current = " <<current << " (frame = " << m_frameNo << "), have " << m_rhythmValues[c].size() << ", need rhythm = " << needRhythmFrame << std::endl;
-                    }
+//                    if (needRhythmFrame) {
+//                        std::cerr << "at current = " <<current << " (frame = " << m_frameNo << "), have " << m_rhythmValues[c].size() << ", need rhythm = " << needRhythmFrame << std::endl;
+//                    }
 
                 }
                 
@@ -606,7 +606,7 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
     }
 
     if (!needTimbre() && !someRhythmFrameNeeded && ((m_frameNo % 2) == 0)) {
-        std::cerr << "done!" << std::endl;
+//        std::cerr << "done!" << std::endl;
         m_done = true;
     }
 
