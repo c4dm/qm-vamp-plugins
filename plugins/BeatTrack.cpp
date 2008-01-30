@@ -219,7 +219,9 @@ BeatTracker::getPreferredBlockSize() const
 {
     size_t theoretical = getPreferredStepSize() * 2;
 
-    //!!! need power of 2
+    // I think this is not necessarily going to be a power of two, and
+    // the host might have a problem with that, but I'm not sure we
+    // can do much about it here
     return theoretical;
 }
 

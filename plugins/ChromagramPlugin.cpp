@@ -98,7 +98,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.identifier = "minpitch";
     desc.name = "Minimum Pitch";
     desc.unit = "MIDI units";
-    //!!! descriptions
+    desc.description = "MIDI pitch corresponding to the lowest frequency to be included in the chromagram";
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 12;
@@ -109,6 +109,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.identifier = "maxpitch";
     desc.name = "Maximum Pitch";
     desc.unit = "MIDI units";
+    desc.description = "MIDI pitch corresponding to the highest frequency to be included in the chromagram";
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 96;
@@ -119,6 +120,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.identifier = "tuning";
     desc.name = "Tuning Frequency";
     desc.unit = "Hz";
+    desc.description = "Frequency of concert A";
     desc.minValue = 420;
     desc.maxValue = 460;
     desc.defaultValue = 440;
@@ -128,6 +130,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.identifier = "bpo";
     desc.name = "Bins per Octave";
     desc.unit = "bins";
+    desc.description = "Number of constant-Q transform bins per octave, and the number of bins for the chromagram outputs";
     desc.minValue = 2;
     desc.maxValue = 36;
     desc.defaultValue = 12;
@@ -138,6 +141,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.identifier = "normalization";
     desc.name = "Normalization";
     desc.unit = "";
+    desc.description = "Normalization for each chromagram output column";
     desc.minValue = 0;
     desc.maxValue = 2;
     desc.defaultValue = 2;
@@ -207,9 +211,6 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    std::cerr << "ChromagramPlugin::initialise: step " << stepSize << ", block "
-	      << blockSize << std::endl;
-
     m_chromagram = new Chromagram(m_config);
     m_binsums = vector<double>(m_config.BPO);
 
@@ -222,13 +223,15 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     m_step = m_chromagram->getHopSize();
     m_block = m_chromagram->getFrameSize();
 
-    //!!! stepSize != m_step should not be an error
-
-    if (stepSize != m_step ||
-        blockSize != m_block) {
+    if (blockSize != m_block) {
+        std::cerr << "ChromagramPlugin::initialise: ERROR: supplied block size " << blockSize << " differs from required block size " << m_block << ", initialise failing" << std::endl;
         delete m_chromagram;
         m_chromagram = 0;
         return false;
+    }
+
+    if (stepSize != m_step) {
+        std::cerr << "ChromagramPlugin::initialise: NOTE: supplied step size " << stepSize << " differs from expected step size " << m_step << " (for block size = " << m_block << ")" << std::endl;
     }
 
     return true;
@@ -276,6 +279,7 @@ ChromagramPlugin::getOutputDescriptors() const
     d.identifier = "chromagram";
     d.name = "Chromagram";
     d.unit = "";
+    d.description = "Output of chromagram, as a single vector per process block";
     d.hasFixedBinCount = true;
     d.binCount = m_config.BPO;
     
@@ -304,7 +308,7 @@ ChromagramPlugin::getOutputDescriptors() const
 
     d.identifier = "chromameans";
     d.name = "Chroma Means";
-    //!!! descriptions
+    d.description = "Mean values of chromagram bins across the duration of the input audio";
     d.sampleType = OutputDescriptor::FixedSampleRate;
     d.sampleRate = 1;
     list.push_back(d);

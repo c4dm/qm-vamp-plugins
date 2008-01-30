@@ -81,6 +81,7 @@ KeyDetector::getParameterDescriptors() const
     ParameterDescriptor desc;
     desc.identifier = "tuning";
     desc.name = "Tuning Frequency";
+    desc.description = "Frequency of concert A";
     desc.unit = "Hz";
     desc.minValue = 420;
     desc.maxValue = 460;
@@ -91,6 +92,7 @@ KeyDetector::getParameterDescriptors() const
     desc.identifier = "length";
     desc.name = "Window Length";
     desc.unit = "chroma frames";
+    desc.description = "Number of chroma analysis frames per key estimation";
     desc.minValue = 1;
     desc.maxValue = 30;
     desc.defaultValue = 10;
@@ -110,7 +112,7 @@ KeyDetector::getParameter(std::string param) const
     if (param == "length") {
         return m_length;
     }
-    std::cerr << "WARNING: KeyDetect::getParameter: unknown parameter \""
+    std::cerr << "WARNING: KeyDetector::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
     return 0.0;
 }
@@ -123,7 +125,7 @@ KeyDetector::setParameter(std::string param, float value)
     } else if (param == "length") {
         m_length = int(value + 0.1);
     } else {
-        std::cerr << "WARNING: KeyDetect::setParameter: unknown parameter \""
+        std::cerr << "WARNING: KeyDetector::setParameter: unknown parameter \""
                   << param << "\"" << std::endl;
     }
 }
@@ -147,7 +149,7 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     m_blockSize = m_getKeyMode->getBlockSize();
 
     if (stepSize != m_stepSize || blockSize != m_blockSize) {
-        std::cerr << "KeyDetector::initialise: step/block sizes "
+        std::cerr << "KeyDetector::initialise: ERROR: step/block sizes "
                   << stepSize << "/" << blockSize << " differ from required "
                   << m_stepSize << "/" << m_blockSize << std::endl;
         delete m_getKeyMode;
@@ -191,6 +193,7 @@ KeyDetector::getOutputDescriptors() const
     d.identifier = "tonic";
     d.name = "Tonic Pitch";
     d.unit = "";
+    d.description = "Tonic of the estimated key (from C = 1 to B = 12)";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
@@ -204,6 +207,7 @@ KeyDetector::getOutputDescriptors() const
     d.identifier = "mode";
     d.name = "Key Mode";
     d.unit = "";
+    d.description = "Major or minor mode of the estimated key (major = 0, minor = 1)";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
@@ -211,13 +215,13 @@ KeyDetector::getOutputDescriptors() const
     d.minValue = 0;
     d.maxValue = 1;
     d.quantizeStep = 1;
-    d.binNames.push_back("Major = 0, Minor = 1");
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 
     d.identifier = "key";
     d.name = "Key";
     d.unit = "";
+    d.description = "Estimated key (from C major = 1 to B major = 12 and C minor = 13 to B minor = 24)";
     d.hasFixedBinCount = true;
     d.binCount = 1;
     d.hasKnownExtents = true;
@@ -225,7 +229,6 @@ KeyDetector::getOutputDescriptors() const
     d.minValue = 1;
     d.maxValue = 24;
     d.quantizeStep = 1;
-    d.binNames.erase(d.binNames.begin(),d.binNames.end());
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 

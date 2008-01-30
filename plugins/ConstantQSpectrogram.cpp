@@ -98,6 +98,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.identifier = "minpitch";
     desc.name = "Minimum Pitch";
     desc.unit = "MIDI units";
+    desc.description = "MIDI pitch corresponding to the lowest frequency to be included in the constant-Q transform";
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 36;
@@ -108,6 +109,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.identifier = "maxpitch";
     desc.name = "Maximum Pitch";
     desc.unit = "MIDI units";
+    desc.description = "MIDI pitch corresponding to the highest frequency to be included in the constant-Q transform";
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 84;
@@ -118,6 +120,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.identifier = "tuning";
     desc.name = "Tuning Frequency";
     desc.unit = "Hz";
+    desc.description = "Frequency of concert A";
     desc.minValue = 420;
     desc.maxValue = 460;
     desc.defaultValue = 440;
@@ -127,6 +130,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.identifier = "bpo";
     desc.name = "Bins per Octave";
     desc.unit = "bins";
+    desc.description = "Number of constant-Q transform bins per octave";
     desc.minValue = 2;
     desc.maxValue = 36;
     desc.defaultValue = 12;
@@ -137,6 +141,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.identifier = "normalized";
     desc.name = "Normalized";
     desc.unit = "";
+    desc.description = "Whether to normalize each output column to unit maximum";
     desc.minValue = 0;
     desc.maxValue = 1;
     desc.defaultValue = 0;
@@ -203,9 +208,6 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    std::cerr << "ConstantQSpectrogram::initialise: step " << stepSize << ", block "
-	      << blockSize << std::endl;
-
     setupConfig();
 
     m_cq = new ConstantQ(m_config);
@@ -214,13 +216,15 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     m_step = m_cq->gethop();
     m_block = m_cq->getfftlength();
 
-    //!!! stepSize != m_step should not be an error
-
-    if (stepSize != m_step ||
-        blockSize != m_block) {
+    if (blockSize != m_block) {
+        std::cerr << "ConstantQSpectrogram::initialise: ERROR: supplied block size " << blockSize << " differs from required block size " << m_block << ", initialise failing" << std::endl;
         delete m_cq;
         m_cq = 0;
         return false;
+    }
+
+    if (stepSize != m_step) {
+        std::cerr << "ConstantQSpectrogram::initialise: NOTE: supplied step size " << stepSize << " differs from expected step size " << m_step << " (for block size = " << m_block << ")" << std::endl;
     }
 
     return true;
@@ -268,6 +272,7 @@ ConstantQSpectrogram::getOutputDescriptors() const
     d.identifier = "constantq";
     d.name = "Constant-Q Spectrogram";
     d.unit = "";
+    d.description = "Output of constant-Q transform, as a single vector per process block";
     d.hasFixedBinCount = true;
     d.binCount = m_bins;
 

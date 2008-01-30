@@ -87,8 +87,7 @@ std::string TonalChangeDetect::getName() const
 
 std::string TonalChangeDetect::getDescription() const
 {
-    //!!!
-    return "";
+    return "Detect and return the positions of harmonic changes such as chord boundaries";
 }
 
 std::string TonalChangeDetect::getMaker() const

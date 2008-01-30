@@ -90,7 +90,7 @@ MFCCPlugin::getParameterDescriptors() const
     desc.identifier = "nceps";
     desc.name = "Number of Coefficients";
     desc.unit = "";
-    //!!! descriptions -- "including C0 if requested"
+    desc.description = "Number of MFCCs to return, starting from C0 if \"Include C0\" is specified or from C1 otherwise";
     desc.minValue = 1;
     desc.maxValue = 40;
     desc.defaultValue = 20;
@@ -101,6 +101,7 @@ MFCCPlugin::getParameterDescriptors() const
     desc.identifier = "logpower";
     desc.name = "Power for Mel Amplitude Logs";
     desc.unit = "";
+    desc.description = "Power to raise the amplitude log values to before applying DCT.  Values greater than 1 may reduce contribution of noise";
     desc.minValue = 0;
     desc.maxValue = 5;
     desc.defaultValue = 1;
@@ -111,7 +112,7 @@ MFCCPlugin::getParameterDescriptors() const
     desc.identifier = "wantc0";
     desc.name = "Include C0";
     desc.unit = "";
-    //!!! description
+    desc.description = "Whether to include the C0 (energy level) coefficient in the returned results";
     desc.minValue = 0;
     desc.maxValue = 1;
     desc.defaultValue = 1;
@@ -217,6 +218,7 @@ MFCCPlugin::getOutputDescriptors() const
     d.identifier = "coefficients";
     d.name = "Coefficients";
     d.unit = "";
+    d.description = "MFCC values";
     d.hasFixedBinCount = true;
     d.binCount = m_bins;
     d.hasKnownExtents = false;
@@ -226,7 +228,7 @@ MFCCPlugin::getOutputDescriptors() const
 
     d.identifier = "means";
     d.name = "Means of Coefficients";
-    //!!! descriptions
+    d.description = "Mean values of MFCCs across duration of audio input";
     d.sampleType = OutputDescriptor::FixedSampleRate;
     d.sampleRate = 1;
     list.push_back(d);

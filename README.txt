@@ -6,7 +6,7 @@ Vamp audio feature extraction plugins from Queen Mary, University of London.
 Version 1.4.
 
 For more information about Vamp plugins, see http://www.vamp-plugins.org/
-and http://www.sonicvisualiser.org/.
+and http://www.sonicvisualiser.org/ .
 
 
 License
@@ -64,10 +64,15 @@ Plugins Included
 This plugin set includes the following plugins:
 
    * Note onset detector
+
    * Beat tracker and tempo estimator
+
    * Key estimator and tonal change detector
+
    * Segmenter, to divide a track into a consistent sequence of segments
+
    * Timbral and rhythmic similarity between audio tracks
+
    * Chromagram, constant-Q spectrogram, and MFCC calculation plugins
 
 More details about the plugins follow.
@@ -76,11 +81,11 @@ More details about the plugins follow.
 Note Onset Detector
 -------------------
 
-Identifier:	qm-onsetdetector
-Authors:	Chris Duxbury, Juan Pablo Bello and Christian Landone
-Category:	Time > Onsets
+ Identifier:	qm-onsetdetector
+ Authors:	Chris Duxbury, Juan Pablo Bello and Christian Landone
+ Category:	Time > Onsets
 
-References:	C. Duxbury, J. P. Bello, M. Davies and M. Sandler.
+ References:	C. Duxbury, J. P. Bello, M. Davies and M. Sandler.
 		Complex domain Onset Detection for Musical Signals.
 		In Proceedings of the 6th Conference on Digital Audio
 		Effects (DAFx-03). London, UK. September 2003.
@@ -111,11 +116,11 @@ the detection function that is used in the peak-picking phase.
 Tempo and Beat Tracker
 ----------------------
 
-Identifier:	qm-tempotracker
-Authors:	Matthew Davies and Christian Landone
-Category:       Time > Tempo
+ Identifier:	qm-tempotracker
+ Authors:	Matthew Davies and Christian Landone
+ Category:      Time > Tempo
 
-References:	M. E. P. Davies and M. D. Plumbley.
+ References:	M. E. P. Davies and M. D. Plumbley.
 		Context-dependent beat tracking of musical audio.
 		Technical Report C4DM-TR-06-02. 5 April 2006.
 
@@ -136,14 +141,14 @@ beat positions.
 Key Detector
 ------------
 
-Identifier:	qm-keydetector
-Authors:	Katy Noland and Christian Landone
-Category:	Key and Tonality
+ Identifier:	qm-keydetector
+ Authors:	Katy Noland and Christian Landone
+ Category:	Key and Tonality
 
-References:	K. Noland and M. Sandler.
+ References:	K. Noland and M. Sandler.
 		Signal Processing Parameters for Tonality Estimation.
-		In Proceedings of Audio Engineering Society 122nd Convention,
-		Vienna, 2007.
+		In Proceedings of Audio Engineering Society 122nd
+                Convention, Vienna, 2007.
 
 The Key Detector plugin analyses a single channel of audio and
 continuously estimates the key of the music.
@@ -163,11 +168,11 @@ The outputs are also labelled with pitch or key as text.
 Tonal Change
 ------------
 
-Identifier:	qm-tonalchange
-Authors:	Chris Harte and Martin Gasser
-Category:	Key and Tonality
+ Identifier:	qm-tonalchange
+ Authors:	Chris Harte and Martin Gasser
+ Category:	Key and Tonality
 
-References:	C. A. Harte, M. Gasser, and M. Sandler.
+ References:	C. A. Harte, M. Gasser, and M. Sandler.
 		Detecting harmonic change in musical audio.
 		In Proceedings of the 1st ACM workshop on Audio and Music
 		Computing Multimedia, Santa Barbara, 2006.
@@ -190,11 +195,11 @@ frame; and the resulting estimated positions of tonal changes.
 Segmenter
 ---------
 
-Identifier:	qm-segmenter
-Authors:	Mark Levy
-Category:	Classification
+ Identifier:	qm-segmenter
+ Authors:	Mark Levy
+ Category:	Classification
 
-References:	M. Levy and M. Sandler.
+ References:	M. Levy and M. Sandler.
 		Structural segmentation of musical audio by constrained
 		clustering.
 		IEEE Transactions on Audio, Speech, and Language Processing,
@@ -225,11 +230,11 @@ receiving all of the input audio data, before it produces any results.
 Similarity
 ----------
 
-Identifier:	qm-similarity
-Authors:	Mark Levy, Kurt Jacobson and Chris Cannam
-Category:	Classification
+ Identifier:	qm-similarity
+ Authors:	Mark Levy, Kurt Jacobson and Chris Cannam
+ Category:	Classification
 
-References:	M. Levy and M. Sandler.
+ References:	M. Levy and M. Sandler.
 		Lightweight measures for timbral similarity of musical audio.
 		In Proceedings of the 1st ACM workshop on Audio and Music
 		Computing Multimedia, Santa Barbara, 2006.
@@ -286,11 +291,11 @@ selected feature type.
 Constant-Q Spectrogram
 ----------------------
 
-Identifier:	qm-constantq
-Authors:	Christian Landone
-Category:	Visualisation
+ Identifier:	qm-constantq
+ Authors:	Christian Landone
+ Category:	Visualisation
 
-References:	J. Brown.
+ References:	J. Brown.
 		Calculation of a constant Q spectral transform.
 		Journal of the Acoustical Society of America, 89(1):
 		425-434, 1991.
@@ -311,9 +316,9 @@ plugin will not accept any other block size.
 Chromagram
 ----------
 
-Identifier:	qm-chromagram
-Authors:	Christian Landone
-Category:	Visualisation
+ Identifier:	qm-chromagram
+ Authors:	Christian Landone
+ Category:	Visualisation
 
 The Chromagram plugin calculates a constant Q spectral transform (as
 above) and then wraps the frequency bin values into a single octave,
@@ -332,11 +337,11 @@ parameters, and the plugin will not accept any other block size.
 Mel-Frequency Cepstral Coefficients
 -----------------------------------
 
-Identifier:	qm-mfcc
-Authors:	Nicolas Chetry and Chris Cannam
-Category:	Low Level Features
+ Identifier:	qm-mfcc
+ Authors:	Nicolas Chetry and Chris Cannam
+ Category:	Low Level Features
 
-References:	B. Logan.
+ References:	B. Logan.
 		Mel-Frequency Cepstral Coefficients for Music Modeling.
 		In Proceedings of the First International Symposium on Music
 		Information Retrieval (ISMIR), 2000.

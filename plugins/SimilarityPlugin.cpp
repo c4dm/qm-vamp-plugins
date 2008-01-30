@@ -122,12 +122,14 @@ SimilarityPlugin::getMaxChannelCount() const
 bool
 SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
-    if (channels < getMinChannelCount() ||
-	channels > getMaxChannelCount()) return false;
+    if (channels < getMinChannelCount()) return false;
+
+    // Using more than getMaxChannelCount is not actually a problem
+    // for us.  Using "incorrect" step and block sizes would be fine
+    // for timbral or chroma similarity, but will break rhythmic
+    // similarity, so we'd better enforce these.
 
     if (stepSize != getPreferredStepSize()) {
-        //!!! actually this perhaps shouldn't be an error... similarly
-        //using more than getMaxChannelCount channels
         std::cerr << "SimilarityPlugin::initialise: supplied step size "
                   << stepSize << " differs from required step size "
                   << getPreferredStepSize() << std::endl;
