@@ -1,7 +1,7 @@
 
 TEMPLATE = lib
 
-CONFIG += plugin warn_on debug
+CONFIG += plugin warn_on release
 CONFIG -= qt
 
 linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -march=pentium3 -msse 
