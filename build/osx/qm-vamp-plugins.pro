@@ -3,7 +3,6 @@ TEMPLATE = lib
 QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
 QMAKE_CXXFLAGS_RELEASE += -O2 -g0
 
-
 CONFIG += plugin warn_on release x86 ppc
 CONFIG -= qt
 
@@ -15,11 +14,7 @@ MOC_DIR = tmp_moc
 INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
 LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
-#LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -Wl,-Bdynamic
-linux-g++:LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -llapack -lblas -lg2c -Wl,-Bdynamic
-#LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -lg2c -Wl,-Bdynamic
-
-LIBS += -lqm-dsp -lvamp-sdk -lblas -llapack 
+LIBS += -install_name qm-vamp-plugins.dylib -lqm-dsp -lvamp-sdk -lblas -llapack 
 
 DEPENDPATH += plugins
 INCLUDEPATH += . plugins
