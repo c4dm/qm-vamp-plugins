@@ -96,7 +96,9 @@ SegmenterPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 void
 SegmenterPlugin::reset()
 {
-    //!!!
+    // re-make segmenter only if it has already been made; otherwise
+    // there's nothing to reset
+    if (segmenter) makeSegmenter();
 }
 
 size_t

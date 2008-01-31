@@ -4,7 +4,7 @@ TEMPLATE = lib
 CONFIG += plugin warn_on debug
 CONFIG -= qt
 
-linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -march=pentium4 -msse -msse2
+linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -march=pentium3 -msse 
 
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
@@ -12,7 +12,7 @@ MOC_DIR = tmp_moc
 INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
 LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
-linux-g++:LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -llapack -lblas -lg2c -Wl,-Bdynamic
+linux-g++:LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -llapack -lblas -lg2c $(shell g++ -print-file-name=libstdc++.a) -Wl,-Bdynamic
 #LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -lg2c -Wl,-Bdynamic
 
 DEPENDPATH += plugins

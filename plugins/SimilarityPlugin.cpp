@@ -237,7 +237,14 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 void
 SimilarityPlugin::reset()
 {
-    //!!!
+    for (int i = 0; i < m_values.size(); ++i) {
+        m_values[i].clear();
+    }
+
+    for (int i = 0; i < m_rhythmValues.size(); ++i) {
+        m_rhythmValues[i].clear();
+    }
+
     m_done = false;
 }
 
