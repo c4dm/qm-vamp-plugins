@@ -79,7 +79,7 @@ protected:
     float m_tuningFrequency;
     int m_length;
 
-    const char *getKeyName(int index);
+    const char *getKeyName(int index) const;
 
     GetKeyMode* m_getKeyMode;
     double* m_inputFrame;

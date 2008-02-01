@@ -88,6 +88,7 @@ protected:
     static const float m_allRhythm;
 
     std::vector<int> m_lastNonEmptyFrame; // per channel
+    std::vector<int> m_emptyFrameCount; // per channel
 
     mutable int m_distanceMatrixOutput;
     mutable int m_distanceVectorOutput;

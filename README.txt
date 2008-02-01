@@ -33,8 +33,8 @@ similarity between multiple audio tracks, a plugin for structural
 segmentation of music audio, and a Mel-frequency cepstral coefficients
 calculation plugin.
 
-This release also includes significant fixes to the existing key
-detector and chromagram plugins.
+This release also includes significant updates to the existing key
+detector, tempo tracker, and chromagram plugins.
 
 
 To Install
@@ -122,7 +122,8 @@ Tempo and Beat Tracker
 
  References:    M. E. P. Davies and M. D. Plumbley.
                 Context-dependent beat tracking of musical audio.
-                Technical Report C4DM-TR-06-02. 5 April 2006.
+                In IEEE Transactions on Audio, Speech and Language
+                Processing. Vol. 15, No. 3, pp1009-1020, 2007.
 
                 M. E. P. Davies and M. D. Plumbley.
                 Beat Tracking With A Two State Model.
@@ -153,14 +154,29 @@ Key Detector
 The Key Detector plugin analyses a single channel of audio and
 continuously estimates the key of the music.
 
-It has three outputs: the tonic pitch of the key; a major or minor
-mode flag; and key (combining the tonic and major/minor into a single
-value).  These outputs have the values:
+It has four outputs: the tonic pitch of the key; a major or minor mode
+flag; the key (combining the tonic and major/minor into a single
+value); and a key strength plot which reports the degree to which the
+chroma vector extracted from each input block correlates to the stored
+key profiles for each major and minor key.  The key profiles are drawn
+from analysis of Book I of the Well Tempered Klavier by J S Bach,
+recorded at A=440 equal temperament.
+
+The outputs have the values:
 
   Tonic pitch: C = 1, C#/Db = 2, ..., B = 12
+
   Major/minor mode: major = 0, minor = 1
+
   Key: C major = 1, C#/Db major = 2, ..., B major = 12
        C minor = 13, C#/Db minor = 14, ..., B minor = 24
+
+  Key Strength Plot: 25 separate bins per feature, separated into 1-12
+       (major from C) and 14-25 (minor from C).  Bin 13 is unused, not
+       for superstitious reasons but simply so as to delimit the major
+       and minor areas if they are displayed on a single plot by the
+       plugin host.  Higher bin values show increased correlation with
+       the key profile for that key.
 
 The outputs are also labelled with pitch or key as text.
 

@@ -25,7 +25,8 @@ MFCCPlugin::MFCCPlugin(float inputSampleRate) :
     m_config(lrintf(inputSampleRate)),
     m_mfcc(0),
     m_step(1024),
-    m_block(2048)
+    m_block(2048),
+    m_count(0)
 {
     m_bins = 20;
     m_wantC0 = true;
@@ -199,6 +200,7 @@ MFCCPlugin::reset()
             m_binsums[i] = 0.0;
         }
     }
+    m_count = 0;
 }
 
 size_t

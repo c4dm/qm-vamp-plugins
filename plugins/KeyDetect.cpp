@@ -17,6 +17,12 @@ using std::endl;
 #include <cmath>
 
 
+// Order for circle-of-5ths plotting
+static int conversion[24] =
+{ 7, 12, 5, 10, 3, 8, 1, 6, 11, 4, 9, 2,
+  16, 21, 14, 19, 24, 17, 22, 15, 20, 13, 18, 23 };
+
+
 KeyDetector::KeyDetector(float inputSampleRate) :
     Plugin(inputSampleRate),
     m_stepSize(0),
@@ -232,6 +238,25 @@ KeyDetector::getOutputDescriptors() const
     d.sampleType = OutputDescriptor::OneSamplePerStep;
     list.push_back(d);
 
+    d.identifier = "keystrength";
+    d.name = "Key Strength Plot";
+    d.unit = "";
+    d.description = "Correlation of the chroma vector with stored key profile for each major and minor key";
+    d.hasFixedBinCount = true;
+    d.binCount = 25;
+    d.hasKnownExtents = false;
+    d.isQuantized = false;
+    d.sampleType = OutputDescriptor::OneSamplePerStep;
+    for (int i = 0; i < 24; ++i) {
+        if (i == 12) d.binNames.push_back(" ");
+        int idx = conversion[i];
+        std::string label = getKeyName(idx > 12 ? idx-12 : idx);
+        if (i < 12) label += " major";
+        else label += " minor";
+        d.binNames.push_back(label);
+    }
+    list.push_back(d);
+
     return list;
 }
 
@@ -254,7 +279,6 @@ KeyDetector::process(const float *const *inputBuffers,
     int minor = m_getKeyMode->isModeMinor(key);
     int tonic = key;
     if (tonic > 12) tonic -= 12;
-
 
     int prevTonic = m_prevKey;
     if (prevTonic > 12) prevTonic -= 12;
@@ -293,6 +317,16 @@ KeyDetector::process(const float *const *inputBuffers,
 
     m_prevKey = key;
 
+    Feature ksf;
+    ksf.values.reserve(25);
+    double *keystrengths = m_getKeyMode->getKeyStrengths();
+    for (int i = 0; i < 24; ++i) {
+        if (i == 12) ksf.values.push_back(-1);
+        ksf.values.push_back(keystrengths[conversion[i]-1]);
+    }
+    ksf.hasTimestamp = false;
+    returnFeatures[3].push_back(ksf);
+
     return returnFeatures;
 }
 
@@ -328,7 +362,7 @@ KeyDetector::getPreferredBlockSize() const
 }
 
 const char *
-KeyDetector::getKeyName(int index)
+KeyDetector::getKeyName(int index) const
 {
     // Keys are numbered with 1 => C, 12 => B
     // This is based on chromagram base set to a C in qm-dsp's GetKeyMode.cpp

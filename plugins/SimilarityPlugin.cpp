@@ -148,6 +148,10 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     m_lastNonEmptyFrame = std::vector<int>(m_channels);
     for (int i = 0; i < m_channels; ++i) m_lastNonEmptyFrame[i] = -1;
+
+    m_emptyFrameCount = std::vector<int>(m_channels);
+    for (int i = 0; i < m_channels; ++i) m_emptyFrameCount[i] = 0;
+
     m_frameNo = 0;
 
     int decimationFactor = getDecimationFactor();
@@ -204,12 +208,12 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_rhythmClipFrames =
             int(ceil((m_rhythmClipDuration * m_processRate) 
                      / m_rhythmClipFrameSize));
-        std::cerr << "SimilarityPlugin::initialise: rhythm clip is "
-                  << m_rhythmClipFrames << " frames of size "
-                  << m_rhythmClipFrameSize << " at process rate "
-                  << m_processRate << " ( = "
-                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
-                  << std::endl;
+//        std::cerr << "SimilarityPlugin::initialise: rhythm clip requires "
+//                  << m_rhythmClipFrames << " frames of size "
+//                  << m_rhythmClipFrameSize << " at process rate "
+//                  << m_processRate << " ( = "
+//                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
+//                  << std::endl;
 
         MFCCConfig config(m_processRate);
         config.fftsize = m_rhythmClipFrameSize;
@@ -243,6 +247,14 @@ SimilarityPlugin::reset()
 
     for (int i = 0; i < m_rhythmValues.size(); ++i) {
         m_rhythmValues[i].clear();
+    }
+
+    for (int i = 0; i < m_lastNonEmptyFrame.size(); ++i) {
+        m_lastNonEmptyFrame[i] = -1;
+    }
+
+    for (int i = 0; i < m_emptyFrameCount.size(); ++i) {
+        m_emptyFrameCount[i] = 0;
     }
 
     m_done = false;
@@ -536,6 +548,7 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
                     }
                 }
             }
+            m_emptyFrameCount[c]++;
             continue;
         }
 
@@ -645,8 +658,9 @@ SimilarityPlugin::calculateTimbral(FeatureSet &returnFeatures)
             // We want to take values up to, but not including, the
             // last non-empty frame (which may be partial)
 
-            int sz = m_lastNonEmptyFrame[i];
+            int sz = m_lastNonEmptyFrame[i] - m_emptyFrameCount[i];
             if (sz < 0) sz = 0;
+            if (sz >= m_values[i].size()) sz = m_values[i].size()-1;
 
             count = 0;
             for (int k = 0; k < sz; ++k) {
@@ -751,6 +765,13 @@ SimilarityPlugin::FeatureMatrix
 SimilarityPlugin::calculateRhythmic(FeatureSet &returnFeatures)
 {
     if (!needRhythm()) return FeatureMatrix();
+
+//        std::cerr << "SimilarityPlugin::initialise: rhythm clip for channel 0 contains "
+//                  << m_rhythmValues[0].size() << " frames of size "
+//                  << m_rhythmClipFrameSize << " at process rate "
+//                  << m_processRate << " ( = "
+//                  << (float(m_rhythmValues[0].size() * m_rhythmClipFrameSize) / m_processRate) << " sec )"
+//                  << std::endl;
 
     BeatSpectrum bscalc;
     CosineDistance cd;
