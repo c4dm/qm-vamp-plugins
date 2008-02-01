@@ -408,7 +408,7 @@ TonalChangeDetect::FeatureSet TonalChangeDetect::getRemainingFeatures()
             featurePeak.label = "";
             featurePeak.hasTimestamp = true;
             featurePeak.timestamp = Vamp::RealTime::frame2RealTime(i*m_step, m_inputSampleRate);
-            returnFeatures[2].push_back(feature);
+            returnFeatures[2].push_back(featurePeak);
         }
 
     }
