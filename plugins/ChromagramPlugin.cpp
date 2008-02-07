@@ -26,7 +26,7 @@ ChromagramPlugin::ChromagramPlugin(float inputSampleRate) :
     m_minMIDIPitch = 12;
     m_maxMIDIPitch = 96;
     m_tuningFrequency = 440;
-    m_normalise = MathUtilities::NormaliseUnitMax;
+    m_normalise = MathUtilities::NormaliseNone;
     m_bpo = 12;
 
     setupConfig();
@@ -132,7 +132,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.unit = "bins";
     desc.description = "Number of constant-Q transform bins per octave, and the number of bins for the chromagram outputs";
     desc.minValue = 2;
-    desc.maxValue = 36;
+    desc.maxValue = 48;
     desc.defaultValue = 12;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
@@ -144,7 +144,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.description = "Normalization for each chromagram output column";
     desc.minValue = 0;
     desc.maxValue = 2;
-    desc.defaultValue = 2;
+    desc.defaultValue = 0;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
     desc.valueNames.push_back("None");

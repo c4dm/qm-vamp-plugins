@@ -250,9 +250,9 @@ KeyDetector::getOutputDescriptors() const
     for (int i = 0; i < 24; ++i) {
         if (i == 12) d.binNames.push_back(" ");
         int idx = conversion[i];
-        std::string label = getKeyName(idx > 12 ? idx-12 : idx);
-        if (i < 12) label += " major";
-        else label += " minor";
+        std::string label = getKeyName(idx > 12 ? idx-12 : idx, 
+                                       i >= 12,
+                                       true);
         d.binNames.push_back(label);
     }
     list.push_back(d);
@@ -276,7 +276,7 @@ KeyDetector::process(const float *const *inputBuffers,
 
 //    int key = (m_getKeyMode->process(m_inputFrame) % 24);
     int key = m_getKeyMode->process(m_inputFrame);
-    int minor = m_getKeyMode->isModeMinor(key);
+    bool minor = m_getKeyMode->isModeMinor(key);
     int tonic = key;
     if (tonic > 12) tonic -= 12;
 
@@ -288,31 +288,24 @@ KeyDetector::process(const float *const *inputBuffers,
         feature.hasTimestamp = false;
 //        feature.timestamp = now;
         feature.values.push_back((float)tonic);
-        feature.label = getKeyName(tonic);
+        feature.label = getKeyName(tonic, minor, false);
         returnFeatures[0].push_back(feature); // tonic
     }
 
     if (minor != (m_getKeyMode->isModeMinor(m_prevKey))) {
         Feature feature;
         feature.hasTimestamp = false;
-        feature.values.push_back((float)minor);
+        feature.values.push_back(minor ? 1.f : 0.f);
         feature.label = (minor ? "Minor" : "Major");
         returnFeatures[1].push_back(feature); // mode
     }
 
     if (key != m_prevKey) {
         Feature feature;
-//        feature.hasTimestamp = true;
         feature.hasTimestamp = false;
-//        feature.timestamp = now;
         feature.values.push_back((float)key);
-        feature.label = std::string(getKeyName(tonic));
-        if (minor) feature.label += " minor";
-        else feature.label += " major";
+        feature.label = getKeyName(tonic, minor, true);
         returnFeatures[2].push_back(feature); // key
-//		cerr << "int key = "<<key<<endl;
-//		cerr << "int tonic = "<<tonic<<endl;
-//		cerr << "feature label = "<<feature.label<<endl;
     }
 
     m_prevKey = key;
@@ -361,19 +354,36 @@ KeyDetector::getPreferredBlockSize() const
     return m_blockSize;
 }
 
-const char *
-KeyDetector::getKeyName(int index) const
+std::string
+KeyDetector::getKeyName(int index, bool minor, bool includeMajMin) const
 {
     // Keys are numbered with 1 => C, 12 => B
     // This is based on chromagram base set to a C in qm-dsp's GetKeyMode.cpp
-    static const char *names[] = {
-        "C", "C# / Db", "D", "D# / Eb",
+
+    static const char *namesMajor[] = {
+        "C", "Db", "D", "Eb",
         "E", "F", "F# / Gb", "G",
-        "G# / Ab", "A", "A# / Bb", "B"
+        "Ab", "A", "Bb", "B"
     };
+
+    static const char *namesMinor[] = {
+        "C", "Db", "D", "D# / Eb",
+        "E", "F", "Gb", "G",
+        "Ab", "A", "A#", "B"
+    };
+
     if (index < 1 || index > 12) {
         return "(unknown)";
     }
-    return names[index - 1]; //'-1' because our names array starts from 0 
+
+    std::string base;
+
+    if (minor) base = namesMinor[index - 1];
+    else base = namesMajor[index - 1];
+
+    if (!includeMajMin) return base;
+
+    if (minor) return base + " minor";
+    else return base + " major";
 }
 

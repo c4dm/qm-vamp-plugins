@@ -79,7 +79,7 @@ protected:
     float m_tuningFrequency;
     int m_length;
 
-    const char *getKeyName(int index) const;
+    std::string getKeyName(int index, bool minor, bool includeMajMin) const;
 
     GetKeyMode* m_getKeyMode;
     double* m_inputFrame;

@@ -27,7 +27,7 @@ ConstantQSpectrogram::ConstantQSpectrogram(float inputSampleRate) :
     m_minMIDIPitch = 12;
     m_maxMIDIPitch = 96;
     m_tuningFrequency = 440;
-    m_normalized = true;
+    m_normalized = false;
     m_bpo = 12;
 
     setupConfig();
@@ -132,7 +132,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.unit = "bins";
     desc.description = "Number of constant-Q transform bins per octave";
     desc.minValue = 2;
-    desc.maxValue = 36;
+    desc.maxValue = 48;
     desc.defaultValue = 12;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
