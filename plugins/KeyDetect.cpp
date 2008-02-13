@@ -367,9 +367,9 @@ KeyDetector::getKeyName(int index, bool minor, bool includeMajMin) const
     };
 
     static const char *namesMinor[] = {
-        "C", "Db", "D", "D# / Eb",
-        "E", "F", "Gb", "G",
-        "Ab", "A", "A#", "B"
+        "C", "C#", "D", "Eb / D#",
+        "E", "F", "F#", "G",
+        "G#", "A", "Bb", "B"
     };
 
     if (index < 1 || index > 12) {
