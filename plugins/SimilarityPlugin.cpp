@@ -178,10 +178,40 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
         m_featureColumnSize = 12;
 
+        // For simplicity, aim to have the chroma fft size equal to
+        // 2048, the same as the mfcc fft size (so the input block
+        // size does not depend on the feature type and we can use the
+        // same processing parameters for rhythm etc).  This is also
+        // why getPreferredBlockSize can confidently return 2048 * the
+        // decimation factor.
+        
+        // The fft size for a chromagram is the filterbank Q value
+        // times the sample rate, divided by the minimum frequency,
+        // rounded up to the nearest power of two.
+
+        double q = 1.0 / (pow(2.0, (1.0 / 12.0)) - 1.0);
+        double fmin = (q * m_processRate) / 2048.0;
+//        std::cerr << "chroma fmin = " << fmin;
+
+        // Round fmin up to the nearest MIDI pitch multiple of 12.
+        // So long as fmin is greater than 12 to start with, this
+        // should not change the resulting fft size.
+
+        int pmin = Pitch::getPitchForFrequency(float(fmin));
+        pmin = ((pmin / 12) + 1) * 12;
+        fmin = Pitch::getFrequencyForPitch(pmin);
+//        std::cerr << " -> " << fmin << " for pitch " << pmin << std::endl;
+
+        float fmax = Pitch::getFrequencyForPitch(pmin + 36);
+//        std::cerr << "fmax = " << fmax << " for pitch " << (pmin+36) << std::endl;
+
+
         ChromaConfig config;
         config.FS = m_processRate;
-        config.min = Pitch::getFrequencyForPitch(24, 0, 440);
-        config.max = Pitch::getFrequencyForPitch(96, 0, 440);
+        config.min = fmin;
+        config.max = fmax;
+//        config.min = Pitch::getFrequencyForPitch(24, 0, 440);
+//        config.max = Pitch::getFrequencyForPitch(96, 0, 440);
         config.BPO = 12;
         config.CQThresh = 0.0054;
         // We don't normalise the chromagram's columns individually;
@@ -189,11 +219,18 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         config.normalise = MathUtilities::NormaliseNone;
         m_chromagram = new Chromagram(config);
         m_fftSize = m_chromagram->getFrameSize();
+        
+        if (m_fftSize != 2048) {
+            std::cerr << "WARNING: SimilarityPlugin::initialise: Internal processing FFT size " << m_fftSize << " != expected size 2048 in chroma mode" << std::endl;
+        }
 
 //        std::cerr << "fftsize = " << m_fftSize << std::endl;
 
-        m_rhythmClipFrameSize = m_fftSize / 16;
-        while (m_rhythmClipFrameSize < 512) m_rhythmClipFrameSize *= 2;
+        m_rhythmClipFrameSize = m_fftSize / 4;
+
+//        m_rhythmClipFrameSize = m_fftSize / 16;
+//        while (m_rhythmClipFrameSize < 512) m_rhythmClipFrameSize *= 2;
+
 //        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
 
 //        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
@@ -290,21 +327,7 @@ SimilarityPlugin::calculateBlockSize() const
 {
     if (m_blockSize != 0) return;
     int decimationFactor = getDecimationFactor();
-    if (m_type == TypeChroma) {
-        ChromaConfig config;
-        config.FS = m_processRate;
-        config.min = Pitch::getFrequencyForPitch(24, 0, 440);
-        config.max = Pitch::getFrequencyForPitch(96, 0, 440);
-        config.BPO = 12;
-        config.CQThresh = 0.0054;
-        config.normalise = MathUtilities::NormaliseNone;
-        Chromagram *c = new Chromagram(config);
-        size_t sz = c->getFrameSize();
-        delete c;
-        m_blockSize = sz * decimationFactor;
-    } else {
-        m_blockSize = 2048 * decimationFactor;
-    }
+    m_blockSize = 2048 * decimationFactor;
 }
 
 SimilarityPlugin::ParameterList SimilarityPlugin::getParameterDescriptors() const
@@ -560,17 +583,20 @@ SimilarityPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* ti
 
         if (needTimbre()) {
 
+            FeatureColumn mf(m_featureColumnSize);
+
             if (m_type == TypeMFCC) {
                 m_mfcc->process(decbuf, raw);
+                for (int i = 0; i < m_featureColumnSize; ++i) {
+                    mf[i] = raw[i];
+                }
             } else if (m_type == TypeChroma) {
-                raw = m_chromagram->process(decbuf);
+                double *chroma = m_chromagram->process(decbuf);
+                for (int i = 0; i < m_featureColumnSize; ++i) {
+                    mf[i] = chroma[i];
+                }
             }
         
-            FeatureColumn mf(m_featureColumnSize);
-            for (int i = 0; i < m_featureColumnSize; ++i) {
-                mf[i] = raw[i];
-            }
-            
             m_values[c].push_back(mf);
         }
 
