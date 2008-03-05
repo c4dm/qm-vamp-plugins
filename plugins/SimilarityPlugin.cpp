@@ -119,184 +119,6 @@ SimilarityPlugin::getMaxChannelCount() const
     return 1024;
 }
 
-bool
-SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
-{
-    if (channels < getMinChannelCount()) return false;
-
-    // Using more than getMaxChannelCount is not actually a problem
-    // for us.  Using "incorrect" step and block sizes would be fine
-    // for timbral or chroma similarity, but will break rhythmic
-    // similarity, so we'd better enforce these.
-
-    if (stepSize != getPreferredStepSize()) {
-        std::cerr << "SimilarityPlugin::initialise: supplied step size "
-                  << stepSize << " differs from required step size "
-                  << getPreferredStepSize() << std::endl;
-        return false;
-    }
-
-    if (blockSize != getPreferredBlockSize()) {
-        std::cerr << "SimilarityPlugin::initialise: supplied block size "
-                  << blockSize << " differs from required block size "
-                  << getPreferredBlockSize() << std::endl;
-        return false;
-    }        
-    
-    m_blockSize = blockSize;
-    m_channels = channels;
-
-    m_lastNonEmptyFrame = std::vector<int>(m_channels);
-    for (int i = 0; i < m_channels; ++i) m_lastNonEmptyFrame[i] = -1;
-
-    m_emptyFrameCount = std::vector<int>(m_channels);
-    for (int i = 0; i < m_channels; ++i) m_emptyFrameCount[i] = 0;
-
-    m_frameNo = 0;
-
-    int decimationFactor = getDecimationFactor();
-    if (decimationFactor > 1) {
-        m_decimator = new Decimator(m_blockSize, decimationFactor);
-    }
-
-    if (m_type == TypeMFCC) {
-
-        m_featureColumnSize = 20;
-
-        MFCCConfig config(m_processRate);
-        config.fftsize = 2048;
-        config.nceps = m_featureColumnSize - 1;
-        config.want_c0 = true;
-        config.logpower = 1;
-        m_mfcc = new MFCC(config);
-        m_fftSize = m_mfcc->getfftlength();
-        m_rhythmClipFrameSize = m_fftSize / 4;
-
-//        std::cerr << "MFCC FS = " << config.FS << ", FFT size = " << m_fftSize<< std::endl;
-
-    } else if (m_type == TypeChroma) {
-
-        m_featureColumnSize = 12;
-
-        // For simplicity, aim to have the chroma fft size equal to
-        // 2048, the same as the mfcc fft size (so the input block
-        // size does not depend on the feature type and we can use the
-        // same processing parameters for rhythm etc).  This is also
-        // why getPreferredBlockSize can confidently return 2048 * the
-        // decimation factor.
-        
-        // The fft size for a chromagram is the filterbank Q value
-        // times the sample rate, divided by the minimum frequency,
-        // rounded up to the nearest power of two.
-
-        double q = 1.0 / (pow(2.0, (1.0 / 12.0)) - 1.0);
-        double fmin = (q * m_processRate) / 2048.0;
-//        std::cerr << "chroma fmin = " << fmin;
-
-        // Round fmin up to the nearest MIDI pitch multiple of 12.
-        // So long as fmin is greater than 12 to start with, this
-        // should not change the resulting fft size.
-
-        int pmin = Pitch::getPitchForFrequency(float(fmin));
-        pmin = ((pmin / 12) + 1) * 12;
-        fmin = Pitch::getFrequencyForPitch(pmin);
-//        std::cerr << " -> " << fmin << " for pitch " << pmin << std::endl;
-
-        float fmax = Pitch::getFrequencyForPitch(pmin + 36);
-//        std::cerr << "fmax = " << fmax << " for pitch " << (pmin+36) << std::endl;
-
-
-        ChromaConfig config;
-        config.FS = m_processRate;
-        config.min = fmin;
-        config.max = fmax;
-//        config.min = Pitch::getFrequencyForPitch(24, 0, 440);
-//        config.max = Pitch::getFrequencyForPitch(96, 0, 440);
-        config.BPO = 12;
-        config.CQThresh = 0.0054;
-        // We don't normalise the chromagram's columns individually;
-        // we normalise the mean at the end instead
-        config.normalise = MathUtilities::NormaliseNone;
-        m_chromagram = new Chromagram(config);
-        m_fftSize = m_chromagram->getFrameSize();
-        
-        if (m_fftSize != 2048) {
-            std::cerr << "WARNING: SimilarityPlugin::initialise: Internal processing FFT size " << m_fftSize << " != expected size 2048 in chroma mode" << std::endl;
-        }
-
-        std::cerr << "fftsize = " << m_fftSize << std::endl;
-
-        m_rhythmClipFrameSize = m_fftSize / 4;
-
-//        m_rhythmClipFrameSize = m_fftSize / 16;
-//        while (m_rhythmClipFrameSize < 512) m_rhythmClipFrameSize *= 2;
-
-        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
-
-        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
-
-    } else {
-
-        std::cerr << "SimilarityPlugin::initialise: internal error: unknown type " << m_type << std::endl;
-        return false;
-    }
-    
-    if (needRhythm()) {
-        m_rhythmClipFrames =
-            int(ceil((m_rhythmClipDuration * m_processRate) 
-                     / m_rhythmClipFrameSize));
-        std::cerr << "SimilarityPlugin::initialise: rhythm clip requires "
-                  << m_rhythmClipFrames << " frames of size "
-                  << m_rhythmClipFrameSize << " at process rate "
-                  << m_processRate << " ( = "
-                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
-                  << std::endl;
-
-        MFCCConfig config(m_processRate);
-        config.fftsize = m_rhythmClipFrameSize;
-        config.nceps = m_rhythmColumnSize - 1;
-        config.want_c0 = true;
-        config.logpower = 1;
-        config.window = RectangularWindow; // because no overlap
-        m_rhythmfcc = new MFCC(config);
-    }
-
-    for (int i = 0; i < m_channels; ++i) {
-
-        m_values.push_back(FeatureMatrix());
-
-        if (needRhythm()) {
-            m_rhythmValues.push_back(FeatureColumnQueue());
-        }
-    }
-
-    m_done = false;
-
-    return true;
-}
-
-void
-SimilarityPlugin::reset()
-{
-    for (int i = 0; i < m_values.size(); ++i) {
-        m_values[i].clear();
-    }
-
-    for (int i = 0; i < m_rhythmValues.size(); ++i) {
-        m_rhythmValues[i].clear();
-    }
-
-    for (int i = 0; i < m_lastNonEmptyFrame.size(); ++i) {
-        m_lastNonEmptyFrame[i] = -1;
-    }
-
-    for (int i = 0; i < m_emptyFrameCount.size(); ++i) {
-        m_emptyFrameCount[i] = 0;
-    }
-
-    m_done = false;
-}
-
 int
 SimilarityPlugin::getDecimationFactor() const
 {
@@ -529,6 +351,174 @@ SimilarityPlugin::getOutputDescriptors() const
     list.push_back(beatspectrum);
     
     return list;
+}
+
+bool
+SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
+{
+    if (channels < getMinChannelCount()) return false;
+
+    // Using more than getMaxChannelCount is not actually a problem
+    // for us.  Using "incorrect" step and block sizes would be fine
+    // for timbral or chroma similarity, but will break rhythmic
+    // similarity, so we'd better enforce these.
+
+    if (stepSize != getPreferredStepSize()) {
+        std::cerr << "SimilarityPlugin::initialise: supplied step size "
+                  << stepSize << " differs from required step size "
+                  << getPreferredStepSize() << std::endl;
+        return false;
+    }
+
+    if (blockSize != getPreferredBlockSize()) {
+        std::cerr << "SimilarityPlugin::initialise: supplied block size "
+                  << blockSize << " differs from required block size "
+                  << getPreferredBlockSize() << std::endl;
+        return false;
+    }        
+    
+    m_blockSize = blockSize;
+    m_channels = channels;
+
+    m_lastNonEmptyFrame = std::vector<int>(m_channels);
+    for (int i = 0; i < m_channels; ++i) m_lastNonEmptyFrame[i] = -1;
+
+    m_emptyFrameCount = std::vector<int>(m_channels);
+    for (int i = 0; i < m_channels; ++i) m_emptyFrameCount[i] = 0;
+
+    m_frameNo = 0;
+
+    int decimationFactor = getDecimationFactor();
+    if (decimationFactor > 1) {
+        m_decimator = new Decimator(m_blockSize, decimationFactor);
+    }
+
+    if (m_type == TypeMFCC) {
+
+        m_featureColumnSize = 20;
+
+        MFCCConfig config(m_processRate);
+        config.fftsize = 2048;
+        config.nceps = m_featureColumnSize - 1;
+        config.want_c0 = true;
+        config.logpower = 1;
+        m_mfcc = new MFCC(config);
+        m_fftSize = m_mfcc->getfftlength();
+        m_rhythmClipFrameSize = m_fftSize / 4;
+
+//        std::cerr << "MFCC FS = " << config.FS << ", FFT size = " << m_fftSize<< std::endl;
+
+    } else if (m_type == TypeChroma) {
+
+        m_featureColumnSize = 12;
+
+        // For simplicity, aim to have the chroma fft size equal to
+        // 2048, the same as the mfcc fft size (so the input block
+        // size does not depend on the feature type and we can use the
+        // same processing parameters for rhythm etc).  This is also
+        // why getPreferredBlockSize can confidently return 2048 * the
+        // decimation factor.
+        
+        // The fft size for a chromagram is the filterbank Q value
+        // times the sample rate, divided by the minimum frequency,
+        // rounded up to the nearest power of two.
+
+        double q = 1.0 / (pow(2.0, (1.0 / 12.0)) - 1.0);
+        double fmin = (q * m_processRate) / 2048.0;
+
+        // Round fmin up to the nearest MIDI pitch multiple of 12.
+        // So long as fmin is greater than 12 to start with, this
+        // should not change the resulting fft size.
+
+        int pmin = Pitch::getPitchForFrequency(float(fmin));
+        pmin = ((pmin / 12) + 1) * 12;
+        fmin = Pitch::getFrequencyForPitch(pmin);
+
+        float fmax = Pitch::getFrequencyForPitch(pmin + 36);
+
+        ChromaConfig config;
+        config.FS = m_processRate;
+        config.min = fmin;
+        config.max = fmax;
+        config.BPO = 12;
+        config.CQThresh = 0.0054;
+        // We don't normalise the chromagram's columns individually;
+        // we normalise the mean at the end instead
+        config.normalise = MathUtilities::NormaliseNone;
+        m_chromagram = new Chromagram(config);
+        m_fftSize = m_chromagram->getFrameSize();
+        
+        if (m_fftSize != 2048) {
+            std::cerr << "WARNING: SimilarityPlugin::initialise: Internal processing FFT size " << m_fftSize << " != expected size 2048 in chroma mode" << std::endl;
+        }
+
+//        std::cerr << "fftsize = " << m_fftSize << std::endl;
+
+        m_rhythmClipFrameSize = m_fftSize / 4;
+
+//        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
+//        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
+
+    } else {
+
+        std::cerr << "SimilarityPlugin::initialise: internal error: unknown type " << m_type << std::endl;
+        return false;
+    }
+    
+    if (needRhythm()) {
+        m_rhythmClipFrames =
+            int(ceil((m_rhythmClipDuration * m_processRate) 
+                     / m_rhythmClipFrameSize));
+//        std::cerr << "SimilarityPlugin::initialise: rhythm clip requires "
+//                  << m_rhythmClipFrames << " frames of size "
+//                  << m_rhythmClipFrameSize << " at process rate "
+//                  << m_processRate << " ( = "
+//                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
+//                  << std::endl;
+
+        MFCCConfig config(m_processRate);
+        config.fftsize = m_rhythmClipFrameSize;
+        config.nceps = m_rhythmColumnSize - 1;
+        config.want_c0 = true;
+        config.logpower = 1;
+        config.window = RectangularWindow; // because no overlap
+        m_rhythmfcc = new MFCC(config);
+    }
+
+    for (int i = 0; i < m_channels; ++i) {
+
+        m_values.push_back(FeatureMatrix());
+
+        if (needRhythm()) {
+            m_rhythmValues.push_back(FeatureColumnQueue());
+        }
+    }
+
+    m_done = false;
+
+    return true;
+}
+
+void
+SimilarityPlugin::reset()
+{
+    for (int i = 0; i < m_values.size(); ++i) {
+        m_values[i].clear();
+    }
+
+    for (int i = 0; i < m_rhythmValues.size(); ++i) {
+        m_rhythmValues[i].clear();
+    }
+
+    for (int i = 0; i < m_lastNonEmptyFrame.size(); ++i) {
+        m_lastNonEmptyFrame[i] = -1;
+    }
+
+    for (int i = 0; i < m_emptyFrameCount.size(); ++i) {
+        m_emptyFrameCount[i] = 0;
+    }
+
+    m_done = false;
 }
 
 SimilarityPlugin::FeatureSet
