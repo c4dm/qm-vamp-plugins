@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 /*
- * SegmenterPlugin.cpp
+ * SimilarityPlugin.cpp
  *
  * Copyright 2008 Centre for Digital Music, Queen Mary, University of London.
  * All rights reserved.
@@ -224,16 +224,16 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
             std::cerr << "WARNING: SimilarityPlugin::initialise: Internal processing FFT size " << m_fftSize << " != expected size 2048 in chroma mode" << std::endl;
         }
 
-//        std::cerr << "fftsize = " << m_fftSize << std::endl;
+        std::cerr << "fftsize = " << m_fftSize << std::endl;
 
         m_rhythmClipFrameSize = m_fftSize / 4;
 
 //        m_rhythmClipFrameSize = m_fftSize / 16;
 //        while (m_rhythmClipFrameSize < 512) m_rhythmClipFrameSize *= 2;
 
-//        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
+        std::cerr << "m_rhythmClipFrameSize = " << m_rhythmClipFrameSize << std::endl;
 
-//        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
+        std::cerr << "min = "<< config.min << ", max = " << config.max << std::endl;
 
     } else {
 
@@ -245,16 +245,16 @@ SimilarityPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
         m_rhythmClipFrames =
             int(ceil((m_rhythmClipDuration * m_processRate) 
                      / m_rhythmClipFrameSize));
-//        std::cerr << "SimilarityPlugin::initialise: rhythm clip requires "
-//                  << m_rhythmClipFrames << " frames of size "
-//                  << m_rhythmClipFrameSize << " at process rate "
-//                  << m_processRate << " ( = "
-//                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
-//                  << std::endl;
+        std::cerr << "SimilarityPlugin::initialise: rhythm clip requires "
+                  << m_rhythmClipFrames << " frames of size "
+                  << m_rhythmClipFrameSize << " at process rate "
+                  << m_processRate << " ( = "
+                  << (float(m_rhythmClipFrames * m_rhythmClipFrameSize) / m_processRate) << " sec )"
+                  << std::endl;
 
         MFCCConfig config(m_processRate);
         config.fftsize = m_rhythmClipFrameSize;
-        config.nceps = m_featureColumnSize - 1;
+        config.nceps = m_rhythmColumnSize - 1;
         config.want_c0 = true;
         config.logpower = 1;
         config.window = RectangularWindow; // because no overlap
