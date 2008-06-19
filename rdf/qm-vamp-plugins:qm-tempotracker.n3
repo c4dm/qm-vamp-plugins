@@ -1,0 +1,94 @@
+@prefix rdfs:     <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:      <http://www.w3.org/2001/XMLSchema#> .
+@prefix vamp:     <http://www.purl.org/ontology/vamp/> .
+@prefix vampex:   <http://www.purl.org/ontology/vamp/examples/> .
+@prefix plugbase: <http://purl.org/ontology/vamp/qm-plugins/> .
+@prefix owl:      <http://www.w3.org/2002/07/owl#> .
+@prefix dc:       <http://purl.org/dc/elements/1.1/> .
+@prefix af:       <http://purl.org/ontology/af/> .
+@prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix cc:       <http://web.resource.org/cc/> .
+@prefix thisplug: <http://purl.org/ontology/vamp/qm-plugins/qm-tempotracker#> .
+@prefix :         <> .
+
+<>  a   vamp:PluginDescription ;
+     foaf:maker          <http://www.vamp-plugins.org/> ;
+     foaf:maker          <http://www.vamp-plugins.org/doap.rdf#template-generator> ;
+     foaf:primaryTopic   plugbase:qm-tempotracker .
+
+plugbase:qm-tempotracker a   vamp:Plugin ;
+    dc:title              "Tempo and Beat Tracker" ;
+    vamp:name             "Tempo and Beat Tracker" ;
+    dc:description        "Estimate beat locations and tempo" ;
+    foaf:maker            [ foaf:name "Queen Mary, University of London"] ; # FIXME could give plugin author's URI here
+    cc:license            <FIXME license for the plugin> ; 
+    vamp:identifier       "qm-tempotracker" ;
+    vamp:vamp_API_version vamp:api_version_1 ;
+    owl:versionInfo       "3" ;
+    vamp:input_domain     vamp:TimeDomain ;
+
+    vamp:parameter_descriptor   thisplug:param_dftype ;
+    vamp:parameter_descriptor   thisplug:param_whiten ;
+
+    vamp:output_descriptor      thisplug:output_beats ;
+    vamp:output_descriptor      thisplug:output_detection_fn ;
+    vamp:output_descriptor      thisplug:output_tempo ;
+    .
+thisplug:param_dftype a  vamp:ParameterDescriptor ;
+    vamp:identifier     "dftype" ;
+    dc:title            "Onset Detection Function Type" ;
+    dc:format           "" ;
+    vamp:min_value       0 ;
+    vamp:max_value       4 ;
+    vamp:default_value   3 .
+
+thisplug:param_whiten a  vamp:ParameterDescriptor ;
+    vamp:identifier     "whiten" ;
+    dc:title            "Adaptive Whitening" ;
+    dc:format           "" ;
+    vamp:min_value       0 ;
+    vamp:max_value       1 ;
+    vamp:default_value   0 .
+
+thisplug:output_beats a  vamp:SparseOutput ;
+    vamp:identifier       "beats" ;
+    dc:title              "Beats" ;
+    dc:description        "Estimated metrical beat locations"  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:is_quantized     "true"  ;
+    vamp:unit             "" ;
+    vamp:bin_count          0 ;
+    vamp:bin_names          ();
+   vamp:quantize_step        1.68156e-44  ;
+    vamp:sample_type        vamp:VariableSampleRate ;
+    vamp:sample_rate    86.1326 ;
+    vamp:computes_feature_type  <FIXME feature type URI> ;
+    vamp:computes_event_type    <FIXME event type URI> ;
+    .
+thisplug:output_detection_fn a  vamp:DenseOutput ;
+    vamp:identifier       "detection_fn" ;
+    dc:title              "Onset Detection Function" ;
+    dc:description        "Probability function of note onset likelihood"  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:is_quantised     "false"  ;
+    vamp:unit             "" ;
+    vamp:bin_count          1 ;
+    vamp:bin_names          ( "");
+    vamp:sample_type       vamp:OneSamplePerStep ;
+    vamp:computes_feature_type  <FIXME feature type URI> ;
+    vamp:computes_event_type    <FIXME event type URI> ;
+    .
+thisplug:output_tempo a  vamp:SparseOutput ;
+    vamp:identifier       "tempo" ;
+    dc:title              "Tempo" ;
+    dc:description        "Locked tempo estimates"  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:is_quantized     "false"  ;
+    vamp:unit             "bpm" ;
+    vamp:bin_count          1 ;
+    vamp:bin_names          ( "");
+    vamp:sample_type        vamp:VariableSampleRate ;
+    vamp:sample_rate    86.1326 ;
+    vamp:computes_feature_type  <FIXME feature type URI> ;
+    vamp:computes_event_type    <FIXME event type URI> ;
+    .
