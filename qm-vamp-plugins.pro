@@ -14,7 +14,7 @@ LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
 linux-g++:LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -Wl,--version-script=vamp-plugin.map
 
-osx:CXXFLAGS += -fvisibility=hidden
+macx-g++:QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
 
 #LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -Wl,-Bdynamic
 
