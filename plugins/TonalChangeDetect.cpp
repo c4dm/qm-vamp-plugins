@@ -271,10 +271,10 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     d.minValue = 2;
     d.hasFixedBinCount = true;
     d.binCount = 1;
-    d.hasKnownExtents = true;
+    d.hasKnownExtents = false;
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::VariableSampleRate;
-    double dStepSecs = double(m_step) / m_inputSampleRate;
+    double dStepSecs = double(getPreferredStepSize()) / m_inputSampleRate;
     d.sampleRate = 1.0f / dStepSecs;
 	
     OutputDescriptor changes;
@@ -283,6 +283,8 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     changes.unit = "";
     changes.hasFixedBinCount = true;
     changes.binCount = 0;
+    changes.hasKnownExtents = false;
+    changes.isQuantized = false;
     changes.sampleType = OutputDescriptor::VariableSampleRate;
     changes.sampleRate = 1.0 / dStepSecs;
 	

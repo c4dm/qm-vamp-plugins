@@ -12,8 +12,11 @@ MOC_DIR = tmp_moc
 INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
 LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
-linux-g++:LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -llapack -lblas -lg2c $(shell g++ -print-file-name=libstdc++.a) -Wl,-Bdynamic
-#LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -lg2c -Wl,-Bdynamic
+linux-g++:LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -Wl,--version-script=vamp-plugin.map
+
+osx:CXXFLAGS += -fvisibility=hidden
+
+#LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -Wl,-Bdynamic
 
 DEPENDPATH += plugins
 INCLUDEPATH += . plugins
@@ -28,7 +31,8 @@ HEADERS += plugins/BeatTrack.h \
            plugins/SegmenterPlugin.h \
            plugins/SimilarityPlugin.h \
            plugins/TonalChangeDetect.h
-SOURCES += plugins/BeatTrack.cpp \
+SOURCES += g2cstubs.c \
+           plugins/BeatTrack.cpp \
            plugins/OnsetDetect.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/ConstantQSpectrogram.cpp \
