@@ -195,6 +195,10 @@ KeyDetector::getOutputDescriptors() const
 {
     OutputList list;
 
+    float osr = 0.0f;
+    if (m_stepSize == 0) (void)getPreferredStepSize();
+    osr = m_inputSampleRate / m_stepSize;
+
     OutputDescriptor d;
     d.identifier = "tonic";
     d.name = "Tonic Pitch";
@@ -207,7 +211,8 @@ KeyDetector::getOutputDescriptors() const
     d.minValue = 1;
     d.maxValue = 12;
     d.quantizeStep = 1;
-    d.sampleType = OutputDescriptor::OneSamplePerStep;
+    d.sampleRate = osr;
+    d.sampleType = OutputDescriptor::VariableSampleRate;
     list.push_back(d);
 
     d.identifier = "mode";
@@ -221,7 +226,8 @@ KeyDetector::getOutputDescriptors() const
     d.minValue = 0;
     d.maxValue = 1;
     d.quantizeStep = 1;
-    d.sampleType = OutputDescriptor::OneSamplePerStep;
+    d.sampleRate = osr;
+    d.sampleType = OutputDescriptor::VariableSampleRate;
     list.push_back(d);
 
     d.identifier = "key";
@@ -235,7 +241,8 @@ KeyDetector::getOutputDescriptors() const
     d.minValue = 1;
     d.maxValue = 24;
     d.quantizeStep = 1;
-    d.sampleType = OutputDescriptor::OneSamplePerStep;
+    d.sampleRate = osr;
+    d.sampleType = OutputDescriptor::VariableSampleRate;
     list.push_back(d);
 
     d.identifier = "keystrength";
@@ -245,8 +252,9 @@ KeyDetector::getOutputDescriptors() const
     d.hasFixedBinCount = true;
     d.binCount = 25;
     d.hasKnownExtents = false;
+    d.sampleRate = osr;
     d.isQuantized = false;
-    d.sampleType = OutputDescriptor::OneSamplePerStep;
+    d.sampleType = OutputDescriptor::VariableSampleRate;
     for (int i = 0; i < 24; ++i) {
         if (i == 12) d.binNames.push_back(" ");
         int idx = conversion[i];
@@ -285,7 +293,8 @@ KeyDetector::process(const float *const *inputBuffers,
 
     if (tonic != prevTonic) {
         Feature feature;
-        feature.hasTimestamp = false;
+        feature.hasTimestamp = true;
+        feature.timestamp = now;
 //        feature.timestamp = now;
         feature.values.push_back((float)tonic);
         feature.label = getKeyName(tonic, minor, false);
@@ -294,7 +303,8 @@ KeyDetector::process(const float *const *inputBuffers,
 
     if (minor != (m_getKeyMode->isModeMinor(m_prevKey))) {
         Feature feature;
-        feature.hasTimestamp = false;
+        feature.hasTimestamp = true;
+        feature.timestamp = now;
         feature.values.push_back(minor ? 1.f : 0.f);
         feature.label = (minor ? "Minor" : "Major");
         returnFeatures[1].push_back(feature); // mode
@@ -302,7 +312,8 @@ KeyDetector::process(const float *const *inputBuffers,
 
     if (key != m_prevKey) {
         Feature feature;
-        feature.hasTimestamp = false;
+        feature.hasTimestamp = true;
+        feature.timestamp = now;
         feature.values.push_back((float)key);
         feature.label = getKeyName(tonic, minor, true);
         returnFeatures[2].push_back(feature); // key
@@ -317,7 +328,8 @@ KeyDetector::process(const float *const *inputBuffers,
         if (i == 12) ksf.values.push_back(-1);
         ksf.values.push_back(keystrengths[conversion[i]-1]);
     }
-    ksf.hasTimestamp = false;
+    ksf.hasTimestamp = true;
+    ksf.timestamp = now;
     returnFeatures[3].push_back(ksf);
 
     return returnFeatures;
