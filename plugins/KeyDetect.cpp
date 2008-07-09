@@ -252,9 +252,8 @@ KeyDetector::getOutputDescriptors() const
     d.hasFixedBinCount = true;
     d.binCount = 25;
     d.hasKnownExtents = false;
-    d.sampleRate = osr;
     d.isQuantized = false;
-    d.sampleType = OutputDescriptor::VariableSampleRate;
+    d.sampleType = OutputDescriptor::OneSamplePerStep;
     for (int i = 0; i < 24; ++i) {
         if (i == 12) d.binNames.push_back(" ");
         int idx = conversion[i];
@@ -328,8 +327,7 @@ KeyDetector::process(const float *const *inputBuffers,
         if (i == 12) ksf.values.push_back(-1);
         ksf.values.push_back(keystrengths[conversion[i]-1]);
     }
-    ksf.hasTimestamp = true;
-    ksf.timestamp = now;
+    ksf.hasTimestamp = false;
     returnFeatures[3].push_back(ksf);
 
     return returnFeatures;
