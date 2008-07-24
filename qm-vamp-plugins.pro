@@ -1,10 +1,10 @@
 
 TEMPLATE = lib
 
-CONFIG += plugin warn_on release
+CONFIG += plugin warn_on debug
 CONFIG -= qt
 
-linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -march=pentium3 -mfpmath=sse -msse -ffast-math
+linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fPIC -march=pentium3 -mfpmath=sse -msse
 
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc

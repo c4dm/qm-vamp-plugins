@@ -318,7 +318,7 @@ ChromagramPlugin::getOutputDescriptors() const
 
 ChromagramPlugin::FeatureSet
 ChromagramPlugin::process(const float *const *inputBuffers,
-                          Vamp::RealTime /* timestamp */)
+                          Vamp::RealTime timestamp)
 {
     if (!m_chromagram) {
 	cerr << "ERROR: ChromagramPlugin::process: "
@@ -330,13 +330,28 @@ ChromagramPlugin::process(const float *const *inputBuffers,
     double *real = new double[m_block];
     double *imag = new double[m_block];
 
-    for (size_t i = 0; i < m_block/2; ++i) {
+    for (size_t i = 0; i <= m_block/2; ++i) {
 	real[i] = inputBuffers[0][i*2];
 	if (i > 0) real[m_block - i] = real[i];
         imag[i] = inputBuffers[0][i*2+1];
         if (i > 0) imag[m_block - i] = imag[i];
     }
 
+//    cerr << "chromagram: timestamp = " << timestamp << endl;
+/*
+    bool printThis = false;
+
+    if (timestamp.sec == 3 && timestamp.nsec < 250000000) {
+        printThis = true;
+    } 
+    if (printThis) {
+        cerr << "\n\nchromagram: timestamp " << timestamp << ": input data starts:" << endl;
+        for (int i = 0; i < m_block && i < 1000; ++i) {
+            cerr << real[i] << "," << imag[i] << " ";
+        }
+        cerr << endl << "values:" << endl;
+    }
+*/
     double *output = m_chromagram->process(real, imag);
 
     delete[] real;
@@ -346,12 +361,22 @@ ChromagramPlugin::process(const float *const *inputBuffers,
     feature.hasTimestamp = false;
     for (size_t i = 0; i < m_config.BPO; ++i) {
         double value = output[i];
+/*
+        if (printThis) {
+            cerr << value << " ";
+        }
+*/
         if (isnan(value)) value = 0.0;
         m_binsums[i] += value;
 	feature.values.push_back(value);
     }
     feature.label = "";
     ++m_count;
+/*
+    if (printThis) {
+        cerr << endl;
+    }
+*/
 
     FeatureSet returnFeatures;
     returnFeatures[0].push_back(feature);

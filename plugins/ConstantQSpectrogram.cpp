@@ -339,7 +339,7 @@ ConstantQSpectrogram::process(const float *const *inputBuffers,
     double *cqre = new double[m_bins];
     double *cqim = new double[m_bins];
 
-    for (size_t i = 0; i < m_block/2; ++i) {
+    for (size_t i = 0; i <= m_block/2; ++i) {
 	real[i] = inputBuffers[0][i*2];
 	if (i > 0) real[m_block - i] = real[i];
         imag[i] = inputBuffers[0][i*2+1];
