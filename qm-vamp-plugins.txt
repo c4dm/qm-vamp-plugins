@@ -1,0 +1,389 @@
+
+QM Vamp Plugins
+===============
+
+Vamp audio feature extraction plugins from the Centre for Digital
+Music at Queen Mary, University of London.
+
+http://www.elec.qmul.ac.uk/digitalmusic/
+
+Version 1.4.
+
+For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
+
+
+Note Onset Detector
+===================
+
+*System identifier* --    [qm-onsetdetector]
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-onsetdetector
+
+The Note Onset Detector plugin analyses a single channel of audio and
+estimates the onset times of notes within the music -- that is, the
+times at which notes and other audible events begin.
+
+It calculates an onset likelihood function for each spectral frame,
+and picks peaks in a smoothed version of this function.  The plugin is
+non-causal, returning all results at the end of processing.
+
+Parameters
+----------
+
+*Onset Detection Function Type* -- The method used to calculate the
+onset likelihood function.  The most versatile method is the default,
+"Complex Domain" (see reference, Duxbury et al 2003).  "Spectral
+Difference" may be appropriate for percussive recordings, "Phase
+Deviation" for non-percussive music, and "Broadband Energy Rise" (see
+reference, Barry et al 2005) for identifying percussive onsets in
+mixed music.
+
+*Onset Detector Sensitivity* -- Sensitivity level for peak detection
+in the onset likelihood function.  The higher the sensitivity, the
+more onsets will (rightly or wrongly) be detected.  The peak picker
+does not have a simple threshold level; instead, this parameter
+controls the required "steepness" of the slopes in the smoothed
+detection function either side of a peak value, in order for that peak
+to be accepted as an onset.
+
+*Adaptive Whitening* -- This option evens out the temporal and
+frequency variation in the signal, which can yield improved
+performance in onset detection, for example in audio with big
+variations in dynamics.
+
+Outputs
+-------
+
+*Note Onsets* -- The detected note onset times, returned as a single
+feature with timestamp but no value for each detected note.
+
+*Onset Detection Function* -- The raw note onset likelihood function
+that was calculated as the first step of the detection process.
+
+*Smoothed Detection Function* -- The note onset likelihood function
+following median filtering.  This is the function from which
+sufficiently steep peak values are picked and classified as onsets.
+
+
+References and Credits
+----------------------
+
+*Basic detection methods*: C. Duxbury, J. P. Bello, M. Davies and
+M. Sandler, _Complex domain Onset Detection for Musical Signals_. In
+Proceedings of the 6th Conference on Digital Audio Effects
+(DAFx-03). London, UK. September 2003.
+
+*Adaptive whitening*: D. Stowell and M. D. Plumbley, _Adaptive
+whitening for improved real-time audio onset detection_. In
+Proceedings of the International Computer Music Conference (ICMC'07),
+August 2007.
+
+*Percussion onset detector*: D. Barry, D. Fitzgerald, E. Coyle and
+B. Lawlor, _Drum Source Separation using Percussive Feature Detection
+and Spectral Modulation_. ISSC 2005.
+
+The Note Onset Detector Vamp plugin was written by Chris Duxbury, Juan
+Pablo Bello and Christian Landone.
+
+
+
+Tempo and Beat Tracker
+======================
+
+*System identifier* --    [qm-tempotracker]
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-tempotracker
+
+
+ Authors:       Matthew Davies and Christian Landone
+ Category:      Time > Tempo
+
+ References:    M. E. P. Davies and M. D. Plumbley.
+                Context-dependent beat tracking of musical audio.
+                In IEEE Transactions on Audio, Speech and Language
+                Processing. Vol. 15, No. 3, pp1009-1020, 2007.
+
+                M. E. P. Davies and M. D. Plumbley.
+                Beat Tracking With A Two State Model.
+                In Proceedings of the IEEE International Conference 
+                on Acoustics, Speech and Signal Processing (ICASSP 2005),
+                Vol. 3, pp241-244 Philadelphia, USA, March 19-23, 2005.
+
+The Tempo and Beat Tracker plugin analyses a single channel of audio
+and estimates the locations of metrical beats and the resulting tempo.
+
+It has three outputs: the beat positions, an ongoing estimate of tempo
+where available, and the onset detection function used in estimating
+beat positions.
+
+
+Key Detector
+------------
+
+*System identifier* --    [qm-keydetector]
+ Authors:       Katy Noland and Christian Landone
+ Category:      Key and Tonality
+
+ References:    K. Noland and M. Sandler.
+                Signal Processing Parameters for Tonality Estimation.
+                In Proceedings of Audio Engineering Society 122nd
+                Convention, Vienna, 2007.
+
+The Key Detector plugin analyses a single channel of audio and
+continuously estimates the key of the music.
+
+It has four outputs: the tonic pitch of the key; a major or minor mode
+flag; the key (combining the tonic and major/minor into a single
+value); and a key strength plot which reports the degree to which the
+chroma vector extracted from each input block correlates to the stored
+key profiles for each major and minor key.  The key profiles are drawn
+from analysis of Book I of the Well Tempered Klavier by J S Bach,
+recorded at A=440 equal temperament.
+
+The outputs have the values:
+
+  Tonic pitch: C = 1, C#/Db = 2, ..., B = 12
+
+  Major/minor mode: major = 0, minor = 1
+
+  Key: C major = 1, C#/Db major = 2, ..., B major = 12
+       C minor = 13, C#/Db minor = 14, ..., B minor = 24
+
+  Key Strength Plot: 25 separate bins per feature, separated into 1-12
+       (major from C) and 14-25 (minor from C).  Bin 13 is unused, not
+       for superstitious reasons but simply so as to delimit the major
+       and minor areas if they are displayed on a single plot by the
+       plugin host.  Higher bin values show increased correlation with
+       the key profile for that key.
+
+The outputs are also labelled with pitch or key as text.
+
+
+Tonal Change
+------------
+
+*System identifier* --    [qm-tonalchange]
+ Authors:       Chris Harte and Martin Gasser
+ Category:      Key and Tonality
+
+ References:    C. A. Harte, M. Gasser, and M. Sandler.
+                Detecting harmonic change in musical audio.
+                In Proceedings of the 1st ACM workshop on Audio and Music
+                Computing Multimedia, Santa Barbara, 2006.
+
+                C. A. Harte and M. Sandler.
+                Automatic chord identification using a quantised chromagram.
+                In Proceedings of the 118th Convention of the Audio
+                Engineering Society, Barcelona, Spain, May 28-31 2005.
+
+The Tonal Change plugin analyses a single channel of audio, detecting
+harmonic changes such as chord boundaries.
+
+It has three outputs: a representation of the musical content in a
+six-dimensional tonal space onto which the algorithm maps 12-bin
+chroma vectors extracted from the audio; a function representing the
+estimated likelihood of a tonal change occurring in each spectral
+frame; and the resulting estimated positions of tonal changes.
+
+
+Segmenter
+---------
+
+*System identifier* --    [qm-segmenter]
+ Authors:       Mark Levy
+ Category:      Classification
+
+ References:    M. Levy and M. Sandler.
+                Structural segmentation of musical audio by constrained
+                clustering.
+                IEEE Transactions on Audio, Speech, and Language Processing,
+                February 2008.
+
+The Segmenter plugin divides a single channel of music up into
+structurally consistent segments.  Its single output contains a
+numeric value (the segment type) for each moment at which a new
+segment starts.
+
+For music with clearly tonally distinguishable sections such as verse,
+chorus, etc., the segments with the same type may be expected to be
+similar to one another in some structural sense (e.g. repetitions of
+the chorus).
+
+The type of feature used in segmentation can be selected using the
+Feature Type parameter.  The default Hybrid (Constant-Q) is generally
+effective for modern studio recordings, while the Chromatic option may
+be preferable for live, acoustic, or older recordings, in which
+repeated sections may be less consistent in sound.  Also available is
+a timbral (MFCC) feature, which is more likely to result in
+classification by instrumentation rather than musical content.
+
+Note that this plugin does a substantial amount of processing after
+receiving all of the input audio data, before it produces any results.
+
+
+
+* Segmenter
+
+parameters:
+               Number of segment-types
+
+** set this to a rough guess at the maximum number of different types of section (chorus, bridge, solo, verse, intro, outro, etc.) in the track – better to set it to too high a value than too low
+
+
+               Feature Type
+
+** the readme is ok on this
+
+
+               Minimum segment duration
+
+** set this to the duration of the shortest section that you would expect to see in the structure – changing this parameter may help the plugin find musical sections rather than just following changes in the sound of the music
+
+outputs:
+               Segmentation
+
+** a list of numbered sections intended to correspond to the musical structure of the track (intro:verse:chorus:etc.) – sections labelled with the same number should contain similar-sounding music
+
+
+Algorithm and plugin settings in brief:
+
+The applied segmentation approach introduces the concept of timbre-type extraction and the use of structural/timbral similarity to obtain the high-level song structure. This is based on the assumption that the distribution of timbre features are similar over corresponding structural elements of the music. Thus, a fairly consistent timbre distribution is assumed over each structural segment.
+
+The algorithm works by obtainig a frequency-domain representation  of the audio signal using a Constant-Q transform, a Chromagram or Mel-Frequency Cepstral Coefficients (MFCC) as underlying features. The user is provided with the option of selecting one of these features using the - Feature Type - plugin parameter. The optimal window size and the hop size for the feature extraction are: 200ms hop size and 600ms window size. These values correspond to the default processing parameters of - 13230 audio frames per block (window size) - and a window increment of 4410, given a sample rate of 22.5 kHz. The user is expected to adjust these parameters for the actual audio sample rate. The extracted features are normalised in accordance with the MPEG-7 standard and a corresponding energy envelope is stored for each block of audio. This is followed by the extraction of 20 principal components per block using PCA. This yields a sequence of 21 dimensional feature vectors where the last element in each vector corresponds to the envelope. To obtain timbre features, an 40 state Hidden Markov Model is trained on the whole sequence of features. Each state of the HMM corresponds to a specific timbre-type. This process partitions the timbre-space of a given track into 40 possible types. The important assumption of the model is that the distribution of these features remain consistent over a structural segment. After training and decoding the HMM, the song is assigned a sequence of timbre-features according to specific timbre-type distributions for each possible structural segment. The segmentation itself is computed by clustering timbre-type histograms. A series of histograms are created over a sliding window which are grouped into M clusters by an adapted soft k-means algorithm. Each of these clusters will correspond to a specific segment-type of the analyzed song. Reference histograms, iteratively updated during clustering, describe the timbre distribution for each segment. The segmentation arises from the final cluster assignments. The number of clusters (segment-types) is typically set to 10. Unlike many clustering algorithms, the constrained clustering used in this plugin does not produce too many clusters or vary significantly even if this is set too high. However, this parameter can be useful for limiting the number of expected segment-types. Lastly, to avoid wasting a segment-type cluster for timbrally distinct but too short segments, the minimum segment duration parameter can be optianally set between 1-15s. A typical value of 4s usually produces good results.
+
+Plugin Parameters:
+::      Number of segment types: 2-12 (10)
+::      Feature-Type: CQ, Chroma, MFCC (CQ)
+::      Minimum segment duration: 1-15s (4s)
+::      Window size (frames per block): 600ms (13230)
+::      Hop size (window increment): 200ms (4410 given a sample rate of 22.5kHz)
+
+
+
+Similarity
+----------
+
+*System identifier* --    [qm-similarity]
+ Authors:       Mark Levy, Kurt Jacobson and Chris Cannam
+ Category:      Classification
+
+ References:    M. Levy and M. Sandler.
+                Lightweight measures for timbral similarity of musical audio.
+                In Proceedings of the 1st ACM workshop on Audio and Music
+                Computing Multimedia, Santa Barbara, 2006.
+
+                K. Jacobson.
+                A Multifaceted Approach to Music Similarity.
+                In Proceedings of the Seventh International Conference on
+                Music Information Retrieval (ISMIR), 2006.
+
+The Similarity plugin treats each channel of its audio input as a
+separate "track", and estimates how similar the tracks are to one
+another using a selectable similarity measure.
+
+The plugin also returns the intermediate data used as a basis of the
+similarity measure; it can therefore be used on a single channel of
+input (with the resulting intermediate data then being applied in some
+other similarity or clustering algorithm, for example) if desired, as
+well as with multiple inputs.
+
+The underlying audio features used for the similarity measure can be
+selected using the Feature Type parameter.  The available features are
+Timbre (in which the distance between tracks is a symmetrised
+Kullback-Leibler divergence between Gaussian-modelled MFCC means and
+variances across each track); Chroma (KL divergence of mean chroma
+histogram); Rhythm (cosine distance between "beat spectrum" measures
+derived from a short sampled section of the track); and combined
+"Timbre and Rhythm" and "Chroma and Rhythm".
+
+The plugin has six outputs: a matrix of the distances between input
+channels; a vector containing the distances between the first input
+channel and each of the input channels; a pair of vectors containing
+the indices of the input channels in the order of their similarity to
+the first input channel, and the distances between the first input
+channel and each of those channels; the means of the underlying
+feature bins (MFCCs or chroma); the variances of the underlying
+feature bins; and the beat spectra used for the rhythmic feature.
+
+Because Vamp does not have the capability to return features in matrix
+form explicitly, the matrix output is returned as a series of vector
+features timestamped at one-second intervals.  Likewise, the
+underlying feature outputs contain one vector feature per input
+channel, timestamped at one-second intervals (so the feature for the
+first channel is at time 0, and so on).  Examining the features that
+the plugin actually returns, when run on some test data, may make this
+arrangement more clear.
+
+Note that the underlying feature values are only returned if the
+relevant feature type is selected.  That is, the means and variances
+outputs are valid provided the pure rhythm feature is not selected;
+the beat spectra output is valid provided rhythm is included in the
+selected feature type.
+
+
+Constant-Q Spectrogram
+----------------------
+
+*System identifier* --    [qm-constantq]
+ Authors:       Christian Landone
+ Category:      Visualisation
+
+ References:    J. Brown.
+                Calculation of a constant Q spectral transform.
+                Journal of the Acoustical Society of America, 89(1):
+                425-434, 1991.
+
+The Constant-Q Spectrogram plugin calculates a spectrogram based on a
+short-time windowed constant Q spectral transform.  This is a
+spectrogram in which the ratio of centre frequency to resolution is
+constant for each frequency bin.  The frequency bins correspond to the
+frequencies of "musical notes" rather than being linearly spaced in
+frequency as they are for the conventional DFT spectrogram.
+
+The pitch range and the number of frequency bins per octave may be
+adjusted using the plugin's parameters.  Note that the plugin's
+preferred step and block sizes depend on these parameters, and the
+plugin will not accept any other block size.
+
+
+Chromagram
+----------
+
+*System identifier* --    [qm-chromagram]
+ Authors:       Christian Landone
+ Category:      Visualisation
+
+The Chromagram plugin calculates a constant Q spectral transform (as
+above) and then wraps the frequency bin values into a single octave,
+with each bin containing the sum of the magnitudes from the
+corresponding bin in all octaves.  The number of values in each
+feature vector returned by the plugin is therefore the same as the
+number of bins per octave configured for the underlying constant Q
+transform.
+
+The pitch range and the number of frequency bins per octave for the
+transform may be adjusted using the plugin's parameters.  Note that
+the plugin's preferred step and block sizes depend on these
+parameters, and the plugin will not accept any other block size.
+
+
+Mel-Frequency Cepstral Coefficients
+-----------------------------------
+
+*System identifier* --    [qm-mfcc]
+ Authors:       Nicolas Chetry and Chris Cannam
+ Category:      Low Level Features
+
+ References:    B. Logan.
+                Mel-Frequency Cepstral Coefficients for Music Modeling.
+                In Proceedings of the First International Symposium on Music
+                Information Retrieval (ISMIR), 2000.
+
+The Mel-Frequency Cepstral Coefficients plugin calculates MFCCs from a
+single channel of audio, returning one MFCC vector from each process
+call.  It also returns the overall means of the coefficient values
+across the length of the audio input, as a separate output at the end
+of processing.
+
+
+
+MFCCs are used very widely, originally designed for speech recognition but now used for music classification and other tasks. Often 13 coefficients are used, with or without the "zero'th" coefficient (which simply reflects the overall signal power across the Mel frequency bands).
+
