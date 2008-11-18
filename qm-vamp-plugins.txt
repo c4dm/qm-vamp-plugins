@@ -18,9 +18,9 @@ Note Onset Detector
 *System identifier* --    [qm-onsetdetector]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-onsetdetector
 
-The Note Onset Detector plugin analyses a single channel of audio and
-estimates the onset times of notes within the music -- that is, the
-times at which notes and other audible events begin.
+Note Onset Detector analyses a single channel of audio and estimates
+the onset times of notes within the music -- that is, the times at
+which notes and other audible events begin.
 
 It calculates an onset likelihood function for each spectral frame,
 and picks peaks in a smoothed version of this function.  The plugin is
@@ -92,31 +92,72 @@ Tempo and Beat Tracker
 *System identifier* --    [qm-tempotracker]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-tempotracker
 
+Tempo and Beat Tracker analyses a single channel of audio and
+estimates the positions of metrical beats within the music (the
+equivalent of a human listener tapping their foot to the beat).
 
- Authors:       Matthew Davies and Christian Landone
- Category:      Time > Tempo
+Parameters
+----------
 
- References:    M. E. P. Davies and M. D. Plumbley.
-                Context-dependent beat tracking of musical audio.
-                In IEEE Transactions on Audio, Speech and Language
-                Processing. Vol. 15, No. 3, pp1009-1020, 2007.
+*Onset Detection Function Type* -- The method used to calculate the
+onset likelihood function.  The most versatile method is the default,
+"Complex Domain" (see reference, Duxbury et al 2003).  "Spectral
+Difference" may be appropriate for percussive recordings, "Phase
+Deviation" for non-percussive music, and "Broadband Energy Rise" (see
+reference, Barry et al 2005) for identifying percussive onsets in
+mixed music.
 
-                M. E. P. Davies and M. D. Plumbley.
-                Beat Tracking With A Two State Model.
-                In Proceedings of the IEEE International Conference 
-                on Acoustics, Speech and Signal Processing (ICASSP 2005),
-                Vol. 3, pp241-244 Philadelphia, USA, March 19-23, 2005.
+*Adaptive Whitening* -- This option evens out the temporal and
+frequency variation in the signal, which can yield improved
+performance in onset detection, for example in audio with big
+variations in dynamics.
 
-The Tempo and Beat Tracker plugin analyses a single channel of audio
-and estimates the locations of metrical beats and the resulting tempo.
+Outputs
+-------
 
-It has three outputs: the beat positions, an ongoing estimate of tempo
-where available, and the onset detection function used in estimating
-beat positions.
+*Beats* -- The estimated beat locations, returned as a single feature,
+with timestamp but no value, for each beat, labelled with the
+corresponding estimated tempo at that beat.
+
+*Onset Detection Function* -- The raw note onset likelihood function
+used in beat estimation.
+
+*Tempo* -- The estimated tempo, returned as a feature each time the
+estimated tempo changes, with a single value for the tempo in beats
+per minute.
+
+References and Credits
+----------------------
+
+*Beat tracking method*: M. E. P. Davies and M. D. Plumbley.
+_Context-dependent beat tracking of musical audio_. In IEEE
+Transactions on Audio, Speech and Language Processing. Vol. 15, No. 3,
+pp1009-1020, 2007.  See also M. E. P. Davies and M. D. Plumbley.
+_Beat Tracking With A Two State Model_. In Proceedings of the IEEE
+International Conference on Acoustics, Speech and Signal Processing
+(ICASSP 2005), Vol. 3, pp241-244 Philadelphia, USA, March 19-23, 2005.
+
+*Onset detection methods*: C. Duxbury, J. P. Bello, M. Davies and
+M. Sandler, _Complex domain Onset Detection for Musical Signals_. In
+Proceedings of the 6th Conference on Digital Audio Effects
+(DAFx-03). London, UK. September 2003.
+
+*Adaptive whitening*: D. Stowell and M. D. Plumbley, _Adaptive
+whitening for improved real-time audio onset detection_. In
+Proceedings of the International Computer Music Conference (ICMC'07),
+August 2007.
+
+*Percussion onset detector*: D. Barry, D. Fitzgerald, E. Coyle and
+B. Lawlor, _Drum Source Separation using Percussive Feature Detection
+and Spectral Modulation_. ISSC 2005.
+
+The Tempo and Beat Tracker Vamp plugin was written by Matthew Davies
+and Christian Landone.
+
 
 
 Key Detector
-------------
+============
 
 *System identifier* --    [qm-keydetector]
  Authors:       Katy Noland and Christian Landone
