@@ -1,7 +1,7 @@
 
 TEMPLATE = lib
 
-CONFIG += plugin warn_on debug
+CONFIG += plugin warn_on release
 CONFIG -= qt
 
 linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fPIC -march=pentium3 -mfpmath=sse -msse
@@ -14,7 +14,7 @@ LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
 
 linux-g++:LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -Wl,--version-script=vamp-plugin.map
 
-macx-g++:QMAKE_CXXFLAGS_RELEASE += -fvisibility=hidden
+macx-g++:LIBS += -framework Accelerate -exported_symbols_list=vamp-plugin.list
 
 #LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -Wl,-Bdynamic
 

@@ -7,21 +7,16 @@ Music at Queen Mary, University of London.
 
 http://www.elec.qmul.ac.uk/digitalmusic/
 
-Version 1.4.
+Version 1.5.
 
 For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 
 
-New In This Release
-===================
+About This Release
+==================
 
-This release contains a new plugin to estimate timbral and rhythmic
-similarity between multiple audio tracks, a plugin for structural
-segmentation of music audio, and a Mel-frequency cepstral coefficients
-calculation plugin.
-
-This release also includes significant updates to the existing key
-detector, tempo tracker, and chromagram plugins.
+This is a bugfix release only.  The plugins provided are unchanged
+from 1.4.
 
 
 Plugins Included
