@@ -15,7 +15,7 @@ For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 Note Onset Detector
 ===================
 
-*System identifier* --    [qm-onsetdetector]
+*System identifier* --    [vamp:qm-vamp-plugins:qm-onsetdetector]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-onsetdetector
 
 Note Onset Detector analyses a single channel of audio and estimates
@@ -89,7 +89,7 @@ Pablo Bello and Christian Landone.
 Tempo and Beat Tracker
 ======================
 
-*System identifier* --    [qm-tempotracker]
+*System identifier* --    [vamp:qm-vamp-plugins:qm-tempotracker]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-tempotracker
 
 Tempo and Beat Tracker analyses a single channel of audio and
@@ -158,7 +158,7 @@ and Christian Landone.
 Key Detector
 ============
 
-*System identifier* --    [qm-keydetector]
+*System identifier* --    [vamp:qm-vamp-plugins:qm-keydetector]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-keydetector
 
 Key Detector analyses a single channel of audio and continuously
@@ -220,7 +220,7 @@ Landone.
 Tonal Change
 ------------
 
-*System identifier* --    [qm-tonalchange]
+*System identifier* --    [vamp:qm-vamp-plugins:qm-tonalchange]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-tonalchange
 
 Tonal Change analyses a single channel of audio, detecting harmonic
@@ -272,7 +272,7 @@ Gasser.
 Segmenter
 =========
 
-*System identifier* --    [qm-segmenter]
+*System identifier* -- [vamp:qm-vamp-plugins:qm-segmenter]
 *RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-segmenter
 
 Segmenter divides a single channel of music up into structurally
@@ -380,23 +380,12 @@ Fazekas for providing much of this documentation.
 Similarity
 ==========
 
-*System identifier* --    [qm-similarity]
- Authors:       Mark Levy, Kurt Jacobson and Chris Cannam
- Category:      Classification
+*System identifier* --    [vamp:qm-vamp-plugins:qm-similarity]
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-similarity
 
- References:    M. Levy and M. Sandler.
-                Lightweight measures for timbral similarity of musical audio.
-                In Proceedings of the 1st ACM workshop on Audio and Music
-                Computing Multimedia, Santa Barbara, 2006.
-
-                K. Jacobson.
-                A Multifaceted Approach to Music Similarity.
-                In Proceedings of the Seventh International Conference on
-                Music Information Retrieval (ISMIR), 2006.
-
-The Similarity plugin treats each channel of its audio input as a
-separate "track", and estimates how similar the tracks are to one
-another using a selectable similarity measure.
+Similarity treats each channel of its audio input as a separate
+"track", and estimates how similar the tracks are to one another using
+a selectable similarity measure.
 
 The plugin also returns the intermediate data used as a basis of the
 similarity measure; it can therefore be used on a single channel of
@@ -404,105 +393,231 @@ input (with the resulting intermediate data then being applied in some
 other similarity or clustering algorithm, for example) if desired, as
 well as with multiple inputs.
 
-The underlying audio features used for the similarity measure can be
-selected using the Feature Type parameter.  The available features are
-Timbre (in which the distance between tracks is a symmetrised
-Kullback-Leibler divergence between Gaussian-modelled MFCC means and
-variances across each track); Chroma (KL divergence of mean chroma
+Because of the way this plugin handles multiple inputs, by assuming
+that each channel represents a separate piece of music, it may not be
+appropriate for use directly in a general-purpose host (unless you
+actually want to do something like compare two stereo channels for
+timbral similarity, which is unlikely).
+
+Parameters
+----------
+*Feature Type* -- The underlying audio feature used for the similarity
+measure.  The available features are Timbre (in which the distance
+between tracks is a symmetrised Kullback-Leibler divergence between
+Gaussian-modelled MFCC means and variances across each track, for the
+first 20 MFCCs including C0); Chroma (KL divergence of mean chroma
 histogram); Rhythm (cosine distance between "beat spectrum" measures
 derived from a short sampled section of the track); and combined
-"Timbre and Rhythm" and "Chroma and Rhythm".
+"Timbre and Rhythm" and "Chroma and Rhythm" features.
 
-The plugin has six outputs: a matrix of the distances between input
-channels; a vector containing the distances between the first input
-channel and each of the input channels; a pair of vectors containing
-the indices of the input channels in the order of their similarity to
-the first input channel, and the distances between the first input
-channel and each of those channels; the means of the underlying
-feature bins (MFCCs or chroma); the variances of the underlying
-feature bins; and the beat spectra used for the rhythmic feature.
+Outputs
+-------
 
-Because Vamp does not have the capability to return features in matrix
-form explicitly, the matrix output is returned as a series of vector
-features timestamped at one-second intervals.  Likewise, the
-underlying feature outputs contain one vector feature per input
-channel, timestamped at one-second intervals (so the feature for the
-first channel is at time 0, and so on).  Examining the features that
-the plugin actually returns, when run on some test data, may make this
-arrangement more clear.
+*Distance Matrix* -- A matrix of the distance measures between input
+channels, returned as a series of vector features timestamped at
+one-second intervals.  The distance from channel i to channel j
+appears as the j'th bin of the feature at time i.
 
-Note that the underlying feature values are only returned if the
-relevant feature type is selected.  That is, the means and variances
-outputs are valid provided the pure rhythm feature is not selected;
-the beat spectra output is valid provided rhythm is included in the
-selected feature type.
+*Distance from First Channel* -- A single vector feature, timestamped
+at time zero, containing the distances between the first input channel
+and each of the input channels (including the first channel itself at
+bin 0, which should have zero distance).
+
+*Ordered Distances from First Channel* -- A pair of vector features,
+at times 0 and 1 second.  The feature at time 0 contains the 1-based
+indices of the input channels in the order of similarity to the first
+input channel (so its first bin should always contain 1, as the first
+channel is most similar to itself).  The feature at time 1 contains,
+in bin n, the distance between the first input channel and the channel
+with index found at bin n of the feature at time 0.
+
+*Feature Means* -- A series of vector features containing the mean
+values of each of the feature bins across the duration of each of the
+input channels.  This output returns one feature for each input
+channel, timestamped at one-second intervals.  The number of bins for
+each feature depends on the feature type; it will be 20 for MFCC
+features and 12 for chroma features.  No features will be returned on
+this output if the feature type is purely rhythmic.
+
+*Feature Variances* -- Just as Feature Means, but variances.
+
+*Beat Spectra* -- A series of vector features containing the rhythmic
+autocorrelation profiles (beat spectra) for each of the input
+channels.  This output returns one 512-bin feature for each input
+channel, timestamped at one-second intervals.  No features will be
+returned on this output if the feature type contains no rhythm
+component.
+
+References and Credits
+----------------------
+
+*Timbral similarity*: M. Levy and M. Sandler. _Lightweight measures
+for timbral similarity of musical audio_. In Proceedings of the 1st
+ACM workshop on Audio and Music Computing Multimedia, Santa Barbara,
+2006.
+
+*Combined rhythmic and timbral similarity*: K. Jacobson. _A
+Multifaceted Approach to Music Similarity_. In Proceedings of the
+Seventh International Conference on Music Information Retrieval
+(ISMIR), 2006.
+
+The Similarity Vamp plugin was written by Mark Levy, Kurt Jacobson and
+Chris Cannam.
 
 
 Constant-Q Spectrogram
-----------------------
+======================
 
-*System identifier* --    [qm-constantq]
- Authors:       Christian Landone
- Category:      Visualisation
+*System identifier* --    [vamp:qm-vamp-plugins:qm-constantq]
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-constantq
 
- References:    J. Brown.
-                Calculation of a constant Q spectral transform.
-                Journal of the Acoustical Society of America, 89(1):
-                425-434, 1991.
-
-The Constant-Q Spectrogram plugin calculates a spectrogram based on a
-short-time windowed constant Q spectral transform.  This is a
-spectrogram in which the ratio of centre frequency to resolution is
-constant for each frequency bin.  The frequency bins correspond to the
-frequencies of "musical notes" rather than being linearly spaced in
-frequency as they are for the conventional DFT spectrogram.
+Constant-Q Spectrogram calculates a spectrogram based on a short-time
+windowed constant Q spectral transform.  This is a spectrogram in
+which the ratio of centre frequency to resolution is constant for each
+frequency bin.  The frequency bins correspond to the frequencies of
+"musical notes" rather than being linearly spaced in frequency as they
+are for the conventional DFT spectrogram.
 
 The pitch range and the number of frequency bins per octave may be
 adjusted using the plugin's parameters.  Note that the plugin's
-preferred step and block sizes depend on these parameters, and the
-plugin will not accept any other block size.
+preferred step and block sizes are defined by these parameters, and
+the plugin will not accept any other block size than its preferred
+value.
+
+Parameters
+----------
+
+*Minimum Pitch* -- The MIDI pitch value (0-127) corresponding to the lowest
+frequency to be included in the constant-Q transform.
+
+*Maximum Pitch* -- The MIDI pitch value (0-127) corresponding to the
+lowest frequency to be included in the constant-Q transform.
+
+*Tuning Frequency* -- The frequency of concert A in the
+music under analysis.
+
+*Bins per Octave* -- The number of constant-Q transform bins to be
+computed per octave.
+
+*Normalized* -- Whether to normalize each output column to unit
+maximum.
+
+Outputs
+-------
+
+*Constant-Q Spectrogram* -- The calculated spectrogram, as a single
+feature per process block containing one bin for each pitch included
+in the spectrogram's range.
+
+References and Credits
+----------------------
+
+*Principle*: J. Brown. _Calculation of a constant Q spectral
+transform_. Journal of the Acoustical Society of America, 89(1):
+425-434, 1991.
+
+The Constant-Q Spectrogram Vamp plugin was written by Christian
+Landone.
 
 
 Chromagram
-----------
+==========
 
-*System identifier* --    [qm-chromagram]
- Authors:       Christian Landone
- Category:      Visualisation
+*System identifier* --    [vamp:qm-vamp-plugins:qm-chromagram]
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-chromagram
 
-The Chromagram plugin calculates a constant Q spectral transform (as
-above) and then wraps the frequency bin values into a single octave,
-with each bin containing the sum of the magnitudes from the
-corresponding bin in all octaves.  The number of values in each
-feature vector returned by the plugin is therefore the same as the
-number of bins per octave configured for the underlying constant Q
-transform.
+Chromagram calculates a constant Q spectral transform (as in the
+Constant Q Spectrogram plugin) and then wraps the frequency bin values
+into a single octave, with each bin containing the sum of the
+magnitudes from the corresponding bin in all octaves.  The number of
+values in each feature vector returned by the plugin is therefore the
+same as the number of bins per octave configured for the underlying
+constant Q transform.
 
 The pitch range and the number of frequency bins per octave for the
 transform may be adjusted using the plugin's parameters.  Note that
 the plugin's preferred step and block sizes depend on these
-parameters, and the plugin will not accept any other block size.
+parameters, and the plugin will not accept any other block size than
+its preferred value.
+
+Parameters
+----------
+
+*Minimum Pitch* -- The MIDI pitch value (0-127) corresponding to the
+lowest frequency to be included in the constant-Q transform used in
+calculating the chromagram.
+
+*Maximum Pitch* -- The MIDI pitch value (0-127) corresponding to the
+lowest frequency to be included in the constant-Q transform used in
+calculating the chromagram.
+
+*Tuning Frequency* -- The frequency of concert A in the
+music under analysis.
+
+*Bins per Octave* -- The number of constant-Q transform bins to be
+computed per octave, and thus the total number of bins present in the
+resulting chromagram.
+
+*Normalized* -- Whether to normalize each output column. Normalization
+may be to unit sum or unit maximum.
+
+Outputs
+-------
+
+*Chromagram* -- The calculated chromagram, as a single feature per
+process block containing the number of bins given in the bins per
+octave parameter.
+
+References and Credits
+----------------------
+The Chromagram Vamp plugin was written by Christian Landone.
 
 
 Mel-Frequency Cepstral Coefficients
------------------------------------
+===================================
 
-*System identifier* --    [qm-mfcc]
- Authors:       Nicolas Chetry and Chris Cannam
- Category:      Low Level Features
+*System identifier* --    [vamp:qm-vamp-plugins:qm-mfcc]
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-mfcc
 
- References:    B. Logan.
-                Mel-Frequency Cepstral Coefficients for Music Modeling.
-                In Proceedings of the First International Symposium on Music
-                Information Retrieval (ISMIR), 2000.
+Mel-Frequency Cepstral Coefficients calculates MFCCs from a single
+channel of audio.  These coefficients, derived from a cosine transform
+of the mapping of an audio spectrum onto a frequency scale modelled on
+human auditory response, are widely used in speech recognition, music
+classification and other tasks.
 
-The Mel-Frequency Cepstral Coefficients plugin calculates MFCCs from a
-single channel of audio, returning one MFCC vector from each process
-call.  It also returns the overall means of the coefficient values
-across the length of the audio input, as a separate output at the end
-of processing.
+Parameters
+----------
 
+*Number of Coefficients* -- The number of MFCCs to return.  Commonly
+used values include 13 or the default 20.  This number includes C0 if
+requested (see Include C0 below).
 
+*Power for Mel Amplitude Logs* -- An optional power value to which the
+spectral amplitudes should be raised before applying the cosine
+transform.  Values greater than 1 may in principle reduce the
+contribution of noise to the results.  The default is 1.
 
-MFCCs are used very widely, originally designed for speech recognition but now used for music classification and other tasks. Often 13 coefficients are used, with or without the "zero'th" coefficient (which simply reflects the overall signal power across the Mel frequency bands).
+*Include C0* -- Whether to include the "zero'th" coefficient, which
+simply reflects the overall signal power across the Mel frequency
+bands.
+
+Outputs
+-------
+
+*Coefficients* -- The MFCC values, returned as one vector feature per
+processing block.
+
+*Means of Coefficients* -- The overall means of the MFCC bins, as a
+single vector feature with time 0 that is returned when processing is
+complete.
+
+References and Credits
+----------------------
+
+*MFCCs in music*: See B. Logan. _Mel-Frequency Cepstral Coefficients
+for Music Modeling_. In Proceedings of the First International
+Symposium on Music Information Retrieval (ISMIR), 2000.
+
+The Mel-Frequency Cepstral Coefficients Vamp plugin was written by
+Nicolas Chetry and Chris Cannam.
 
