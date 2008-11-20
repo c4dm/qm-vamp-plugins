@@ -155,152 +155,230 @@ The Tempo and Beat Tracker Vamp plugin was written by Matthew Davies
 and Christian Landone.
 
 
-
 Key Detector
 ============
 
 *System identifier* --    [qm-keydetector]
- Authors:       Katy Noland and Christian Landone
- Category:      Key and Tonality
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-keydetector
 
- References:    K. Noland and M. Sandler.
-                Signal Processing Parameters for Tonality Estimation.
-                In Proceedings of Audio Engineering Society 122nd
-                Convention, Vienna, 2007.
+Key Detector analyses a single channel of audio and continuously
+estimates the key of the music by comparing the degree to which a
+block-by-block chromagram correlates to the stored key profiles for
+each major and minor key.
 
-The Key Detector plugin analyses a single channel of audio and
-continuously estimates the key of the music.
+The key profiles are drawn from analysis of Book I of the Well
+Tempered Klavier by J S Bach, recorded at A=440 equal temperament.
 
-It has four outputs: the tonic pitch of the key; a major or minor mode
-flag; the key (combining the tonic and major/minor into a single
-value); and a key strength plot which reports the degree to which the
-chroma vector extracted from each input block correlates to the stored
-key profiles for each major and minor key.  The key profiles are drawn
-from analysis of Book I of the Well Tempered Klavier by J S Bach,
-recorded at A=440 equal temperament.
+Parameters
+----------
 
-The outputs have the values:
+*Tuning Frequency* -- The frequency of concert A in the music under
+analysis.
 
-  Tonic pitch: C = 1, C#/Db = 2, ..., B = 12
+*Window Length* -- The number of chroma analysis frames taken into
+account for key estimation.  This controls how eager the key detector
+will be to return short-duration tonal changes as new key changes (the
+shorter the window, the more likely it is to detect a new key change).
 
-  Major/minor mode: major = 0, minor = 1
+Outputs
+-------
 
-  Key: C major = 1, C#/Db major = 2, ..., B major = 12
-       C minor = 13, C#/Db minor = 14, ..., B minor = 24
+*Tonic Pitch* -- The tonic pitch of each estimated key change,
+returned as a single-valued feature at the point where the key change
+is detected, with value counted from 1 to 12 where C is 1, C# or Db is
+2, and so on up to B which is 12.
 
-  Key Strength Plot: 25 separate bins per feature, separated into 1-12
-       (major from C) and 14-25 (minor from C).  Bin 13 is unused, not
-       for superstitious reasons but simply so as to delimit the major
-       and minor areas if they are displayed on a single plot by the
-       plugin host.  Higher bin values show increased correlation with
-       the key profile for that key.
+*Key Mode* -- The major or minor mode of the estimated key, where
+major is 0 and minor is 1.
+
+*Key* -- The estimated key for each key change, returned as a
+single-valued feature at the point where the key change is detected,
+with value counted from 1 to 24 where 1-12 are the major keys and
+13-24 are the minor keys, such that C major is 1, C# major is 2, and
+so on up to B major which is 12; then C minor is 13, Db minor is 14,
+and so on up to B minor which is 24.
+
+*Key Strength Plot* -- A grid representing the ongoing key
+"probability" throughout the music.  This is returned as a feature for
+each chroma frame, containing 25 bins.  Bins 1-12 are the major keys
+from C upwards; bins 14-25 are the minor keys from C upwards.  The
+13th bin is unused: it just provides space between the first and
+second halves of the feature if displayed in a single plot.
 
 The outputs are also labelled with pitch or key as text.
 
+References and Credits
+----------------------
+
+*Method*: see K. Noland and M. Sandler. _Signal Processing Parameters
+for Tonality Estimation_. In Proceedings of Audio Engineering Society
+122nd Convention, Vienna, 2007.
+
+The Key Detector Vamp plugin was written by Katy Noland and Christian
+Landone.
 
 Tonal Change
 ------------
 
 *System identifier* --    [qm-tonalchange]
- Authors:       Chris Harte and Martin Gasser
- Category:      Key and Tonality
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-tonalchange
 
- References:    C. A. Harte, M. Gasser, and M. Sandler.
-                Detecting harmonic change in musical audio.
-                In Proceedings of the 1st ACM workshop on Audio and Music
-                Computing Multimedia, Santa Barbara, 2006.
+Tonal Change analyses a single channel of audio, detecting harmonic
+changes such as chord boundaries.
 
-                C. A. Harte and M. Sandler.
-                Automatic chord identification using a quantised chromagram.
-                In Proceedings of the 118th Convention of the Audio
-                Engineering Society, Barcelona, Spain, May 28-31 2005.
+Parameters
+----------
 
-The Tonal Change plugin analyses a single channel of audio, detecting
-harmonic changes such as chord boundaries.
+*Gaussian smoothing* -- The window length for the internal smoothing
+operation, in chroma analysis frames.  This controls how eager the
+tonal change detector will be to identify very short-term tonal
+changes.  The default value of 5 is quite short, and may lead to more
+(not always meaningful) results being returned; for many purposes a
+larger value, closer to the maximum of 20, may be appropriate.
 
-It has three outputs: a representation of the musical content in a
-six-dimensional tonal space onto which the algorithm maps 12-bin
-chroma vectors extracted from the audio; a function representing the
+*Chromagram minimum pitch* -- The MIDI pitch value (0-127) of the
+minimum pitch included in the internal chromagram analyis.
+
+*Chromagram maximum pitch* -- The MIDI pitch value (0-127) of the
+maximum pitch included in the internal chromagram analyis.
+
+*Chromagram tuning frequency* -- The frequency of concert A in the
+music under analysis.
+
+Outputs
+-------
+
+*Transform to 6D Tonal Content Space* -- A representation of the
+musical content in a six-dimensional tonal space onto which the
+algorithm maps 12-bin chroma vectors extracted from the audio.
+
+*Tonal Change Detection Function* -- A function representing the
 estimated likelihood of a tonal change occurring in each spectral
-frame; and the resulting estimated positions of tonal changes.
+frame.
 
+*Tonal Change Positions* -- The resulting estimated positions of tonal
+changes.
+
+References and Credits
+----------------------
+
+*Method*: C. A. Harte, M. Gasser, and M. Sandler. _Detecting harmonic
+change in musical audio_.  In Proceedings of the 1st ACM workshop on
+Audio and Music Computing Multimedia, Santa Barbara, 2006.
+
+The Tonal Change Vamp plugin was wrtitten by Chris Harte and Martin
+Gasser.
 
 Segmenter
----------
+=========
 
 *System identifier* --    [qm-segmenter]
- Authors:       Mark Levy
- Category:      Classification
+*RDF URI* -- http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins#qm-segmenter
 
- References:    M. Levy and M. Sandler.
-                Structural segmentation of musical audio by constrained
-                clustering.
-                IEEE Transactions on Audio, Speech, and Language Processing,
-                February 2008.
-
-The Segmenter plugin divides a single channel of music up into
-structurally consistent segments.  Its single output contains a
-numeric value (the segment type) for each moment at which a new
-segment starts.
+Segmenter divides a single channel of music up into structurally
+consistent segments.  It returns a numeric value (the segment type)
+for each moment at which a new segment starts.
 
 For music with clearly tonally distinguishable sections such as verse,
-chorus, etc., the segments with the same type may be expected to be
-similar to one another in some structural sense (e.g. repetitions of
-the chorus).
+chorus, etc., segments with the same type may be expected to be
+similar to one another in some structural sense.  For example,
+repetitions of the chorus are likely to share a segment type.
 
-The type of feature used in segmentation can be selected using the
-Feature Type parameter.  The default Hybrid (Constant-Q) is generally
-effective for modern studio recordings, while the Chromatic option may
-be preferable for live, acoustic, or older recordings, in which
-repeated sections may be less consistent in sound.  Also available is
-a timbral (MFCC) feature, which is more likely to result in
-classification by instrumentation rather than musical content.
+The plugin only attempts to identify similar segments; it does not
+attempt to label them.  For example, it makes no attempt to tell you
+which segment is the chorus.
 
 Note that this plugin does a substantial amount of processing after
 receiving all of the input audio data, before it produces any results.
 
+Method
+------
 
+The method relies upon structural/timbral similarity to obtain the
+high-level song structure.  This is based on the assumption that the
+distributions of timbre features are similar over corresponding
+structural elements of the music.
 
-* Segmenter
+The algorithm works by obtaining a frequency-domain representation of
+the audio signal using a Constant-Q transform, a Chromagram or
+Mel-Frequency Cepstral Coefficients (MFCC) as underlying features (the
+particular feature is selectable as a parameter).  The extracted
+features are normalised in accordance with the MPEG-7 standard (NASE
+descriptor), which means the spectrum is converted to decibel scale
+and each spectral vector is normalised by the RMS energy envelope.
+The value of this envelope is stored for each processing block of
+audio. This is followed by the extraction of 20 principal components
+per block using PCA, yielding a sequence of 21 dimensional feature
+vectors where the last element in each vector corresponds to the
+energy envelope.
 
-parameters:
-               Number of segment-types
+A 40-state Hidden Markov Model is then trained on the whole sequence
+of features, with each state of the HMM corresponding to a specific
+timbre type. This process partitions the timbre-space of a given track
+into 40 possible types. The important assumption of the model is that
+the distribution of these features remain consistent over a structural
+segment. After training and decoding the HMM, the song is assigned a
+sequence of timbre-features according to specific timbre-type
+distributions for each possible structural segment.
 
-** set this to a rough guess at the maximum number of different types of section (chorus, bridge, solo, verse, intro, outro, etc.) in the track – better to set it to too high a value than too low
+The segmentation itself is computed by clustering timbre-type
+histograms. A series of histograms are created over a sliding window
+which are grouped into M clusters by an adapted soft k-means
+algorithm. Each of these clusters will correspond to a specific
+segment-type of the analyzed song. Reference histograms, iteratively
+updated during clustering, describe the timbre distribution for each
+segment. The segmentation arises from the final cluster assignments.
 
+Parameters
+----------
 
-               Feature Type
+*Number of segment-types* -- The maximum number of clusters
+(segment-types) to be returned.  The default is 10. Unlike many
+clustering algorithms, the constrained clustering used in this plugin
+does not produce too many clusters or vary significantly even if this
+is set too high. However, this parameter can be useful for limiting
+the number of expected segment-types.
 
-** the readme is ok on this
+*Feature Type* -- The type of spectral feature used for segmentation.
+The default Hybrid (using a Constant-Q spectrogram) is generally
+effective for modern studio recordings, while the Chromatic (a
+chromagram) option may be preferable for live, acoustic, or older
+recordings, in which repeated sections may be less consistent in
+sound.  Also available is a timbral feature using Mel-frequency
+cepstral coefficients, which is more likely to result in
+classification by instrumentation rather than musical content.
 
+*Minimum segment duration* -- The approximate expected minimum
+duration for a segment, from 1 to 15 seconds.  Changing this parameter
+may help the plugin to find musical sections rather than just
+following changes in the sound of the music, and also avoid wasting a
+segment-type cluster for timbrally distinct but too-short segments.
+The default of 4 seconds usually produces good results.
 
-               Minimum segment duration
+Outputs
+-------
 
-** set this to the duration of the shortest section that you would expect to see in the structure – changing this parameter may help the plugin find musical sections rather than just following changes in the sound of the music
+*Segmentation* -- The estimated segment boundaries, returned as a
+single feature with one value at each segment boundary, with the value
+representing the segment type number for the segment starting at that
+boundary.
 
-outputs:
-               Segmentation
+References and Credits
+----------------------
 
-** a list of numbered sections intended to correspond to the musical structure of the track (intro:verse:chorus:etc.) – sections labelled with the same number should contain similar-sounding music
+*Method*: M. Levy and M. Sandler. _Structural segmentation of musical
+audio by constrained clustering_. IEEE Transactions on Audio, Speech,
+and Language Processing, February 2008.
 
+Note that this plugin does not implemented the beat-sychronous aspect
+of the segmentation method described in the paper.
 
-Algorithm and plugin settings in brief:
-
-The applied segmentation approach introduces the concept of timbre-type extraction and the use of structural/timbral similarity to obtain the high-level song structure. This is based on the assumption that the distribution of timbre features are similar over corresponding structural elements of the music. Thus, a fairly consistent timbre distribution is assumed over each structural segment.
-
-The algorithm works by obtainig a frequency-domain representation  of the audio signal using a Constant-Q transform, a Chromagram or Mel-Frequency Cepstral Coefficients (MFCC) as underlying features. The user is provided with the option of selecting one of these features using the - Feature Type - plugin parameter. The optimal window size and the hop size for the feature extraction are: 200ms hop size and 600ms window size. These values correspond to the default processing parameters of - 13230 audio frames per block (window size) - and a window increment of 4410, given a sample rate of 22.5 kHz. The user is expected to adjust these parameters for the actual audio sample rate. The extracted features are normalised in accordance with the MPEG-7 standard and a corresponding energy envelope is stored for each block of audio. This is followed by the extraction of 20 principal components per block using PCA. This yields a sequence of 21 dimensional feature vectors where the last element in each vector corresponds to the envelope. To obtain timbre features, an 40 state Hidden Markov Model is trained on the whole sequence of features. Each state of the HMM corresponds to a specific timbre-type. This process partitions the timbre-space of a given track into 40 possible types. The important assumption of the model is that the distribution of these features remain consistent over a structural segment. After training and decoding the HMM, the song is assigned a sequence of timbre-features according to specific timbre-type distributions for each possible structural segment. The segmentation itself is computed by clustering timbre-type histograms. A series of histograms are created over a sliding window which are grouped into M clusters by an adapted soft k-means algorithm. Each of these clusters will correspond to a specific segment-type of the analyzed song. Reference histograms, iteratively updated during clustering, describe the timbre distribution for each segment. The segmentation arises from the final cluster assignments. The number of clusters (segment-types) is typically set to 10. Unlike many clustering algorithms, the constrained clustering used in this plugin does not produce too many clusters or vary significantly even if this is set too high. However, this parameter can be useful for limiting the number of expected segment-types. Lastly, to avoid wasting a segment-type cluster for timbrally distinct but too short segments, the minimum segment duration parameter can be optianally set between 1-15s. A typical value of 4s usually produces good results.
-
-Plugin Parameters:
-::      Number of segment types: 2-12 (10)
-::      Feature-Type: CQ, Chroma, MFCC (CQ)
-::      Minimum segment duration: 1-15s (4s)
-::      Window size (frames per block): 600ms (13230)
-::      Hop size (window increment): 200ms (4410 given a sample rate of 22.5kHz)
-
+The Segmenter Vamp plugin was written by Mark Levy.  Thanks to George
+Fazekas for providing much of this documentation.
 
 
 Similarity
-----------
+==========
 
 *System identifier* --    [qm-similarity]
  Authors:       Mark Levy, Kurt Jacobson and Chris Cannam
