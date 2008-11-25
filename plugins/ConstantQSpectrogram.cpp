@@ -236,6 +236,10 @@ ConstantQSpectrogram::reset()
     if (m_cq) {
 	delete m_cq;
 	m_cq = new ConstantQ(m_config);
+        m_bins = m_cq->getK();
+        m_cq->sparsekernel();
+        m_step = m_cq->gethop();
+        m_block = m_cq->getfftlength();
     }
 }
 
@@ -276,7 +280,7 @@ ConstantQSpectrogram::getOutputDescriptors() const
     d.hasFixedBinCount = true;
     d.binCount = m_bins;
 
-//    std::cerr << "Bin count " << d.binCount << std::endl;
+    std::cerr << "Bin count " << d.binCount << std::endl;
     
     const char *names[] =
 	{ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
@@ -339,11 +343,13 @@ ConstantQSpectrogram::process(const float *const *inputBuffers,
     double *cqre = new double[m_bins];
     double *cqim = new double[m_bins];
 
+//    std::cout << "in:" << std::endl;
     for (size_t i = 0; i <= m_block/2; ++i) {
 	real[i] = inputBuffers[0][i*2];
 	if (i > 0) real[m_block - i] = real[i];
         imag[i] = inputBuffers[0][i*2+1];
         if (i > 0) imag[m_block - i] = imag[i];
+//        std::cout << real[i] << "," << imag[i] << " ";
     }
 
     m_cq->process(real, imag, cqre, cqim);
@@ -351,14 +357,17 @@ ConstantQSpectrogram::process(const float *const *inputBuffers,
     delete[] real;
     delete[] imag;
 
+//    std::cout << "\nout:" << std::endl;
     Feature feature;
     feature.hasTimestamp = false;
     for (int i = 0; i < m_bins; ++i) {
         double re = cqre[i];
         double im = cqim[i];
+//        std::cout << re << "," << im << ":";
         if (isnan(re)) re = 0.0;
         if (isnan(im)) im = 0.0;
         double value = sqrt(re * re + im * im);
+//        std::cout << value << " ";
 	feature.values.push_back(value);
     }
     feature.label = "";

@@ -243,6 +243,10 @@ ChromagramPlugin::reset()
     if (m_chromagram) {
 	delete m_chromagram;
 	m_chromagram = new Chromagram(m_config);
+        for (int i = 0; i < m_config.BPO; ++i) {
+            m_binsums[i] = 0.0;
+        }
+        m_count = 0;
     }
 }
 
