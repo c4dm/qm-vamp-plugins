@@ -33,11 +33,13 @@ public:
 	delete df;
 	df = new DetectionFunction(dfConfig);
 	dfOutput.clear();
+        origin = Vamp::RealTime::zeroTime;
     }
 
     DFConfig dfConfig;
     DetectionFunction *df;
     vector<double> dfOutput;
+    Vamp::RealTime origin;
 };
     
 
@@ -272,7 +274,7 @@ BeatTracker::getOutputDescriptors() const
 
 BeatTracker::FeatureSet
 BeatTracker::process(const float *const *inputBuffers,
-                     Vamp::RealTime /* timestamp */)
+                     Vamp::RealTime timestamp)
 {
     if (!m_d) {
 	cerr << "ERROR: BeatTracker::process: "
@@ -300,6 +302,8 @@ BeatTracker::process(const float *const *inputBuffers,
 
     delete[] magnitudes;
     delete[] phases;
+
+    if (m_d->dfOutput.empty()) m_d->origin = timestamp;
 
     m_d->dfOutput.push_back(output);
 
@@ -351,7 +355,7 @@ BeatTracker::getRemainingFeatures()
 
 	Feature feature;
 	feature.hasTimestamp = true;
-	feature.timestamp = Vamp::RealTime::frame2RealTime
+	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
 	    (frame, lrintf(m_inputSampleRate));
 
 	float bpm = 0.0;
@@ -387,7 +391,7 @@ BeatTracker::getRemainingFeatures()
         if (tempos[i] > 1 && int(tempos[i] * 100) != int(prevTempo * 100)) {
             Feature feature;
             feature.hasTimestamp = true;
-            feature.timestamp = Vamp::RealTime::frame2RealTime
+            feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
                 (frame, lrintf(m_inputSampleRate));
             feature.values.push_back(tempos[i]);
             sprintf(label, "%.2f bpm", tempos[i]);

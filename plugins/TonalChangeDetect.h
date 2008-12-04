@@ -54,25 +54,25 @@ public:
     FeatureSet getRemainingFeatures();
 	
 private:
-	void setupConfig();
+    void setupConfig();
 
     ChromaConfig m_config;
     Chromagram *m_chromagram;
-	TonalEstimator m_TonalEstimator;
+    TonalEstimator m_TonalEstimator;
     mutable size_t m_step;
     mutable size_t m_block;
     size_t m_stepDelay;
     std::queue<ChromaVector> m_pending;
-	ChromaVector m_vaCurrentVector;
-	TCSGram m_TCSGram;
+    ChromaVector m_vaCurrentVector;
+    TCSGram m_TCSGram;
 	
-private:
-	int m_iSmoothingWidth;  // smoothing window size
-	
+    int m_iSmoothingWidth;  // smoothing window size
     int m_minMIDIPitch;     // chromagram parameters
     int m_maxMIDIPitch;
     float m_tuningFrequency;
-	
+
+    Vamp::RealTime m_origin;
+    bool m_haveOrigin;
 };
 
 

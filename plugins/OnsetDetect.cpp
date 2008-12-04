@@ -33,11 +33,13 @@ public:
 	delete df;
 	df = new DetectionFunction(dfConfig);
 	dfOutput.clear();
+        origin = Vamp::RealTime::zeroTime;
     }
 
     DFConfig dfConfig;
     DetectionFunction *df;
     vector<double> dfOutput;
+    Vamp::RealTime origin;
 };
     
 
@@ -376,6 +378,8 @@ OnsetDetector::process(const float *const *inputBuffers,
     delete[] magnitudes;
     delete[] phases;
 
+    if (m_d->dfOutput.empty()) m_d->origin = timestamp;
+
     m_d->dfOutput.push_back(output);
 
     FeatureSet returnFeatures;
@@ -461,7 +465,7 @@ OnsetDetector::getRemainingFeatures()
 
 	Feature feature;
 	feature.hasTimestamp = true;
-	feature.timestamp = Vamp::RealTime::frame2RealTime
+	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
 	    (frame, lrintf(m_inputSampleRate));
 
 	returnFeatures[0].push_back(feature); // onsets are output 0
@@ -473,7 +477,7 @@ OnsetDetector::getRemainingFeatures()
 //        feature.hasTimestamp = false;
         feature.hasTimestamp = true;
 	size_t frame = i * m_d->dfConfig.stepSize;
-	feature.timestamp = Vamp::RealTime::frame2RealTime
+	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
 	    (frame, lrintf(m_inputSampleRate));
 
         feature.values.push_back(ppSrc[i]);

@@ -18,7 +18,9 @@ TonalChangeDetect::TonalChangeDetect(float fInputSampleRate)
       m_chromagram(0),
       m_step(0),
       m_block(0),
-      m_stepDelay(0)
+      m_stepDelay(0),
+      m_origin(Vamp::RealTime::zeroTime),
+      m_haveOrigin(false)
 {
     m_minMIDIPitch = 32;
     m_maxMIDIPitch = 108;
@@ -44,7 +46,7 @@ bool TonalChangeDetect::initialise(size_t channels, size_t stepSize, size_t bloc
         std::cerr << "TonalChangeDetect::initialise: Given channel count " << channels << " outside acceptable range (" << getMinChannelCount() << " to " << getMaxChannelCount() << ")" << std::endl;
         return false;
     }
-	
+
     m_chromagram = new Chromagram(m_config);
     m_step = m_chromagram->getHopSize();
     m_block = m_chromagram->getFrameSize();
@@ -221,6 +223,9 @@ TonalChangeDetect::reset()
     while (!m_pending.empty()) m_pending.pop();
 	
     m_vaCurrentVector.resize(12, 0.0);
+
+    m_origin = Vamp::RealTime::zeroTime;
+    m_haveOrigin = false;
 }
 
 size_t
@@ -305,6 +310,8 @@ TonalChangeDetect::process(const float *const *inputBuffers,
 	     << endl;
 	return FeatureSet();
     }
+
+    if (!m_haveOrigin) m_origin = timestamp;
 
     // convert float* to double*
     double *tempBuffer = new double[m_block];
@@ -399,7 +406,8 @@ TonalChangeDetect::FeatureSet TonalChangeDetect::getRemainingFeatures()
         Feature feature;
         feature.label = "";
         feature.hasTimestamp = true;
-        feature.timestamp = Vamp::RealTime::frame2RealTime(i*m_step, m_inputSampleRate);
+        feature.timestamp = m_origin +
+            Vamp::RealTime::frame2RealTime(i*m_step, m_inputSampleRate);
         feature.values.push_back(dCurrent);
         returnFeatures[1].push_back(feature);
 
@@ -409,7 +417,8 @@ TonalChangeDetect::FeatureSet TonalChangeDetect::getRemainingFeatures()
             Feature featurePeak;
             featurePeak.label = "";
             featurePeak.hasTimestamp = true;
-            featurePeak.timestamp = Vamp::RealTime::frame2RealTime(i*m_step, m_inputSampleRate);
+            featurePeak.timestamp = m_origin +
+                Vamp::RealTime::frame2RealTime(i*m_step, m_inputSampleRate);
             returnFeatures[2].push_back(featurePeak);
         }
 
