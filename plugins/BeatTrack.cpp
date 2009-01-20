@@ -12,13 +12,17 @@
 #include <dsp/onsets/DetectionFunction.h>
 #include <dsp/onsets/PeakPicking.h>
 #include <dsp/tempotracking/TempoTrack.h>
+#include <dsp/tempotracking/TempoTrackV2.h>
 
 using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
 
-float BeatTracker::m_stepSecs = 0.01161;
+float BeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
+
+#define METHOD_OLD 0
+#define METHOD_NEW 1
 
 class BeatTrackerData
 {
@@ -46,6 +50,7 @@ public:
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
+    m_method(METHOD_NEW),
     m_dfType(DF_COMPLEXSD),
     m_whiten(false)
 {
@@ -98,14 +103,26 @@ BeatTracker::getParameterDescriptors() const
     ParameterList list;
 
     ParameterDescriptor desc;
+
+    desc.identifier = "method";
+    desc.name = "Beat Tracking Method";
+    desc.description = ""; //!!!
+    desc.minValue = 0;
+    desc.maxValue = 1;
+    desc.defaultValue = METHOD_NEW;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    desc.valueNames.push_back("Old");
+    desc.valueNames.push_back("New");
+    list.push_back(desc);
+
     desc.identifier = "dftype";
     desc.name = "Onset Detection Function Type";
     desc.description = "Method used to calculate the onset detection function";
     desc.minValue = 0;
     desc.maxValue = 4;
     desc.defaultValue = 3;
-    desc.isQuantized = true;
-    desc.quantizeStep = 1;
+    desc.valueNames.clear();
     desc.valueNames.push_back("High-Frequency Content");
     desc.valueNames.push_back("Spectral Difference");
     desc.valueNames.push_back("Phase Deviation");
@@ -139,6 +156,8 @@ BeatTracker::getParameter(std::string name) const
         default: case DF_COMPLEXSD: return 3;
         case DF_BROADBAND: return 4;
         }
+    } else if (name == "method") {
+        return m_method;
     } else if (name == "whiten") {
         return m_whiten ? 1.0 : 0.0; 
     }
@@ -156,6 +175,8 @@ BeatTracker::setParameter(std::string name, float value)
         default: case 3: m_dfType = DF_COMPLEXSD; break;
         case 4: m_dfType = DF_BROADBAND; break;
         }
+    } else if (name == "method") {
+        m_method = lrintf(value);
     } else if (name == "whiten") {
         m_whiten = (value > 0.5);
     }
@@ -327,6 +348,13 @@ BeatTracker::getRemainingFeatures()
 	return FeatureSet();
     }
 
+    if (m_method == METHOD_OLD) return beatTrackOld();
+    else return beatTrackNew();
+}
+
+BeatTracker::FeatureSet
+BeatTracker::beatTrackOld()
+{
     double aCoeffs[] = { 1.0000, -0.5949, 0.2348 };
     double bCoeffs[] = { 0.1600,  0.3200, 0.1600 };
 
@@ -398,6 +426,67 @@ BeatTracker::getRemainingFeatures()
             feature.label = label;
             returnFeatures[2].push_back(feature); // tempo is output 2
         }
+    }
+
+    return returnFeatures;
+}
+
+BeatTracker::FeatureSet
+BeatTracker::beatTrackNew()
+{
+    vector<double> df;
+    vector<double> beatPeriod;
+
+    for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
+        df.push_back(m_d->dfOutput[i]);
+        beatPeriod.push_back(0.0);
+    }
+    if (df.empty()) return FeatureSet();
+
+    TempoTrackV2 tt;
+
+    tt.calculateBeatPeriod(df, beatPeriod);
+
+    vector<double> beats;
+    tt.calculateBeats(df, beatPeriod, beats);
+    
+    FeatureSet returnFeatures;
+
+    char label[100];
+
+    for (size_t i = 0; i < beats.size(); ++i) {
+
+        // beats are returned in reverse order?
+
+        size_t index = beats.size() - i - 1;
+
+	size_t frame = beats[index] * m_d->dfConfig.stepSize;
+        
+	Feature feature;
+	feature.hasTimestamp = true;
+	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
+	    (frame, lrintf(m_inputSampleRate));
+
+	float bpm = 0.0;
+	int frameIncrement = 0;
+
+	if (index > 0) {
+
+	    frameIncrement = (beats[index - 1] - beats[index]) * m_d->dfConfig.stepSize;
+
+	    // one beat is frameIncrement frames, so there are
+	    // samplerate/frameIncrement bps, so
+	    // 60*samplerate/frameIncrement bpm
+
+	    if (frameIncrement > 0) {
+		bpm = (60.0 * m_inputSampleRate) / frameIncrement;
+		bpm = int(bpm * 100.0 + 0.5) / 100.0;
+                sprintf(label, "%.2f bpm", bpm);
+                feature.label = label;
+	    }
+	}
+
+	returnFeatures[0].push_back(feature); // beats are output 0
     }
 
     return returnFeatures;

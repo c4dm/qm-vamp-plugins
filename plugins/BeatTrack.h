@@ -48,9 +48,12 @@ public:
 
 protected:
     BeatTrackerData *m_d;
+    int m_method;
     int m_dfType;
     bool m_whiten;
     static float m_stepSecs;
+    FeatureSet beatTrackOld();
+    FeatureSet beatTrackNew();
 };
 
 
