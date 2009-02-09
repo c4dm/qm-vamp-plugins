@@ -370,8 +370,8 @@ BeatTracker::beatTrackOld()
 
     TempoTrack tempoTracker(ttParams);
 
-    vector<double> tempos;
-    vector<int> beats = tempoTracker.process(m_d->dfOutput, &tempos);
+    vector<double> tempi;
+    vector<int> beats = tempoTracker.process(m_d->dfOutput, &tempi);
 
     FeatureSet returnFeatures;
 
@@ -410,21 +410,22 @@ BeatTracker::beatTrackOld()
 
     double prevTempo = 0.0;
 
-    for (size_t i = 0; i < tempos.size(); ++i) {
+    for (size_t i = 0; i < tempi.size(); ++i) {
 
         size_t frame = i * m_d->dfConfig.stepSize * ttParams.lagLength;
 
 //        std::cerr << "unit " << i << ", step size " << m_d->dfConfig.stepSize << ", hop " << ttParams.lagLength << ", frame = " << frame << std::endl;
         
-        if (tempos[i] > 1 && int(tempos[i] * 100) != int(prevTempo * 100)) {
+        if (tempi[i] > 1 && int(tempi[i] * 100) != int(prevTempo * 100)) {
             Feature feature;
             feature.hasTimestamp = true;
             feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
                 (frame, lrintf(m_inputSampleRate));
-            feature.values.push_back(tempos[i]);
-            sprintf(label, "%.2f bpm", tempos[i]);
+            feature.values.push_back(tempi[i]);
+            sprintf(label, "%.2f bpm", tempi[i]);
             feature.label = label;
             returnFeatures[2].push_back(feature); // tempo is output 2
+            prevTempo = tempi[i];
         }
     }
 
@@ -436,6 +437,7 @@ BeatTracker::beatTrackNew()
 {
     vector<double> df;
     vector<double> beatPeriod;
+    vector<double> tempi;
 
     for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
         df.push_back(m_d->dfOutput[i]);
@@ -445,7 +447,7 @@ BeatTracker::beatTrackNew()
 
     TempoTrackV2 tt;
 
-    tt.calculateBeatPeriod(df, beatPeriod);
+    tt.calculateBeatPeriod(df, beatPeriod, tempi);
 
     vector<double> beats;
     tt.calculateBeats(df, beatPeriod, beats);
@@ -456,11 +458,7 @@ BeatTracker::beatTrackNew()
 
     for (size_t i = 0; i < beats.size(); ++i) {
 
-        // beats are returned in reverse order?
-
-        size_t index = beats.size() - i - 1;
-
-	size_t frame = beats[index] * m_d->dfConfig.stepSize;
+	size_t frame = beats[i] * m_d->dfConfig.stepSize;
         
 	Feature feature;
 	feature.hasTimestamp = true;
@@ -470,9 +468,9 @@ BeatTracker::beatTrackNew()
 	float bpm = 0.0;
 	int frameIncrement = 0;
 
-	if (index > 0) {
+	if (i+1 < beats.size()) {
 
-	    frameIncrement = (beats[index - 1] - beats[index]) * m_d->dfConfig.stepSize;
+	    frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
 
 	    // one beat is frameIncrement frames, so there are
 	    // samplerate/frameIncrement bps, so
@@ -487,6 +485,25 @@ BeatTracker::beatTrackNew()
 	}
 
 	returnFeatures[0].push_back(feature); // beats are output 0
+    }
+
+    double prevTempo = 0.0;
+
+    for (size_t i = 0; i < tempi.size(); ++i) {
+
+	size_t frame = i * m_d->dfConfig.stepSize;
+        
+        if (tempi[i] > 1 && int(tempi[i] * 100) != int(prevTempo * 100)) {
+            Feature feature;
+            feature.hasTimestamp = true;
+            feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
+                (frame, lrintf(m_inputSampleRate));
+            feature.values.push_back(tempi[i]);
+            sprintf(label, "%.2f bpm", tempi[i]);
+            feature.label = label;
+            returnFeatures[2].push_back(feature); // tempo is output 2
+            prevTempo = tempi[i];
+        }
     }
 
     return returnFeatures;
