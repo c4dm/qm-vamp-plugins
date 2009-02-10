@@ -211,7 +211,6 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     DFConfig dfConfig;
     dfConfig.DFType = m_dfType;
-    dfConfig.stepSecs = float(stepSize) / m_inputSampleRate;
     dfConfig.stepSize = stepSize;
     dfConfig.frameLength = blockSize;
     dfConfig.dbRise = 3;
@@ -445,7 +444,7 @@ BeatTracker::beatTrackNew()
     }
     if (df.empty()) return FeatureSet();
 
-    TempoTrackV2 tt;
+    TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize);
 
     tt.calculateBeatPeriod(df, beatPeriod, tempi);
 

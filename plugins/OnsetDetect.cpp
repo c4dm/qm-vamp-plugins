@@ -251,7 +251,6 @@ OnsetDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     DFConfig dfConfig;
     dfConfig.DFType = m_dfType;
-    dfConfig.stepSecs = float(stepSize) / m_inputSampleRate;
     dfConfig.stepSize = stepSize;
     dfConfig.frameLength = blockSize;
     dfConfig.dbRise = 6.0 - m_sensitivity / 16.6667;
@@ -289,7 +288,7 @@ OnsetDetector::getOutputDescriptors() const
     OutputList list;
 
     float stepSecs = m_preferredStepSecs;
-    if (m_d) stepSecs = m_d->dfConfig.stepSecs;
+//    if (m_d) stepSecs = m_d->dfConfig.stepSecs;
 
     OutputDescriptor onsets;
     onsets.identifier = "onsets";
