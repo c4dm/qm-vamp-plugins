@@ -88,13 +88,13 @@ BeatTracker::getMaker() const
 int
 BeatTracker::getPluginVersion() const
 {
-    return 3;
+    return 4;
 }
 
 string
 BeatTracker::getCopyright() const
 {
-    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 BeatTracker::ParameterList

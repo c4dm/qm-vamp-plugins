@@ -19,6 +19,7 @@
 #include "plugins/MFCCPlugin.h"
 #include "plugins/SegmenterPlugin.h"
 #include "plugins/SimilarityPlugin.h"
+#include "plugins/BarBeatTrack.h"
 
 static Vamp::PluginAdapter<BeatTracker> beatTrackerAdapter;
 static Vamp::PluginAdapter<OnsetDetector> onsetDetectorAdapter;
@@ -29,6 +30,7 @@ static Vamp::PluginAdapter<KeyDetector> keyDetectorAdapter;
 static Vamp::PluginAdapter<MFCCPlugin> mfccPluginAdapter;
 static Vamp::PluginAdapter<SegmenterPlugin> segmenterPluginAdapter;
 static Vamp::PluginAdapter<SimilarityPlugin> similarityPluginAdapter;
+static Vamp::PluginAdapter<BarBeatTracker> barBeatTrackPluginAdapter;
 
 const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
                                                     unsigned int index)
@@ -45,6 +47,7 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
     case  6: return segmenterPluginAdapter.getDescriptor();
     case  7: return similarityPluginAdapter.getDescriptor();
     case  8: return mfccPluginAdapter.getDescriptor();
+    case  9: return barBeatTrackPluginAdapter.getDescriptor();
     default: return 0;
     }
 }
