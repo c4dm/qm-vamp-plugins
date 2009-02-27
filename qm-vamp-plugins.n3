@@ -111,9 +111,7 @@ plugbase:qm-chromagram_output_chromagram a  vamp:DenseOutput ;
     vamp:unit             "" ;
     vamp:bin_count        12 ;
     vamp:bin_names        ( "C" "C#" "D" "D#" "E" "F" "F#" "G" "G#" "A" "A#" "B");
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type  af:Chromagram ;
     .
 plugbase:qm-chromagram_output_chromameans a  vamp:DenseOutput ;
     vamp:identifier       "chromameans" ;
@@ -210,9 +208,7 @@ plugbase:qm-constantq_output_constantq a  vamp:DenseOutput ;
     vamp:unit             "" ;
     vamp:bin_count        1 ;
     vamp:bin_names        ( "C");
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type  af:Spectrogram ;
     .
 plugbase:qm-keydetector a   vamp:Plugin ;
     dc:title              "Key Detector" ;
@@ -308,9 +304,7 @@ plugbase:qm-keydetector_output_key a  vamp:SparseOutput ;
     vamp:bin_names        ( "");
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      1.34583 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_event_type   af:KeyChange ;
     .
 plugbase:qm-keydetector_output_keystrength a  vamp:DenseOutput ;
     vamp:identifier       "keystrength" ;
@@ -464,9 +458,7 @@ plugbase:qm-onsetdetector_output_onsets a  vamp:SparseOutput ;
     vamp:bin_names        ();
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      86.1326 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_event_type   af:Onset;
     .
 plugbase:qm-onsetdetector_output_detection_fn a  vamp:DenseOutput ;
     vamp:identifier       "detection_fn" ;
@@ -476,9 +468,7 @@ plugbase:qm-onsetdetector_output_detection_fn a  vamp:DenseOutput ;
     vamp:unit             "" ;
     vamp:bin_count        1 ;
     vamp:bin_names        ( "");
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type   af:OnsetDetectionFunction ;
     .
 plugbase:qm-onsetdetector_output_smoothed_df a  vamp:SparseOutput ;
     vamp:identifier       "smoothed_df" ;
@@ -490,9 +480,7 @@ plugbase:qm-onsetdetector_output_smoothed_df a  vamp:SparseOutput ;
     vamp:bin_names        ( "");
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      86.1326 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type   af:OnsetDetectionFunction ;
     .
 plugbase:qm-segmenter a   vamp:Plugin ;
     dc:title              "Segmenter" ;
@@ -560,9 +548,7 @@ plugbase:qm-segmenter_output_segmentation a  vamp:SparseOutput ;
     vamp:bin_names        ( "");
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      5 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_event_type   af:StructuralSegment ;
     .
 plugbase:qm-similarity a   vamp:Plugin ;
     dc:title              "Similarity" ;
@@ -720,9 +706,7 @@ plugbase:qm-tempotracker_output_beats a  vamp:SparseOutput ;
     vamp:bin_names        ();
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      86.1326 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_event_type   af:Beat;
     .
 plugbase:qm-tempotracker_output_detection_fn a  vamp:DenseOutput ;
     vamp:identifier       "detection_fn" ;
@@ -732,9 +716,7 @@ plugbase:qm-tempotracker_output_detection_fn a  vamp:DenseOutput ;
     vamp:unit             "" ;
     vamp:bin_count        1 ;
     vamp:bin_names        ( "");
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type   af:OnsetDetectionFunction;
     .
 plugbase:qm-tempotracker_output_tempo a  vamp:SparseOutput ;
     vamp:identifier       "tempo" ;
@@ -746,9 +728,7 @@ plugbase:qm-tempotracker_output_tempo a  vamp:SparseOutput ;
     vamp:bin_names        ( "");
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      86.1326 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_event_type   af:Tempo ;
     .
 plugbase:qm-tonalchange a   vamp:Plugin ;
     dc:title              "Tonal Change" ;
@@ -825,9 +805,7 @@ plugbase:qm-tonalchange_output_tcstransform a  vamp:DenseOutput ;
     vamp:max_value    1  ;
     vamp:bin_count        6 ;
     vamp:bin_names        ( "" "" "" "" "" "");
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type  af:TonalContentSpace;
     .
 plugbase:qm-tonalchange_output_tcfunction a  vamp:SparseOutput ;
     vamp:identifier       "tcfunction" ;
@@ -839,9 +817,7 @@ plugbase:qm-tonalchange_output_tcfunction a  vamp:SparseOutput ;
     vamp:bin_names        ( "");
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      21.5332 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_signal_type  af:TonalChangeDetectionFunction;
     .
 plugbase:qm-tonalchange_output_changepositions a  vamp:SparseOutput ;
     vamp:identifier       "changepositions" ;
@@ -853,8 +829,6 @@ plugbase:qm-tonalchange_output_changepositions a  vamp:SparseOutput ;
     vamp:bin_names        ();
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      21.5332 ;
-#   vamp:computes_event_type   <Place event type URI here and uncomment> ;
-#   vamp:computes_feature      <Place feature attribute URI here and uncomment> ;
-#   vamp:computes_signal_type  <Place signal type URI here and uncomment> ;
+    vamp:computes_event_type   af:TonalOnset;
     .
 
