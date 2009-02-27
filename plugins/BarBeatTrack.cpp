@@ -234,9 +234,20 @@ BarBeatTracker::getOutputDescriptors() const
     beatcounts.sampleType = OutputDescriptor::VariableSampleRate;
     beatcounts.sampleRate = 1.0 / m_stepSecs;
 
+    OutputDescriptor beatsd;
+    beatsd.identifier = "beatsd";
+    beatsd.name = "Beat Spectral Difference";
+    beatsd.description = "Beat spectral difference function used for bar-line detection";
+    beatsd.unit = "";
+    beatsd.hasFixedBinCount = true;
+    beatsd.binCount = 1;
+    beatsd.sampleType = OutputDescriptor::VariableSampleRate;
+    beatsd.sampleRate = 1.0 / m_stepSecs;
+
     list.push_back(beat);
     list.push_back(bars);
     list.push_back(beatcounts);
+    list.push_back(beatsd);
 
     return list;
 }
@@ -319,6 +330,9 @@ BarBeatTracker::barBeatTrack()
     const float *downsampled = m_d->downBeat->getBufferedAudio(downLength);
     m_d->downBeat->findDownBeats(downsampled, downLength, beats, downbeats);
 
+    vector<double> beatsd;
+    m_d->downBeat->getBeatSD(beatsd);
+
 //    std::cerr << "BarBeatTracker: found downbeats at: ";
 //    for (int i = 0; i < downbeats.size(); ++i) std::cerr << downbeats[i] << " " << std::endl;
                                  
@@ -359,6 +373,13 @@ BarBeatTracker::barBeatTrack()
 
         feature.values.push_back(beat + 1);
         returnFeatures[2].push_back(feature); // beat function
+
+        if (i > 0 && i <= beatsd.size()) {
+            feature.values.clear();
+            feature.values.push_back(beatsd[i-1]);
+            feature.label = "";
+            returnFeatures[3].push_back(feature); // beat spectral difference
+        }
 
         if (beat == 0) {
             feature.values.clear();
