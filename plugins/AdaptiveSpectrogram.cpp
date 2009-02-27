@@ -37,7 +37,7 @@ AdaptiveSpectrogram::~AdaptiveSpectrogram()
 string
 AdaptiveSpectrogram::getIdentifier() const
 {
-    return "adaptivespectrogram";
+    return "qm-adaptivespectrogram";
 }
 
 string

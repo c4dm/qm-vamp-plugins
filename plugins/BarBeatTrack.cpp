@@ -278,7 +278,7 @@ BarBeatTracker::process(const float *const *inputBuffers,
 
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
 
-    std::cerr << "df[" << m_d->dfOutput.size() << "] is " << output << std::endl;
+//    std::cerr << "df[" << m_d->dfOutput.size() << "] is " << output << std::endl;
     m_d->dfOutput.push_back(output);
 
     // Downsample and store the incoming audio block.
