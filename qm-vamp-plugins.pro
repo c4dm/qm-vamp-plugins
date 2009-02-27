@@ -25,7 +25,8 @@ DEPENDPATH += plugins
 INCLUDEPATH += . plugins
 
 # Input
-HEADERS += plugins/BarBeatTrack.h \
+HEADERS += plugins/AdaptiveSpectrogram.h \
+           plugins/BarBeatTrack.h \
            plugins/BeatTrack.h \
            plugins/OnsetDetect.h \
            plugins/ChromagramPlugin.h \
@@ -36,6 +37,7 @@ HEADERS += plugins/BarBeatTrack.h \
            plugins/SimilarityPlugin.h \
            plugins/TonalChangeDetect.h
 SOURCES += g2cstubs.c \
+           plugins/AdaptiveSpectrogram.cpp \
            plugins/BarBeatTrack.cpp \
            plugins/BeatTrack.cpp \
            plugins/OnsetDetect.cpp \
