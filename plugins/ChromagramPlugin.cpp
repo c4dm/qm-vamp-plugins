@@ -80,7 +80,7 @@ ChromagramPlugin::getMaker() const
 int
 ChromagramPlugin::getPluginVersion() const
 {
-    return 3;
+    return 4;
 }
 
 string
@@ -121,8 +121,8 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.name = "Tuning Frequency";
     desc.unit = "Hz";
     desc.description = "Frequency of concert A";
-    desc.minValue = 420;
-    desc.maxValue = 460;
+    desc.minValue = 360;
+    desc.maxValue = 500;
     desc.defaultValue = 440;
     desc.isQuantized = false;
     list.push_back(desc);
@@ -132,7 +132,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.unit = "bins";
     desc.description = "Number of constant-Q transform bins per octave, and the number of bins for the chromagram outputs";
     desc.minValue = 2;
-    desc.maxValue = 48;
+    desc.maxValue = 960;
     desc.defaultValue = 12;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
