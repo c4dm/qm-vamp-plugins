@@ -29,7 +29,7 @@ public:
 	df = new DetectionFunction(config);
         // decimation factor aims at resampling to c. 3KHz; must be power of 2
         int factor = MathUtilities::nextPowerOfTwo(rate / 3000);
-        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
+//        std::cerr << "BarBeatTrackerData: factor = " << factor << std::endl;
         downBeat = new DownBeat(rate, factor, config.stepSize);
     }
     ~BarBeatTrackerData() {
@@ -184,6 +184,7 @@ size_t
 BarBeatTracker::getPreferredStepSize() const
 {
     size_t step = size_t(m_inputSampleRate * m_stepSecs + 0.0001);
+    if (step < 1) step = 1;
 //    std::cerr << "BarBeatTracker::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }

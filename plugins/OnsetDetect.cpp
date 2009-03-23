@@ -272,6 +272,7 @@ size_t
 OnsetDetector::getPreferredStepSize() const
 {
     size_t step = size_t(m_inputSampleRate * m_preferredStepSecs + 0.0001);
+    if (step < 1) step = 1;
 //    std::cerr << "OnsetDetector::getPreferredStepSize: input sample rate is " << m_inputSampleRate << ", step size is " << step << std::endl;
     return step;
 }

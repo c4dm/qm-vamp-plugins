@@ -222,6 +222,7 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     m_step = m_chromagram->getHopSize();
     m_block = m_chromagram->getFrameSize();
+    if (m_step < 1) m_step = 1;
 
     if (blockSize != m_block) {
         std::cerr << "ChromagramPlugin::initialise: ERROR: supplied block size " << blockSize << " differs from required block size " << m_block << ", initialise failing" << std::endl;
@@ -257,6 +258,7 @@ ChromagramPlugin::getPreferredStepSize() const
 	Chromagram chroma(m_config);
 	m_step = chroma.getHopSize();
 	m_block = chroma.getFrameSize();
+        if (m_step < 1) m_step = 1;
     }
 
     return m_step;
@@ -269,6 +271,7 @@ ChromagramPlugin::getPreferredBlockSize() const
 	Chromagram chroma(m_config);
 	m_step = chroma.getHopSize();
 	m_block = chroma.getFrameSize();
+        if (m_step < 1) m_step = 1;
     }
 
     return m_block;

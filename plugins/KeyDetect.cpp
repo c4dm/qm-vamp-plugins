@@ -166,7 +166,8 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     m_inputFrame = new double[m_blockSize];
 
     m_prevKey = -1;
-	
+    m_first = true;
+
     return true;
 }
 
@@ -187,6 +188,7 @@ KeyDetector::reset()
     }
 
     m_prevKey = -1;
+    m_first = true;
 }
 
 
@@ -290,7 +292,7 @@ KeyDetector::process(const float *const *inputBuffers,
     int prevTonic = m_prevKey;
     if (prevTonic > 12) prevTonic -= 12;
 
-    if (tonic != prevTonic) {
+    if (m_first || (tonic != prevTonic)) {
         Feature feature;
         feature.hasTimestamp = true;
         feature.timestamp = now;
@@ -300,7 +302,7 @@ KeyDetector::process(const float *const *inputBuffers,
         returnFeatures[0].push_back(feature); // tonic
     }
 
-    if (minor != (m_getKeyMode->isModeMinor(m_prevKey))) {
+    if (m_first || (minor != (m_getKeyMode->isModeMinor(m_prevKey)))) {
         Feature feature;
         feature.hasTimestamp = true;
         feature.timestamp = now;
@@ -309,7 +311,7 @@ KeyDetector::process(const float *const *inputBuffers,
         returnFeatures[1].push_back(feature); // mode
     }
 
-    if (key != m_prevKey) {
+    if (m_first || (key != m_prevKey)) {
         Feature feature;
         feature.hasTimestamp = true;
         feature.timestamp = now;
@@ -319,6 +321,7 @@ KeyDetector::process(const float *const *inputBuffers,
     }
 
     m_prevKey = key;
+    m_first = false;
 
     Feature ksf;
     ksf.values.reserve(25);

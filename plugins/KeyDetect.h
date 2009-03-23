@@ -57,6 +57,7 @@ protected:
     GetKeyMode* m_getKeyMode;
     double* m_inputFrame;
     int m_prevKey;
+    bool m_first;
 };
 
 

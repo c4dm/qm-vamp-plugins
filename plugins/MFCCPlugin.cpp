@@ -173,8 +173,8 @@ MFCCPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    std::cerr << "MFCCPlugin::initialise: step " << stepSize << ", block "
-	      << blockSize << std::endl;
+//    std::cerr << "MFCCPlugin::initialise: step " << stepSize << ", block "
+//	      << blockSize << std::endl;
 
     m_step = stepSize;
     m_block = blockSize;
@@ -280,6 +280,8 @@ MFCCPlugin::process(const float *const *inputBuffers,
     }
     feature.label = "";
     ++m_count;
+
+    delete[] output;
 
     FeatureSet returnFeatures;
     returnFeatures[0].push_back(feature);
