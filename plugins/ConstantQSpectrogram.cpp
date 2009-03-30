@@ -348,7 +348,7 @@ ConstantQSpectrogram::process(const float *const *inputBuffers,
 	real[i] = inputBuffers[0][i*2];
 	if (i > 0) real[m_block - i] = real[i];
         imag[i] = inputBuffers[0][i*2+1];
-        if (i > 0) imag[m_block - i] = imag[i];
+        if (i > 0) imag[m_block - i] = imag[i]; //!!! huh? surely -imag[i] ?
 //        std::cout << real[i] << "," << imag[i] << " ";
     }
 

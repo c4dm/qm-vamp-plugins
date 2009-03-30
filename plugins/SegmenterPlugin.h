@@ -52,7 +52,7 @@ protected:
     mutable Segmenter* segmenter;
     mutable int hopsize;
     mutable int windowsize;
-    mutable int neighbourhoodLimit; // in sec
+    mutable float neighbourhoodLimit; // in sec
     int nSegmentTypes;
     feature_types featureType;	// 1 = constant-Q, 2 = chroma
     
