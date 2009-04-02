@@ -36,7 +36,7 @@ DWT::~DWT()
 string
 DWT::getIdentifier() const
 {
-    return "dwt";
+    return "qm-dwt";
 }
 
 string
