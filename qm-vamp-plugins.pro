@@ -28,6 +28,7 @@ INCLUDEPATH += . plugins
 HEADERS += plugins/AdaptiveSpectrogram.h \
            plugins/BarBeatTrack.h \
            plugins/BeatTrack.h \
+           plugins/DWT.h \
            plugins/OnsetDetect.h \
            plugins/ChromagramPlugin.h \
            plugins/ConstantQSpectrogram.h \
@@ -40,6 +41,7 @@ SOURCES += g2cstubs.c \
            plugins/AdaptiveSpectrogram.cpp \
            plugins/BarBeatTrack.cpp \
            plugins/BeatTrack.cpp \
+           plugins/DWT.cpp \
            plugins/OnsetDetect.cpp \
            plugins/ChromagramPlugin.cpp \
            plugins/ConstantQSpectrogram.cpp \
