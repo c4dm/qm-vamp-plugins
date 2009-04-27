@@ -53,7 +53,7 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
     case  8: return mfccPluginAdapter.getDescriptor();
     case  9: return barBeatTrackPluginAdapter.getDescriptor();
     case 10: return dwtAdapter.getDescriptor();
-//    case 11: return adaptiveSpectrogramAdapter.getDescriptor();
+    case 11: return adaptiveSpectrogramAdapter.getDescriptor();
     default: return 0;
     }
 }

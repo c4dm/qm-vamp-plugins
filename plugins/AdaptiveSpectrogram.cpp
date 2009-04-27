@@ -23,6 +23,8 @@ using std::endl;
 
 using Vamp::RealTime;
 
+//#define DEBUG_VERBOSE 1
+
 AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     Plugin(inputSampleRate),
     m_w(9),
@@ -204,7 +206,9 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
     int Wid = WID;
     int wi = 0;
 
+#ifdef DEBUG_VERBOSE
     cerr << "wid = " << wid << ", WID = " << WID << endl;
+#endif
 
     double *tmpin  = new double[WID];
     double *tmprout = new double[WID];
@@ -221,15 +225,62 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
             }
             FFT::process(Wid, false, tmpin, 0, tmprout, tmpiout);
             for (int j = 0; j < Wid/2; ++j) {
-                double mag =
-                    tmprout[j] * tmprout[j] +
-                    tmpiout[j] * tmpiout[j];
-                specs[wi][i][j] = sqrt(mag) / Wid;
+                int k = j+1; // include Nyquist but not DC
+                double mag = sqrt(tmprout[k] * tmprout[k] +
+                                  tmpiout[k] * tmpiout[k]);
+                double scaled = mag / (Wid/2);
+//                double power = scaled*scaled;
+//                if (k < Wid/2) power = power*2;
+                specs[wi][i][j] = scaled;
             }
         }
         Wid /= 2;
         ++wi;
     }
+
+/*    
+    while (Wid >= wid) {
+        specs[wi] = new double *[WID/Wid];
+        cerr << "filling width " << Wid << endl;
+        for (int i = 0; i < WID/Wid; ++i) {
+            specs[wi][i] = new double[Wid/2];
+            for (int j = 0; j < Wid/2; ++j) {
+
+                specs[wi][i][j] = 0;
+                int x0 = i * Wid/2;
+                int x1 = (i+1) * Wid/2 - 1;
+                int y0 = j * (WID/Wid);
+                int y1 = (j+1) * (WID/Wid) - 1;
+
+                cerr << "box at " << i  << "," << j << " covers [" << x0 << "," << y0 << "] to [" << x1 << "," << y1 << "]" << endl;
+
+                for (int y = WID/4; y < WID/2; ++y) {
+                    for (int x = WID/4-2; x < WID/4; ++x) {
+                        if (x >= x0 && x <= x1 && y >= y0 && y <= y1) {
+                            ++specs[wi][i][j];
+                        }
+                    }
+                }
+
+                for (int x = 0; x < WID/2; ++x) {
+                    int y = 0;
+                    if (x >= x0 && x <= x1 && y >= y0 && y <= y1) {
+                        ++specs[wi][i][j];
+                    }
+                }
+            }
+        }
+        cerr << "this spectrogram:" << endl;
+        for (int j = Wid/2-1; j >= 0; --j) {
+            for (int i = 0; i < WID/Wid; ++i) {
+                cerr << specs[wi][i][j] << " ";
+            }
+            cerr << endl;
+        }
+        Wid /= 2;
+        ++wi;
+    }
+*/
 
     int *spl = new int[WID/2];
     double *spec = new double[WID/2];
@@ -258,15 +309,17 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
     }
     delete[] specs;
 
+#ifdef DEBUG_VERBOSE
     std::cerr << "Results at " << ts << ":" << std::endl;
-/*    for (int i = 0; i < WID/2; ++i) {
-        if (spl[i] == i || spec[i] == i) {
-            std::cerr << "\n***\n";
-        }
+    for (int i = 0; i < WID/2; ++i) {
+//        if (spl[i] == i || spec[i] == i) {
+//            std::cerr << "\n***\n";
+//        }
         std::cerr << "[" << i << "] " << spl[i] << "," << spec[i] << " ";
     }
     std::cerr << std::endl;
-*/
+#endif
+
     vector<vector<float> > rmat(WID/wid);
     for (int i = 0; i < WID/wid; ++i) {
         rmat[i] = vector<float>(WID/2);
@@ -306,27 +359,25 @@ AdaptiveSpectrogram::unpackResultMatrix(vector<vector<float> > &rmat,
     )
 {
 
+#ifdef DEBUG_VERBOSE
     cerr << "x = " << x << ", y = " << y << ", w = " << w << ", h = " << h 
          << ", sz = " << sz << ", *spl = " << *spl << ", *spec = " << *spec << ", res = " << res <<  endl;
+#endif
 
     if (sz <= 1) {
 
         for (int i = 0; i < w; ++i) {
             for (int j = 0; j < h; ++j) {
-//                rmat[x+i][y+j] = (off ? 0 : *spec);
                 if (rmat[x+i][y+j] != 0) {
                     cerr << "WARNING: Overwriting value " << rmat[x+i][y+j] 
                          << " with " << res + i + j << " at " << x+i << "," << y+j << endl;
                 }
-//                cerr << "[" << x+i << "][" << y+j << "] <= " << res+i+j << endl;
                 rmat[x+i][y+j] = *spec;
             }
         }
 
-//        cerr << " (done)" << endl;
         return;
     }
-//    cerr << endl;
 
     if (*spl == 0) {
 
@@ -381,46 +432,67 @@ AdaptiveSpectrogram::unpackResultMatrix(vector<vector<float> > &rmat,
  */
 double
 AdaptiveSpectrogram::DoCutSpectrogramBlock2(int* spl, double*** Specs, int Y, int R0,
-                                      int x0, int Y0, int N, double& ene)
+                                            int x0, int Y0, int N, double& ene, string pfx)
 {
     double ent = 0; 
 
+#ifdef DEBUG_VERBOSE
+    cerr << pfx << "cutting with Y = " << Y << ", R0 = " << R0 << ", x0 = " << x0 << ", Y0 = " << Y0 << ", N = " << N << endl;
+#endif
+
     if (Y > N) {
+
+#ifdef DEBUG_VERBOSE
+        cerr << pfx << "Y > N case, making top/bottom cut" << endl;
+#endif
 
         spl[0] = 0;
         double ene1, ene2;
 
         ent += DoCutSpectrogramBlock2
-            (&spl[1], Specs, Y/2, R0, x0, Y0, N, ene1);
+            (&spl[1], Specs, Y/2, R0, x0, Y0, N, ene1, pfx + "  ");
 
         ent += DoCutSpectrogramBlock2
-            (&spl[Y/2], Specs, Y/2, R0, x0, Y0+Y/2, N, ene2);
+            (&spl[Y/2], Specs, Y/2, R0, x0, Y0+Y/2, N, ene2, pfx + "  ");
 
         ene = ene1+ene2;
 
     } else if (N == 1) {
 
         double tmp = Specs[R0][x0][Y0];
+
+#ifdef DEBUG_VERBOSE
+        cerr << pfx << "N == 1 case (value here = " << tmp << ")" << endl;
+#endif
+
         ene = tmp;
         ent = xlogx(tmp);
 
     } else {
         // Y == N, the square case
 
+#ifdef DEBUG_VERBOSE
+        cerr << pfx << "Y == N case, testing left/right cut" << endl;
+#endif
+
         double enel, ener, enet, eneb, entl, entr, entt, entb;
         int* tmpspl = new int[Y];
 
         entl = DoCutSpectrogramBlock2
-            (&spl[1], Specs, Y/2, R0+1, 2*x0, Y0/2, N/2, enel);
+            (&spl[1], Specs, Y/2, R0+1, 2*x0, Y0/2, N/2, enel, pfx + "  ");
 
         entr = DoCutSpectrogramBlock2
-            (&spl[Y/2], Specs, Y/2, R0+1, 2*x0+1, Y0/2, N/2, ener);
+            (&spl[Y/2], Specs, Y/2, R0+1, 2*x0+1, Y0/2, N/2, ener, pfx + "  ");
+
+#ifdef DEBUG_VERBOSE
+        cerr << pfx << "Y == N case, testing top/bottom cut" << endl;
+#endif
 
         entb = DoCutSpectrogramBlock2
-            (&tmpspl[1], Specs, Y/2, R0, x0, Y0, N/2, eneb);
+            (&tmpspl[1], Specs, Y/2, R0, x0, Y0, N/2, eneb, pfx + "  ");
 
         entt = DoCutSpectrogramBlock2
-            (&tmpspl[Y/2], Specs, Y/2, R0, x0, Y0+Y/2, N/2, enet);
+            (&tmpspl[Y/2], Specs, Y/2, R0, x0, Y0+Y/2, N/2, enet, pfx + "  ");
 
         double
             ene0 = enet + eneb,
@@ -435,16 +507,24 @@ AdaptiveSpectrogram::DoCutSpectrogramBlock2(int* spl, double*** Specs, int Y, in
 
         // quasi-global normalization
 
-        norment0 = (ent0 - ene0 * log(ene0+eneres)) / (ene0+eneres);
-        norment1 = (ent1 - ene1 * log(ene1+eneres)) / (ene1+eneres);
+//        norment0 = (ent0 - ene0 * log(ene0+eneres)) / (ene0+eneres);
+//        norment1 = (ent1 - ene1 * log(ene1+eneres)) / (ene1+eneres);
+        norment0 = ene0;
+        norment1 = ene1;
 
         // local normalization
 
         if (norment1 < norment0) {
+#ifdef DEBUG_VERBOSE
+            cerr << pfx << "top/bottom cut wins (" << norment0 << " > " << norment1 << "), returning sum ent " << ent0 << " and ene " << ene0 << endl;
+#endif
             spl[0] = 0;
             ent = ent0, ene = ene0;
             memcpy(&spl[1], &tmpspl[1], sizeof(int)*(Y-2));
         } else {
+#ifdef DEBUG_VERBOSE
+            cerr << pfx << "left/right cut wins (" << norment1 << " >= " << norment0 << "), returning sum ent " << ent1 << " and ene " << ene1 << endl;
+#endif
             spl[0] = 1;
             ent = ent1, ene = ene1;
         }

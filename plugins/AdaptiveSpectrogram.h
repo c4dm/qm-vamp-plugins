@@ -61,7 +61,8 @@ protected:
                             double *spec, int specsz, int res);
 
     double DoCutSpectrogramBlock2(int* spl, double*** Specs, int Y, int R0,
-                                  int x0, int Y0, int N, double& ene);
+                                  int x0, int Y0, int N, double& ene,
+                                  std::string pfx = "");
 
     double DoMixSpectrogramBlock2(int* spl, double* Spec, double*** Specs,
                                   int Y, int R0, int x0, int Y0,
