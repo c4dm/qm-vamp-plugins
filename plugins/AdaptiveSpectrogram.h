@@ -55,6 +55,78 @@ protected:
         else return x * log(x);
     }
 
+    struct Spectrogram
+    {
+        int resolution;
+        int width;
+        double **data;
+
+        Spectrogram(int r, int w) :
+            resolution(r), width(w) {
+            data = new double *[width];
+            for (int i = 0; i < width; ++i) data[i] = new double[resolution];
+        }
+
+        ~Spectrogram() {
+            for (int i = 0; i < width; ++i) delete[] data[i];
+            delete[] data;
+        }            
+    };
+
+    struct Spectrograms
+    {
+        int minres;
+        int maxres;
+        int n;
+        Spectrogram **spectrograms;
+
+        Spectrograms(int mn, int mx, int widthofmax) :
+            minres(mn), maxres(mx) {
+            n = log2(maxres/minres) + 1;
+            spectrograms = new Spectrogram *[n];
+            int r = mn;
+            for (int i = 0; i < n; ++i) {
+                spectrograms[i] = new Spectrogram(r, widthofmax * (mx / r));
+                r = r * 2;
+            }
+        }
+        ~Spectrograms() {
+            for (int i = 0; i < n; ++i) {
+                delete spectrograms[i];
+            }
+            delete[] spectrograms;
+        }
+    };
+
+    struct Cutting
+    {
+        enum Cut { Horizontal, Vertical, Finished };
+        Cut cut;
+        Cutting *first;
+        Cutting *second;
+        double cost;
+        double value;
+
+        ~Cutting() {
+            delete first;
+            delete second;
+        }
+    };
+
+    double cost(const Spectrogram &s, int x, int y) {
+        return xlogx(s.data[x][y]);
+    }
+
+    double value(const Spectrogram &s, int x, int y) {
+        return s.data[x][y];
+    }
+
+    Cutting *cut(const Spectrograms &, int res, int x, int y, int h);
+
+    void printCutting(Cutting *, std::string);
+
+    void assemble(const Spectrograms &, const Cutting *, std::vector<std::vector<float> > &, int x, int y, int w, int h);
+
     void unpackResultMatrix(std::vector<std::vector<float> > &rmat,
                             int x, int y, int w, int h,
                             int *spl,

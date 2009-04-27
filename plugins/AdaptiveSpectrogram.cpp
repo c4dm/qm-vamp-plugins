@@ -29,6 +29,8 @@ AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     Plugin(inputSampleRate),
     m_w(9),
     m_n(2)
+//    m_w(0),
+//    m_n(2)
 {
 }
 
@@ -195,6 +197,7 @@ AdaptiveSpectrogram::getRemainingFeatures()
     return fs;
 }
 
+#ifdef NOT_DEFINED
 AdaptiveSpectrogram::FeatureSet
 AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 {
@@ -349,7 +352,190 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 */
     return fs;
 }
+#endif
 
+AdaptiveSpectrogram::FeatureSet
+AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
+{
+    FeatureSet fs;
+
+    int minwid = (2 << m_w), maxwid = ((2 << m_w) << m_n);
+
+    cerr << "widths from " << minwid << " to " << maxwid << " ("
+         << minwid/2 << " to " << maxwid/2 << " in real parts)" << endl;
+
+    Spectrograms s(minwid/2, maxwid/2, 1);
+    
+    double *tmpin  = new double[maxwid];
+    double *tmprout = new double[maxwid];
+    double *tmpiout = new double[maxwid];
+
+    int w = minwid;
+    int index = 0;
+
+    while (w <= maxwid) {
+        for (int i = 0; i < maxwid / w; ++i) {
+            int origin = maxwid/4 - w/4; // for 50% overlap
+            for (int j = 0; j < w; ++j) {
+                double mul = 0.50 - 0.50 * cos((2 * M_PI * j) / w);
+                tmpin[j] = inputBuffers[0][origin + i * w/2 + j] * mul;
+            }
+            FFT::process(w, false, tmpin, 0, tmprout, tmpiout);
+            for (int j = 0; j < w/2; ++j) {
+                int k = j+1; // include Nyquist but not DC
+                double mag = sqrt(tmprout[k] * tmprout[k] +
+                                  tmpiout[k] * tmpiout[k]);
+                double scaled = mag / (w/2);
+                s.spectrograms[index]->data[i][j] = scaled;
+            }
+        }
+        w *= 2;
+        ++index;
+    }
+
+    Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2);
+
+    printCutting(cutting, "  ");
+
+    vector<vector<float> > rmat(maxwid/minwid);
+    for (int i = 0; i < maxwid/minwid; ++i) {
+        rmat[i] = vector<float>(maxwid/2);
+    }
+    
+    assemble(s, cutting, rmat, 0, 0, maxwid/minwid, maxwid/2);
+
+    delete cutting;
+
+    for (int i = 0; i < rmat.size(); ++i) {
+        Feature f;
+        f.hasTimestamp = false;
+        f.values = rmat[i];
+        fs[0].push_back(f);
+    }
+
+    return fs;
+}
+
+void
+AdaptiveSpectrogram::printCutting(Cutting *c, string pfx)
+{
+    if (c->first) {
+        if (c->cut == Cutting::Horizontal) {
+            cerr << pfx << "H" << endl;
+        } else if (c->cut == Cutting::Vertical) {
+            cerr << pfx << "V" << endl;
+        }
+        printCutting(c->first, pfx + "  ");
+        printCutting(c->second, pfx + "  ");
+    } else {
+        cerr << pfx << "* " << c->value << endl;
+    }
+}
+
+AdaptiveSpectrogram::Cutting *
+AdaptiveSpectrogram::cut(const Spectrograms &s,
+                         int res,
+                         int x, int y, int h)
+{
+//    cerr << "res = " << res << ", x = " << x << ", y = " << y << ", h = " << h << endl;
+
+    if (h > 1 && res > s.minres) {
+
+        // The "vertical" division is a top/bottom split.
+        // Splitting this way keeps us in the same resolution,
+        // but with two vertical subregions of height h/2.
+
+        Cutting *top    = cut(s, res, x, y + h/2, h/2);
+        Cutting *bottom = cut(s, res, x, y, h/2);
+
+        // The "horizontal" division is a left/right split.  Splitting
+        // this way places us in resolution res/2, which has lower
+        // vertical resolution but higher horizontal resolution.  We
+        // need to double x accordingly.
+
+        Cutting *left   = cut(s, res/2, 2 * x, y/2, h/2);
+        Cutting *right  = cut(s, res/2, 2 * x + 1, y/2, h/2);
+
+        double vcost = top->cost + bottom->cost;
+        double hcost = left->cost + right->cost;
+
+        if (vcost > hcost) {
+
+            // cut horizontally (left/right)
+
+            Cutting *cutting = new Cutting;
+            cutting->cut = Cutting::Horizontal;
+            cutting->first = left;
+            cutting->second = right;
+            cutting->cost = hcost;
+            cutting->value = left->value + right->value;
+            delete top;
+            delete bottom;
+            return cutting;
+
+        } else {
+
+            Cutting *cutting = new Cutting;
+            cutting->cut = Cutting::Vertical;
+            cutting->first = top;
+            cutting->second = bottom;
+            cutting->cost = vcost;
+            cutting->value = top->value + bottom->value;
+            delete left;
+            delete right;
+            return cutting;
+        }
+
+    } else {
+
+        // no cuts possible from this level
+
+        Cutting *cutting = new Cutting;
+        cutting->cut = Cutting::Finished;
+        cutting->first = 0;
+        cutting->second = 0;
+
+        int n = 0;
+        for (int r = res; r > s.minres; r /= 2) ++n;
+        const Spectrogram *spectrogram = s.spectrograms[n];
+
+        cutting->cost = cost(*spectrogram, x, y);
+        cutting->value = value(*spectrogram, x, y);
+
+//        cerr << "cost for this cell: " << cutting->cost << endl;
+
+        return cutting;
+    }
+}
+
+void
+AdaptiveSpectrogram::assemble(const Spectrograms &s,
+                              const Cutting *cutting,
+                              vector<vector<float> > &rmat,
+                              int x, int y, int w, int h)
+{
+    switch (cutting->cut) {
+
+    case Cutting::Finished:
+        for (int i = 0; i < w; ++i) {
+            for (int j = 0; j < h; ++j) {
+                rmat[x+i][y+j] = cutting->value;
+            }
+        }
+        return;
+
+    case Cutting::Horizontal:
+        assemble(s, cutting->first, rmat, x, y, w/2, h);
+        assemble(s, cutting->second, rmat, x+w/2, y, w/2, h);
+        break;
+        
+    case Cutting::Vertical:
+        assemble(s, cutting->first, rmat, x, y+h/2, w, h/2);
+        assemble(s, cutting->second, rmat, x, y, w, h/2);
+        break;
+    }        
+}
+            
 void
 AdaptiveSpectrogram::unpackResultMatrix(vector<vector<float> > &rmat,
                                   int x, int y, int w, int h,
