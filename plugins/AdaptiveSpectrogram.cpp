@@ -25,10 +25,13 @@ using Vamp::RealTime;
 
 //#define DEBUG_VERBOSE 1
 
+static const int cutThreadCount = 4;
+
 AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     Plugin(inputSampleRate),
-    m_w(9),
-    m_n(2)
+    m_w(8),
+    m_n(3),
+    m_first(true)
 //    m_w(0),
 //    m_n(2)
 {
@@ -36,6 +39,12 @@ AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
 
 AdaptiveSpectrogram::~AdaptiveSpectrogram()
 {
+    for (int i = 0; i < m_cutThreads.size(); ++i) {
+        m_cutThreads[i]->finish();
+        m_cutThreads[i]->wait();
+        delete m_cutThreads[i];
+    }
+    m_cutThreads.clear();
 }
 
 string
@@ -113,7 +122,7 @@ AdaptiveSpectrogram::getParameterDescriptors() const
     desc.unit = "";
     desc.minValue = 1;
     desc.maxValue = 10;
-    desc.defaultValue = 3;
+    desc.defaultValue = 4;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
     list.push_back(desc);
@@ -125,7 +134,7 @@ AdaptiveSpectrogram::getParameterDescriptors() const
     desc2.unit = "";
     desc2.minValue = 1;
     desc2.maxValue = 14;
-    desc2.defaultValue = 10;
+    desc2.defaultValue = 9;
     desc2.isQuantized = true;
     desc2.quantizeStep = 1;
     // I am so lazy
@@ -242,6 +251,8 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
     delete[] tmprout;
     delete[] tmpiout;
 
+    m_first = true;//!!!
+
     Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2);
 
 #ifdef DEBUG_VERBOSE
@@ -264,11 +275,13 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
         fs[0].push_back(f);
     }
 
+//    std::cerr << "process returning!\n" << std::endl;
+
     return fs;
 }
 
 void
-AdaptiveSpectrogram::printCutting(Cutting *c, string pfx)
+AdaptiveSpectrogram::printCutting(Cutting *c, string pfx) const
 {
     if (c->first) {
         if (c->cut == Cutting::Horizontal) {
@@ -283,29 +296,100 @@ AdaptiveSpectrogram::printCutting(Cutting *c, string pfx)
     }
 }
 
-AdaptiveSpectrogram::Cutting *
-AdaptiveSpectrogram::cut(const Spectrograms &s,
-                         int res,
-                         int x, int y, int h)
+void
+AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
+                                int res,
+                                int x, int y, int h,
+                                Cutting *&top, Cutting *&bottom,
+                                Cutting *&left, Cutting *&right) const
 {
-//    cerr << "res = " << res << ", x = " << x << ", y = " << y << ", h = " << h << endl;
+    m_first = false;
+    if (m_first) {//!!!
 
-    if (h > 1 && res > s.minres) {
+        m_first = false;
 
-        // The "vertical" division is a top/bottom split.
-        // Splitting this way keeps us in the same resolution,
-        // but with two vertical subregions of height h/2.
+        if (m_cutThreads.empty()) {
+            for (int i = 0; i < 4; ++i) {
+//            for (int i = 0; i < 1; ++i) {
+                CutThread *t = new CutThread(this);
+                t->start();
+                m_cutThreads.push_back(t);
+            }
+//            sleep(1); //!!!
+        }
 
-        Cutting *top    = cut(s, res, x, y + h/2, h/2);
-        Cutting *bottom = cut(s, res, x, y, h/2);
+//    int threadIndices[4];
+//    int found = 0;
+//    for (int i = 0; i < m_cutThreads.size(); ++i) {
+//        if (!m_cutThreads[i]->busy()) {
+//            threadIndices[found] = i;
+//            if (++found == 4) break;
+//        }
+//    }
+
+//    if (found == 4) {
+
+        // enough threads available; use them.  Need to avoid threads calling back on cut() in this class before we have made all of our threads busy (otherwise the recursive call is likely to claim threads further down our threadIndices before we do) -- hence m_threadMutex
+
+        //!!! no, thread mutex not a good way, need a claim() call on each thread or something
+
+//        m_threadMutex.lock();
+        m_cutThreads[0]->cut(s, res, x, y + h/2, h/2); // top
+        m_cutThreads[1]->cut(s, res, x, y, h/2); // bottom
+        m_cutThreads[2]->cut(s, res/2, 2 * x, y/2, h/2); // left
+        m_cutThreads[3]->cut(s, res/2, 2 * x + 1, y/2, h/2); // right
+
+//        std::cerr << "set up all four" << std::endl;
+
+        top    = m_cutThreads[0]->get();
+        bottom = m_cutThreads[1]->get();
+        left   = m_cutThreads[2]->get();
+        right  = m_cutThreads[3]->get();
+/*
+        bottom = cut(s, res, x, y, h/2);
 
         // The "horizontal" division is a left/right split.  Splitting
         // this way places us in resolution res/2, which has lower
         // vertical resolution but higher horizontal resolution.  We
         // need to double x accordingly.
+        
+        left   = cut(s, res/2, 2 * x, y/2, h/2);
+        right  = cut(s, res/2, 2 * x + 1, y/2, h/2);
+*/
+//        std::cerr << "got all four" << std::endl;
 
-        Cutting *left   = cut(s, res/2, 2 * x, y/2, h/2);
-        Cutting *right  = cut(s, res/2, 2 * x + 1, y/2, h/2);
+    } else {
+
+        // unthreaded
+
+        // The "vertical" division is a top/bottom split.
+        // Splitting this way keeps us in the same resolution,
+        // but with two vertical subregions of height h/2.
+
+        top    = cut(s, res, x, y + h/2, h/2);
+        bottom = cut(s, res, x, y, h/2);
+
+        // The "horizontal" division is a left/right split.  Splitting
+        // this way places us in resolution res/2, which has lower
+        // vertical resolution but higher horizontal resolution.  We
+        // need to double x accordingly.
+        
+        left   = cut(s, res/2, 2 * x, y/2, h/2);
+        right  = cut(s, res/2, 2 * x + 1, y/2, h/2);
+    }
+}
+
+AdaptiveSpectrogram::Cutting *
+AdaptiveSpectrogram::cut(const Spectrograms &s,
+                         int res,
+                         int x, int y, int h) const
+{
+//    cerr << "res = " << res << ", x = " << x << ", y = " << y << ", h = " << h << endl;
+
+    if (h > 1 && res > s.minres) {
+
+        Cutting *top = 0, *bottom = 0, *left = 0, *right = 0;
+        getSubCuts(s, res, x, y, h, top, bottom, left, right);
 
         double vcost = top->cost + bottom->cost;
         double hcost = left->cost + right->cost;
@@ -374,7 +458,7 @@ void
 AdaptiveSpectrogram::assemble(const Spectrograms &s,
                               const Cutting *cutting,
                               vector<vector<float> > &rmat,
-                              int x, int y, int w, int h)
+                              int x, int y, int w, int h) const
 {
     switch (cutting->cut) {
 
