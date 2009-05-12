@@ -32,19 +32,20 @@ AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     m_w(8),
     m_n(3),
     m_first(true)
-//    m_w(0),
-//    m_n(2)
 {
 }
 
 AdaptiveSpectrogram::~AdaptiveSpectrogram()
 {
     for (int i = 0; i < m_cutThreads.size(); ++i) {
-        m_cutThreads[i]->finish();
-        m_cutThreads[i]->wait();
         delete m_cutThreads[i];
     }
     m_cutThreads.clear();
+
+    for (int i = 0; i < m_fftThreads.size(); ++i) {
+        delete m_fftThreads[i];
+    }
+    m_fftThreads.clear();
 }
 
 string
@@ -101,6 +102,10 @@ AdaptiveSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockSi
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
+    while (m_fftThreads.size() < (m_n + 1)) {
+        m_fftThreads.push_back(new FFTThread());
+    }
+    
     return true;
 }
 
@@ -219,37 +224,24 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 #endif
 
     Spectrograms s(minwid/2, maxwid/2, 1);
-    
-    double *tmpin  = new double[maxwid];
-    double *tmprout = new double[maxwid];
-    double *tmpiout = new double[maxwid];
 
     int w = minwid;
     int index = 0;
 
     while (w <= maxwid) {
-        for (int i = 0; i < maxwid / w; ++i) {
-            int origin = maxwid/4 - w/4; // for 50% overlap
-            for (int j = 0; j < w; ++j) {
-                double mul = 0.50 - 0.50 * cos((2 * M_PI * j) / w);
-                tmpin[j] = inputBuffers[0][origin + i * w/2 + j] * mul;
-            }
-            FFT::process(w, false, tmpin, 0, tmprout, tmpiout);
-            for (int j = 0; j < w/2; ++j) {
-                int k = j+1; // include Nyquist but not DC
-                double mag = sqrt(tmprout[k] * tmprout[k] +
-                                  tmpiout[k] * tmpiout[k]);
-                double scaled = mag / (w/2);
-                s.spectrograms[index]->data[i][j] = scaled;
-            }
-        }
+        m_fftThreads[index]->calculate(inputBuffers[0], s, index, w, maxwid);
         w *= 2;
         ++index;
     }
 
-    delete[] tmpin;
-    delete[] tmprout;
-    delete[] tmpiout;
+    w = minwid;
+    index = 0;
+
+    while (w <= maxwid) {
+        m_fftThreads[index]->await();
+        w *= 2;
+        ++index;
+    }
 
     m_first = true;//!!!
 
@@ -303,7 +295,6 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
                                 Cutting *&top, Cutting *&bottom,
                                 Cutting *&left, Cutting *&right) const
 {
-    m_first = false;
     if (m_first) {//!!!
 
         m_first = false;
@@ -312,7 +303,7 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
             for (int i = 0; i < 4; ++i) {
 //            for (int i = 0; i < 1; ++i) {
                 CutThread *t = new CutThread(this);
-                t->start();
+//                t->start();
                 m_cutThreads.push_back(t);
             }
 //            sleep(1); //!!!

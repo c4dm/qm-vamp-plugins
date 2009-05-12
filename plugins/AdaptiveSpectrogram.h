@@ -14,6 +14,8 @@
 #include <cmath>
 #include <vector>
 
+#include <dsp/transforms/FFT.h>//!!!
+
 #include "thread/Thread.h"
 
 class AdaptiveSpectrogram : public Vamp::Plugin
@@ -110,108 +112,101 @@ protected:
         }
     };
 
-    class CutThread : public Thread
+    class FFTThread : public AsynchronousTask
     {
     public:
-        CutThread(const AdaptiveSpectrogram *as) :
-            m_as(as),
-//            m_busy(false),
-//            m_computed(false),
-            m_result(0),
-            m_workToDoC("CutThread: work to do"),
-            m_workToDo(false),
-            m_workDoneC("CutThread: work done"),
-            m_workDone(false),
-            m_finishing(false)
-        { }
-        ~CutThread() { }
+        FFTThread() { }
+        ~FFTThread() { }
 
+        void calculate(const float *timeDomain, Spectrograms &s,
+                       int res, int width, int maxwidth) {
+            m_in = timeDomain;
+            m_s = &s;
+            m_res = res;
+            m_w = width;
+            m_maxwid = maxwidth;
+            startTask();
+        }
+
+        void await() {
+            awaitTask();
+        }
+
+    protected:
+        void performTask() {
+
+            double *tmpin   = new double[m_w];
+            double *tmprout = new double[m_w];
+            double *tmpiout = new double[m_w];
+
+            //!!! use window object
+
+            for (int i = 0; i < m_maxwid / m_w; ++i) {
+                int origin = m_maxwid/4 - m_w/4; // for 50% overlap
+                for (int j = 0; j < m_w; ++j) {
+                    double mul = 0.50 - 0.50 * cos((2 * M_PI * j) / m_w);
+                    tmpin[j] = m_in[origin + i * m_w/2 + j] * mul;
+                }
+                FFT::process(m_w, false, tmpin, 0, tmprout, tmpiout);
+                for (int j = 0; j < m_w/2; ++j) {
+                    int k = j+1; // include Nyquist but not DC
+                    double mag = sqrt(tmprout[k] * tmprout[k] +
+                                      tmpiout[k] * tmpiout[k]);
+                    double scaled = mag / (m_w/2);
+                    m_s->spectrograms[m_res]->data[i][j] = scaled;
+                }
+            }
+
+            delete[] tmpin;
+            delete[] tmprout;
+            delete[] tmpiout;
+        }
+
+    private:
+        const float *m_in;
+        Spectrograms *m_s;
+        int m_res;
+        int m_w;
+        int m_maxwid;
+    };
+
+    std::vector<FFTThread *> m_fftThreads;
+
+    class CutThread : public AsynchronousTask
+    {
+    public:
+        CutThread(const AdaptiveSpectrogram *as) : m_as(as), m_result(0) { }
+        ~CutThread() { }
+        
         void cut(const Spectrograms &s, int res, int x, int y, int h) {
-            m_workToDoC.lock();
-//            std::cerr << "locked in main thread" << std::endl;
             m_s = &s;
             m_res = res;
             m_x = x;
             m_y = y;
             m_h = h;
-//            m_busy = true;
-//            m_computed = false;
-            m_workToDo = true;
-            m_workDone = false;
-            m_workToDoC.signal();
-            m_workDoneC.lock();
-            m_workToDoC.unlock();
+            startTask();
         }
 
         Cutting *get() {
-//            std::cerr << "about to wait within main thread" << std::endl;
-            // m_workDoneC must be locked from prior call to cut()
-            while (!m_workDone) m_workDoneC.wait();
-//            std::cerr << "waited within main thread" << std::endl;
-//            m_workDoneC.lock();
-//            while (!m_computed) {
-//                std::cerr << "waiting within main thread" << std::endl;
-//                m_condition.wait();
-//            }
-            Cutting *c = m_result;
-            m_result = 0;
-            m_workDoneC.unlock();
-            return c;
-        }
-/*
-        bool busy() {
-            return m_busy;
-        }
-*/
-        void finish() {
-            m_finishing = true;
-            m_workToDoC.signal();
+            awaitTask();
+            return m_result;
         }
 
     protected:
-        virtual void run() {
-            m_workToDoC.lock();
-//            std::cerr << "locked within run function" << std::endl;
-            while (!m_finishing) {
-//                if (!m_busy) {
-//                    std::cerr << "waiting within run function" << std::endl;
-//                    m_condition.wait();
-//                }
-                    while (!m_workToDo && !m_finishing) m_workToDoC.wait();
-//                    std::cerr << "waited within run function" << std::endl;
-                if (m_finishing) {
-                    break;
-                }
-                if (m_workToDo) {
-//                    std::cerr << "cut thread " << this << ": calling cut" << std::endl;
-                    m_result = m_as->cut(*m_s, m_res, m_x, m_y, m_h);
-//                    std::cerr << "cut returning" << std::endl;
-//                    m_computed = true;
-//                    m_busy = false;
-                    m_workToDo = false;
-                    m_workDone = true;
-//                    std::cerr << "signalling completion from run function" << std::endl;
-                    m_workDoneC.signal();
-                }
-            }
-            m_workToDoC.unlock();
+        void performTask() {
+            m_result = m_as->cut(*m_s, m_res, m_x, m_y, m_h);
         }
 
+    private:
         const AdaptiveSpectrogram *m_as;
         const Spectrograms *m_s;
         int m_res;
         int m_x;
         int m_y;
         int m_h;
-//        bool m_busy;
-//        bool m_computed;
         Cutting *m_result;
-        Condition m_workToDoC;
-        bool m_workToDo;
-        Condition m_workDoneC;
-        bool m_workDone;
-        bool m_finishing;
     };
+
     mutable std::vector<CutThread *> m_cutThreads;//!!! mutable blargh
 
 ///!!!    Mutex m_threadMutex;
