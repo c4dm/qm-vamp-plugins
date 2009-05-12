@@ -361,8 +361,10 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 
     int minwid = (2 << m_w), maxwid = ((2 << m_w) << m_n);
 
+#ifdef DEBUG_VERBOSE
     cerr << "widths from " << minwid << " to " << maxwid << " ("
          << minwid/2 << " to " << maxwid/2 << " in real parts)" << endl;
+#endif
 
     Spectrograms s(minwid/2, maxwid/2, 1);
     
@@ -395,7 +397,9 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 
     Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2);
 
+#ifdef DEBUG_VERBOSE
     printCutting(cutting, "  ");
+#endif
 
     vector<vector<float> > rmat(maxwid/minwid);
     for (int i = 0; i < maxwid/minwid; ++i) {
@@ -458,6 +462,17 @@ AdaptiveSpectrogram::cut(const Spectrograms &s,
 
         double vcost = top->cost + bottom->cost;
         double hcost = left->cost + right->cost;
+
+        bool normalize = true;
+
+        if (normalize) {
+
+            double venergy = top->value + bottom->value;
+            vcost = (vcost + (venergy * log(venergy))) / venergy;
+
+            double henergy = left->value + right->value;
+            hcost = (hcost + (henergy * log(henergy))) / henergy;
+        }            
 
         if (vcost > hcost) {
 
