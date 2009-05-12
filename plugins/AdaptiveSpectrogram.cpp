@@ -395,6 +395,10 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
         ++index;
     }
 
+    delete[] tmpin;
+    delete[] tmprout;
+    delete[] tmpiout;
+
     Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2);
 
 #ifdef DEBUG_VERBOSE
