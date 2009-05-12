@@ -126,25 +126,6 @@ protected:
     void printCutting(Cutting *, std::string);
 
     void assemble(const Spectrograms &, const Cutting *, std::vector<std::vector<float> > &, int x, int y, int w, int h);
-
-    void unpackResultMatrix(std::vector<std::vector<float> > &rmat,
-                            int x, int y, int w, int h,
-                            int *spl,
-                            double *spec, int specsz, int res);
-
-    double DoCutSpectrogramBlock2(int* spl, double*** Specs, int Y, int R0,
-                                  int x0, int Y0, int N, double& ene,
-                                  std::string pfx = "");
-
-    double DoMixSpectrogramBlock2(int* spl, double* Spec, double*** Specs,
-                                  int Y, int R0, int x0, int Y0,
-                                  bool normmix, int res, double* e);
-
-    double MixSpectrogramBlock2(int* spl, double* Spec, double*** Specs,
-                                int WID, int wid, bool normmix);
-
-    double MixSpectrogram2(int** spl, double** Spec, double*** Specs, int Fr,
-                           int WID, int wid, bool norm, bool normmix);
 };
 
 
