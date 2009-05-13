@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <dsp/transforms/FFT.h>//!!!
+#include <base/Window.h>
 
 #include "thread/Thread.h"
 
@@ -115,7 +116,8 @@ protected:
     class FFTThread : public AsynchronousTask
     {
     public:
-        FFTThread(int w) {
+        FFTThread(int w) :
+            m_window(HanningWindow, w) {
             m_w = w;
             m_fft = new FFTReal(m_w);
             m_rin = new double[m_w];
@@ -146,15 +148,12 @@ protected:
 
     protected:
         void performTask() {
-
-            //!!! use window object
-
             for (int i = 0; i < m_maxwid / m_w; ++i) {
                 int origin = m_maxwid/4 - m_w/4; // for 50% overlap
                 for (int j = 0; j < m_w; ++j) {
-                    double mul = 0.50 - 0.50 * cos((2 * M_PI * j) / m_w);
-                    m_rin[j] = m_in[origin + i * m_w/2 + j] * mul;
+                    m_rin[j] = m_in[j];
                 }
+                m_window.cut(m_rin);
                 m_fft->process(false, m_rin, m_rout, m_iout);
                 for (int j = 0; j < m_w/2; ++j) {
                     int k = j+1; // include Nyquist but not DC
@@ -167,6 +166,7 @@ protected:
         }
 
     private:
+        Window<double> m_window;
         FFTReal *m_fft;
         const float *m_in;
         double *m_rin;
