@@ -42,8 +42,8 @@ AdaptiveSpectrogram::~AdaptiveSpectrogram()
     }
     m_cutThreads.clear();
 
-    for (int i = 0; i < m_fftThreads.size(); ++i) {
-        delete m_fftThreads[i];
+    for (FFTMap::iterator i = m_fftThreads.begin(); i != m_fftThreads.end(); ++i) {
+        delete i->second;
     }
     m_fftThreads.clear();
 }
@@ -102,10 +102,6 @@ AdaptiveSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockSi
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    while (m_fftThreads.size() < (m_n + 1)) {
-        m_fftThreads.push_back(new FFTThread());
-    }
-    
     return true;
 }
 
@@ -229,18 +225,18 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
     int index = 0;
 
     while (w <= maxwid) {
-        m_fftThreads[index]->calculate(inputBuffers[0], s, index, w, maxwid);
+        if (m_fftThreads.find(w) == m_fftThreads.end()) {
+            m_fftThreads[w] = new FFTThread(w);
+        }
+        m_fftThreads[w]->calculate(inputBuffers[0], s, index, maxwid);
         w *= 2;
         ++index;
     }
 
     w = minwid;
-    index = 0;
-
     while (w <= maxwid) {
-        m_fftThreads[index]->await();
+        m_fftThreads[w]->await();
         w *= 2;
-        ++index;
     }
 
     m_first = true;//!!!

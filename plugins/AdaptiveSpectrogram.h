@@ -115,15 +115,27 @@ protected:
     class FFTThread : public AsynchronousTask
     {
     public:
-        FFTThread() { }
-        ~FFTThread() { }
+        FFTThread(int w) {
+            m_w = w;
+            m_fft = new FFTReal(m_w);
+            m_rin = new double[m_w];
+            m_rout = new double[m_w];
+            m_iout = new double[m_w];
+        }
+        ~FFTThread() {
+            delete[] m_rin;
+            delete[] m_rout;
+            delete[] m_iout;
+            delete m_fft;
+        }
+
+        int getW() const { return m_w; }
 
         void calculate(const float *timeDomain, Spectrograms &s,
-                       int res, int width, int maxwidth) {
+                       int res, int maxwidth) {
             m_in = timeDomain;
             m_s = &s;
             m_res = res;
-            m_w = width;
             m_maxwid = maxwidth;
             startTask();
         }
@@ -135,42 +147,39 @@ protected:
     protected:
         void performTask() {
 
-            double *tmpin   = new double[m_w];
-            double *tmprout = new double[m_w];
-            double *tmpiout = new double[m_w];
-
             //!!! use window object
 
             for (int i = 0; i < m_maxwid / m_w; ++i) {
                 int origin = m_maxwid/4 - m_w/4; // for 50% overlap
                 for (int j = 0; j < m_w; ++j) {
                     double mul = 0.50 - 0.50 * cos((2 * M_PI * j) / m_w);
-                    tmpin[j] = m_in[origin + i * m_w/2 + j] * mul;
+                    m_rin[j] = m_in[origin + i * m_w/2 + j] * mul;
                 }
-                FFT::process(m_w, false, tmpin, 0, tmprout, tmpiout);
+                m_fft->process(false, m_rin, m_rout, m_iout);
                 for (int j = 0; j < m_w/2; ++j) {
                     int k = j+1; // include Nyquist but not DC
-                    double mag = sqrt(tmprout[k] * tmprout[k] +
-                                      tmpiout[k] * tmpiout[k]);
+                    double mag = sqrt(m_rout[k] * m_rout[k] +
+                                      m_iout[k] * m_iout[k]);
                     double scaled = mag / (m_w/2);
                     m_s->spectrograms[m_res]->data[i][j] = scaled;
                 }
             }
-
-            delete[] tmpin;
-            delete[] tmprout;
-            delete[] tmpiout;
         }
 
     private:
+        FFTReal *m_fft;
         const float *m_in;
+        double *m_rin;
+        double *m_rout;
+        double *m_iout;
         Spectrograms *m_s;
         int m_res;
         int m_w;
         int m_maxwid;
     };
 
-    std::vector<FFTThread *> m_fftThreads;
+    typedef std::map<int, FFTThread *> FFTMap;
+    FFTMap m_fftThreads;
 
     class CutThread : public AsynchronousTask
     {
