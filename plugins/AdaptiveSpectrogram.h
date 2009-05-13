@@ -54,6 +54,7 @@ public:
 protected:
     int m_w;
     int m_n;
+    bool m_threaded;
 
     struct Spectrogram
     {
@@ -133,12 +134,9 @@ protected:
 
         int getW() const { return m_w; }
 
-        void calculate(const float *timeDomain, Spectrograms &s,
-                       int res, int maxwidth) {
-            m_in = timeDomain;
-            m_s = &s;
-            m_res = res;
-            m_maxwid = maxwidth;
+        void startCalculation(const float *timeDomain, Spectrograms &s,
+                              int res, int maxwidth) {
+            setParameters(timeDomain, s, res, maxwidth);
             startTask();
         }
 
@@ -146,12 +144,19 @@ protected:
             awaitTask();
         }
 
-    protected:
+        void setParameters(const float *timeDomain, Spectrograms &s,
+                           int res, int maxwidth) {
+            m_in = timeDomain;
+            m_s = &s;
+            m_res = res;
+            m_maxwid = maxwidth;
+        }
+
         void performTask() {
             for (int i = 0; i < m_maxwid / m_w; ++i) {
                 int origin = m_maxwid/4 - m_w/4; // for 50% overlap
                 for (int j = 0; j < m_w; ++j) {
-                    m_rin[j] = m_in[j];
+                    m_rin[j] = m_in[origin + i * m_w/2 + j];
                 }
                 m_window.cut(m_rin);
                 m_fft->process(false, m_rin, m_rout, m_iout);
@@ -216,10 +221,8 @@ protected:
         Cutting *m_result;
     };
 
-    mutable std::vector<CutThread *> m_cutThreads;//!!! mutable blargh
-
-///!!!    Mutex m_threadMutex;
-mutable    bool m_first; //!!! gross
+    mutable std::vector<CutThread *> m_cutThreads;
+    mutable bool m_threadsInUse;
 
     double xlogx(double x) const {
         if (x == 0.0) return 0.0;

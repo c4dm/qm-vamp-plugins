@@ -25,13 +25,12 @@ using Vamp::RealTime;
 
 //#define DEBUG_VERBOSE 1
 
-static const int cutThreadCount = 4;
-
 AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     Plugin(inputSampleRate),
     m_w(8),
     m_n(3),
-    m_first(true)
+    m_threaded(true),
+    m_threadsInUse(false)
 {
 }
 
@@ -155,6 +154,18 @@ AdaptiveSpectrogram::getParameterDescriptors() const
     desc2.valueNames.push_back("16384");
     list.push_back(desc2);
 
+    ParameterDescriptor desc3;
+    desc3.identifier = "threaded";
+    desc3.name = "Multi-threaded processing";
+    desc3.description = "Perform calculations in several threads in parallel";
+    desc3.unit = "";
+    desc3.minValue = 0;
+    desc3.maxValue = 1;
+    desc3.defaultValue = 1;
+    desc3.isQuantized = true;
+    desc3.quantizeStep = 1;
+    list.push_back(desc3);
+
     return list;
 }
 
@@ -163,6 +174,7 @@ AdaptiveSpectrogram::getParameter(std::string id) const
 {
     if (id == "n") return m_n+1;
     else if (id == "w") return m_w+1;
+    else if (id == "threaded") return (m_threaded ? 1 : 0);
     return 0.f;
 }
 
@@ -175,7 +187,9 @@ AdaptiveSpectrogram::setParameter(std::string id, float value)
     } else if (id == "w") {
         int w = lrintf(value);
         if (w >= 1 && w <= 14) m_w = w-1;
-    }        
+    } else if (id == "threaded") {
+        m_threaded = (value > 0.5);
+    }
 }
 
 AdaptiveSpectrogram::OutputList
@@ -228,18 +242,25 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
         if (m_fftThreads.find(w) == m_fftThreads.end()) {
             m_fftThreads[w] = new FFTThread(w);
         }
-        m_fftThreads[w]->calculate(inputBuffers[0], s, index, maxwid);
+        if (m_threaded) {
+            m_fftThreads[w]->startCalculation(inputBuffers[0], s, index, maxwid);
+        } else {
+            m_fftThreads[w]->setParameters(inputBuffers[0], s, index, maxwid);
+            m_fftThreads[w]->performTask();
+        }
         w *= 2;
         ++index;
     }
 
-    w = minwid;
-    while (w <= maxwid) {
-        m_fftThreads[w]->await();
-        w *= 2;
+    if (m_threaded) {
+        w = minwid;
+        while (w <= maxwid) {
+            m_fftThreads[w]->await();
+            w *= 2;
+        }
     }
 
-    m_first = true;//!!!
+    m_threadsInUse = false;
 
     Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2);
 
@@ -291,59 +312,32 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
                                 Cutting *&top, Cutting *&bottom,
                                 Cutting *&left, Cutting *&right) const
 {
-    if (m_first) {//!!!
+    if (m_threaded && !m_threadsInUse) {
 
-        m_first = false;
+        m_threadsInUse = true;
 
         if (m_cutThreads.empty()) {
             for (int i = 0; i < 4; ++i) {
-//            for (int i = 0; i < 1; ++i) {
                 CutThread *t = new CutThread(this);
-//                t->start();
                 m_cutThreads.push_back(t);
             }
-//            sleep(1); //!!!
         }
 
-//    int threadIndices[4];
-//    int found = 0;
-//    for (int i = 0; i < m_cutThreads.size(); ++i) {
-//        if (!m_cutThreads[i]->busy()) {
-//            threadIndices[found] = i;
-//            if (++found == 4) break;
-//        }
-//    }
+        // Cut threads 0 and 1 calculate the top and bottom halves;
+        // threads 2 and 3 calculate left and right.
 
-//    if (found == 4) {
-
-        // enough threads available; use them.  Need to avoid threads calling back on cut() in this class before we have made all of our threads busy (otherwise the recursive call is likely to claim threads further down our threadIndices before we do) -- hence m_threadMutex
-
-        //!!! no, thread mutex not a good way, need a claim() call on each thread or something
-
-//        m_threadMutex.lock();
+        // The "vertical" division is a top/bottom split.
+        // Splitting this way keeps us in the same resolution,
+        // but with two vertical subregions of height h/2.
         m_cutThreads[0]->cut(s, res, x, y + h/2, h/2); // top
         m_cutThreads[1]->cut(s, res, x, y, h/2); // bottom
         m_cutThreads[2]->cut(s, res/2, 2 * x, y/2, h/2); // left
         m_cutThreads[3]->cut(s, res/2, 2 * x + 1, y/2, h/2); // right
 
-//        std::cerr << "set up all four" << std::endl;
-
         top    = m_cutThreads[0]->get();
         bottom = m_cutThreads[1]->get();
         left   = m_cutThreads[2]->get();
         right  = m_cutThreads[3]->get();
-/*
-        bottom = cut(s, res, x, y, h/2);
-
-        // The "horizontal" division is a left/right split.  Splitting
-        // this way places us in resolution res/2, which has lower
-        // vertical resolution but higher horizontal resolution.  We
-        // need to double x accordingly.
-        
-        left   = cut(s, res/2, 2 * x, y/2, h/2);
-        right  = cut(s, res/2, 2 * x + 1, y/2, h/2);
-*/
-//        std::cerr << "got all four" << std::endl;
 
     } else {
 
