@@ -18,6 +18,8 @@
 #include <base/Window.h>
 
 #include "thread/Thread.h"
+#include "thread/AsynchronousTask.h"
+#include "thread/BlockAllocator.h"
 
 class AdaptiveSpectrogram : public Vamp::Plugin
 {
@@ -107,10 +109,21 @@ protected:
         Cutting *second;
         double cost;
         double value;
+        BlockAllocator *allocator;
 
         ~Cutting() {
-            delete first;
-            delete second;
+            if (first) first->erase();
+            if (second) second->erase();
+        }
+
+        void erase() {
+            if (allocator) {
+                if (first) first->erase();
+                if (second) second->erase();
+                allocator->deallocate(this);
+            } else {
+                delete this;
+            }
         }
     };
 
@@ -189,8 +202,12 @@ protected:
     class CutThread : public AsynchronousTask
     {
     public:
-        CutThread(const AdaptiveSpectrogram *as) : m_as(as), m_result(0) { }
-        ~CutThread() { }
+        CutThread(const AdaptiveSpectrogram *as) : m_as(as), m_result(0) {
+            m_allocator = new BlockAllocator(sizeof(Cutting));
+        }
+        ~CutThread() {
+            delete m_allocator;
+        }
         
         void cut(const Spectrograms &s, int res, int x, int y, int h) {
             m_s = &s;
@@ -208,11 +225,12 @@ protected:
 
     protected:
         void performTask() {
-            m_result = m_as->cut(*m_s, m_res, m_x, m_y, m_h);
+            m_result = m_as->cut(*m_s, m_res, m_x, m_y, m_h, m_allocator);
         }
 
     private:
         const AdaptiveSpectrogram *m_as;
+        BlockAllocator *m_allocator;
         const Spectrograms *m_s;
         int m_res;
         int m_x;
@@ -224,20 +242,21 @@ protected:
     mutable std::vector<CutThread *> m_cutThreads;
     mutable bool m_threadsInUse;
 
-    double xlogx(double x) const {
+    inline double xlogx(double x) const {
         if (x == 0.0) return 0.0;
         else return x * log(x);
     }
 
-    double cost(const Spectrogram &s, int x, int y) const {
+    inline double cost(const Spectrogram &s, int x, int y) const {
         return xlogx(s.data[x][y]);
     }
 
-    double value(const Spectrogram &s, int x, int y) const {
+    inline double value(const Spectrogram &s, int x, int y) const {
         return s.data[x][y];
     }
 
-    Cutting *cut(const Spectrograms &, int res, int x, int y, int h) const;
+    Cutting *cut(const Spectrograms &, int res, int x, int y, int h,
+                 BlockAllocator *allocator) const;
 
     void getSubCuts(const Spectrograms &, int res, int x, int y, int h,
                     Cutting *&top, Cutting *&bottom,

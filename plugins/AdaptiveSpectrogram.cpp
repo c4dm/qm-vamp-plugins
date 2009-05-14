@@ -41,7 +41,8 @@ AdaptiveSpectrogram::~AdaptiveSpectrogram()
     }
     m_cutThreads.clear();
 
-    for (FFTMap::iterator i = m_fftThreads.begin(); i != m_fftThreads.end(); ++i) {
+    for (FFTMap::iterator i = m_fftThreads.begin();
+         i != m_fftThreads.end(); ++i) {
         delete i->second;
     }
     m_fftThreads.clear();
@@ -157,7 +158,7 @@ AdaptiveSpectrogram::getParameterDescriptors() const
     ParameterDescriptor desc3;
     desc3.identifier = "threaded";
     desc3.name = "Multi-threaded processing";
-    desc3.description = "Perform calculations in several threads in parallel";
+    desc3.description = "Perform calculations using several threads in parallel";
     desc3.unit = "";
     desc3.minValue = 0;
     desc3.maxValue = 1;
@@ -262,7 +263,9 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 
     m_threadsInUse = false;
 
-    Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2);
+//    std::cerr << "maxwid/2 = " << maxwid/2 << ", minwid/2 = " << minwid/2 << ", n+1 = " << m_n+1 << ", 2^(n+1) = " << (2<<m_n) << std::endl;
+
+    Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2, 0);
 
 #ifdef DEBUG_VERBOSE
     printCutting(cutting, "  ");
@@ -275,7 +278,7 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
     
     assemble(s, cutting, rmat, 0, 0, maxwid/minwid, maxwid/2);
 
-    delete cutting;
+    cutting->erase();
 
     for (int i = 0; i < rmat.size(); ++i) {
         Feature f;
@@ -324,15 +327,13 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
         }
 
         // Cut threads 0 and 1 calculate the top and bottom halves;
-        // threads 2 and 3 calculate left and right.
+        // threads 2 and 3 calculate left and right.  See notes in
+        // unthreaded code below for more information.
 
-        // The "vertical" division is a top/bottom split.
-        // Splitting this way keeps us in the same resolution,
-        // but with two vertical subregions of height h/2.
-        m_cutThreads[0]->cut(s, res, x, y + h/2, h/2); // top
-        m_cutThreads[1]->cut(s, res, x, y, h/2); // bottom
-        m_cutThreads[2]->cut(s, res/2, 2 * x, y/2, h/2); // left
-        m_cutThreads[3]->cut(s, res/2, 2 * x + 1, y/2, h/2); // right
+        m_cutThreads[0]->cut(s, res, x, y + h/2, h/2);        // top
+        m_cutThreads[1]->cut(s, res, x, y, h/2);              // bottom
+        m_cutThreads[2]->cut(s, res/2, 2 * x, y/2, h/2);      // left
+        m_cutThreads[3]->cut(s, res/2, 2 * x + 1, y/2, h/2);  // right
 
         top    = m_cutThreads[0]->get();
         bottom = m_cutThreads[1]->get();
@@ -341,31 +342,41 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
 
     } else {
 
-        // unthreaded
+        // Unthreaded version
 
         // The "vertical" division is a top/bottom split.
         // Splitting this way keeps us in the same resolution,
         // but with two vertical subregions of height h/2.
 
-        top    = cut(s, res, x, y + h/2, h/2);
-        bottom = cut(s, res, x, y, h/2);
+        top    = cut(s, res, x, y + h/2, h/2, 0);
+        bottom = cut(s, res, x, y, h/2, 0);
 
         // The "horizontal" division is a left/right split.  Splitting
         // this way places us in resolution res/2, which has lower
         // vertical resolution but higher horizontal resolution.  We
         // need to double x accordingly.
         
-        left   = cut(s, res/2, 2 * x, y/2, h/2);
-        right  = cut(s, res/2, 2 * x + 1, y/2, h/2);
+        left   = cut(s, res/2, 2 * x, y/2, h/2, 0);
+        right  = cut(s, res/2, 2 * x + 1, y/2, h/2, 0);
     }
 }
 
 AdaptiveSpectrogram::Cutting *
 AdaptiveSpectrogram::cut(const Spectrograms &s,
                          int res,
-                         int x, int y, int h) const
+                         int x, int y, int h,
+                         BlockAllocator *allocator) const
 {
 //    cerr << "res = " << res << ", x = " << x << ", y = " << y << ", h = " << h << endl;
+
+    Cutting *cutting;
+    if (allocator) {
+        cutting = (Cutting *)(allocator->allocate());
+        cutting->allocator = allocator;
+    } else {
+        cutting = new Cutting;
+        cutting->allocator = 0;
+    }
 
     if (h > 1 && res > s.minres) {
 
@@ -389,27 +400,23 @@ AdaptiveSpectrogram::cut(const Spectrograms &s,
         if (vcost > hcost) {
 
             // cut horizontally (left/right)
-
-            Cutting *cutting = new Cutting;
             cutting->cut = Cutting::Horizontal;
             cutting->first = left;
             cutting->second = right;
             cutting->cost = hcost;
-            cutting->value = left->value + right->value;
-            delete top;
-            delete bottom;
+            top->erase();
+            bottom->erase();
             return cutting;
 
         } else {
 
-            Cutting *cutting = new Cutting;
+            // cut vertically (top/bottom)
             cutting->cut = Cutting::Vertical;
             cutting->first = top;
             cutting->second = bottom;
             cutting->cost = vcost;
-            cutting->value = top->value + bottom->value;
-            delete left;
-            delete right;
+            left->erase();
+            right->erase();
             return cutting;
         }
 
@@ -417,7 +424,6 @@ AdaptiveSpectrogram::cut(const Spectrograms &s,
 
         // no cuts possible from this level
 
-        Cutting *cutting = new Cutting;
         cutting->cut = Cutting::Finished;
         cutting->first = 0;
         cutting->second = 0;
