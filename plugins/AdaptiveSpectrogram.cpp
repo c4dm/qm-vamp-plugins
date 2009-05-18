@@ -263,7 +263,7 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 
     m_threadsInUse = false;
 
-//    std::cerr << "maxwid/2 = " << maxwid/2 << ", minwid/2 = " << minwid/2 << ", n+1 = " << m_n+1 << ", 2^(n+1) = " << (2<<m_n) << std::endl;
+    std::cerr << "maxwid/2 = " << maxwid/2 << ", minwid/2 = " << minwid/2 << ", n+1 = " << m_n+1 << ", 2^(n+1) = " << (2<<m_n) << std::endl;
 
     Cutting *cutting = cut(s, maxwid/2, 0, 0, maxwid/2, 0);
 
@@ -404,6 +404,7 @@ AdaptiveSpectrogram::cut(const Spectrograms &s,
             cutting->first = left;
             cutting->second = right;
             cutting->cost = hcost;
+            cutting->value = left->value + right->value;
             top->erase();
             bottom->erase();
             return cutting;
@@ -415,6 +416,7 @@ AdaptiveSpectrogram::cut(const Spectrograms &s,
             cutting->first = top;
             cutting->second = bottom;
             cutting->cost = vcost;
+            cutting->value = top->value + bottom->value;
             left->erase();
             right->erase();
             return cutting;
