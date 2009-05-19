@@ -210,6 +210,12 @@ AdaptiveSpectrogram::getOutputDescriptors() const
     d.sampleType = OutputDescriptor::FixedSampleRate;
     d.sampleRate = m_inputSampleRate / ((2 << m_w) / 2);
     d.hasDuration = false;
+    char name[20];
+    for (int i = 0; i < d.binCount; ++i) {
+        float freq = (m_inputSampleRate / d.binCount) * (i + 1); // no DC bin
+        sprintf(name, "%d Hz", int(freq));
+        d.binNames.push_back(name);
+    }
     list.push_back(d);
 
     return list;
@@ -454,7 +460,7 @@ AdaptiveSpectrogram::assemble(const Spectrograms &s,
     case Cutting::Finished:
         for (int i = 0; i < w; ++i) {
             for (int j = 0; j < h; ++j) {
-                rmat[x+i][y+j] = cutting->value;
+                rmat[x+i][y+j] = cutting->value * cutting->value;
             }
         }
         return;
