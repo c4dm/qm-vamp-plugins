@@ -260,7 +260,8 @@ protected:
 
     void getSubCuts(const Spectrograms &, int res, int x, int y, int h,
                     Cutting *&top, Cutting *&bottom,
-                    Cutting *&left, Cutting *&right) const;
+                    Cutting *&left, Cutting *&right,
+                    BlockAllocator *allocator) const;
 
     void printCutting(Cutting *, std::string) const;
 

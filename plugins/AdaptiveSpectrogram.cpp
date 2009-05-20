@@ -319,7 +319,8 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
                                 int res,
                                 int x, int y, int h,
                                 Cutting *&top, Cutting *&bottom,
-                                Cutting *&left, Cutting *&right) const
+                                Cutting *&left, Cutting *&right,
+                                BlockAllocator *allocator) const
 {
     if (m_threaded && !m_threadsInUse) {
 
@@ -354,16 +355,16 @@ AdaptiveSpectrogram::getSubCuts(const Spectrograms &s,
         // Splitting this way keeps us in the same resolution,
         // but with two vertical subregions of height h/2.
 
-        top    = cut(s, res, x, y + h/2, h/2, 0);
-        bottom = cut(s, res, x, y, h/2, 0);
+        top    = cut(s, res, x, y + h/2, h/2, allocator);
+        bottom = cut(s, res, x, y, h/2, allocator);
 
         // The "horizontal" division is a left/right split.  Splitting
         // this way places us in resolution res/2, which has lower
         // vertical resolution but higher horizontal resolution.  We
         // need to double x accordingly.
         
-        left   = cut(s, res/2, 2 * x, y/2, h/2, 0);
-        right  = cut(s, res/2, 2 * x + 1, y/2, h/2, 0);
+        left   = cut(s, res/2, 2 * x, y/2, h/2, allocator);
+        right  = cut(s, res/2, 2 * x + 1, y/2, h/2, allocator);
     }
 }
 
@@ -387,7 +388,7 @@ AdaptiveSpectrogram::cut(const Spectrograms &s,
     if (h > 1 && res > s.minres) {
 
         Cutting *top = 0, *bottom = 0, *left = 0, *right = 0;
-        getSubCuts(s, res, x, y, h, top, bottom, left, right);
+        getSubCuts(s, res, x, y, h, top, bottom, left, right, allocator);
 
         double vcost = top->cost + bottom->cost;
         double hcost = left->cost + right->cost;
