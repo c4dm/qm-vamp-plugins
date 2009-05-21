@@ -56,6 +56,7 @@ public:
 protected:
     int m_w;
     int m_n;
+    bool m_coarse;
     bool m_threaded;
 
     struct Spectrogram
@@ -255,12 +256,24 @@ protected:
         return s.data[x][y];
     }
 
+    inline double normalize(double vcost, double venergy) const {
+        return (vcost + (venergy * log(venergy))) / venergy;
+    }
+
+    inline bool isResolutionWanted(const Spectrograms &s, int res) const {
+        if (!m_coarse) return true;
+        if (res == s.minres || res == s.maxres) return true;
+        int n = 0;
+        for (int r = res; r > s.minres; r >>= 1) ++n;
+        return ((n & 0x1) == 0);
+    }
+
     Cutting *cut(const Spectrograms &, int res, int x, int y, int h,
                  BlockAllocator *allocator) const;
 
     void getSubCuts(const Spectrograms &, int res, int x, int y, int h,
-                    Cutting *&top, Cutting *&bottom,
-                    Cutting *&left, Cutting *&right,
+                    Cutting **top, Cutting **bottom,
+                    Cutting **left, Cutting **right,
                     BlockAllocator *allocator) const;
 
     void printCutting(Cutting *, std::string) const;
