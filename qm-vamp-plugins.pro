@@ -1,6 +1,5 @@
 
 TEMPLATE = lib
-
 CONFIG += plugin warn_on release
 CONFIG -= qt
 
@@ -20,10 +19,13 @@ linux-g++-64 {
 }
 
 macx-g++* {
+    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
+    QMAKE_CXXFLAGS_RELEASE += -O2 -g0
+    CONFIG += x86 ppc
     DEFINES += USE_PTHREADS
-    LIBS += -framework Accelerate -lpthread -exported_symbols_list=vamp-plugin.list
+    LIBS += -lqm-dsp -lvamp-sdk -framework Accelerate -lpthread -exported_symbols_list=vamp-plugin.list
     INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
-    LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
+    LIBPATH += ../include ../lib ../qm-dsp
 }
 
 win32-x-g++ {
