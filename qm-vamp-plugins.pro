@@ -4,27 +4,37 @@ TEMPLATE = lib
 CONFIG += plugin warn_on release
 CONFIG -= qt
 
-linux-g++*:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
+linux-g++* {
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
+    DEFINES += USE_PTHREADS
+    INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
+    LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
+}
 
-linux-g++*:DEFINES += USE_PTHREADS
-macx-g++*:DEFINES += USE_PTHREADS
+linux-g++ {
+    LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
+}
 
-#linux-g++:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fPIC -march=pentium3 -mfpmath=sse -msse
-#linux-g++-64:QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fPIC -ffast-math -fno-exceptions
+linux-g++-64 {
+    LIBS += -Lbuild/linux/amd64  -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
+}
+
+macx-g++* {
+    DEFINES += USE_PTHREADS
+    LIBS += -framework Accelerate -lpthread -exported_symbols_list=vamp-plugin.list
+    INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
+    LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
+}
+
+win32-x-g++ {
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O2 -march=pentium3 -msse
+    INCLUDEPATH += ../include ../qm-dsp
+    LIBPATH += ./build/mingw32 ../lib ../qm-dsp ../qm-dsp/release 
+    LIBS += -shared -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -lf77blas -lg2cstubs -Wl,-Bdynamic -Wl,--version-script=vamp-plugin.map
+}
 
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
-
-INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
-LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
-
-linux-g++:LIBS += -static-libgcc -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
-
-linux-g++-64:LIBS += -Lbuild/linux/amd64  -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
-
-macx-g++:LIBS += -framework Accelerate -lpthread -exported_symbols_list=vamp-plugin.list
-
-#LIBS += -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/atlas/sse -lblas -llapack -Wl,-Bdynamic
 
 DEPENDPATH += plugins
 INCLUDEPATH += . plugins
