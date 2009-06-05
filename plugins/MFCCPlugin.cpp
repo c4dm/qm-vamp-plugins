@@ -83,7 +83,7 @@ MFCCPlugin::getPluginVersion() const
 string
 MFCCPlugin::getCopyright() const
 {
-    return "Plugin by Nicolas Chetry and Chris Cannam.  Copyright (c) 2008 QMUL - All Rights Reserved";
+    return "Plugin by Nicolas Chetry and Chris Cannam.  Copyright (c) 2009 QMUL - All Rights Reserved";
 }
 
 MFCCPlugin::ParameterList

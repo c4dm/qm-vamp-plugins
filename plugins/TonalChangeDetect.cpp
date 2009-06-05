@@ -104,7 +104,7 @@ int TonalChangeDetect::getPluginVersion() const
 
 std::string TonalChangeDetect::getCopyright() const
 {
-    return "Plugin by Martin Gasser and Christopher Harte.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Martin Gasser and Christopher Harte.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() const

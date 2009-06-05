@@ -23,7 +23,7 @@ ChromagramPlugin::ChromagramPlugin(float inputSampleRate) :
     m_step(0),
     m_block(0)
 {
-    m_minMIDIPitch = 12;
+    m_minMIDIPitch = 36;
     m_maxMIDIPitch = 96;
     m_tuningFrequency = 440;
     m_normalise = MathUtilities::NormaliseNone;
@@ -86,7 +86,7 @@ ChromagramPlugin::getPluginVersion() const
 string
 ChromagramPlugin::getCopyright() const
 {
-    return "Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 ChromagramPlugin::ParameterList
@@ -101,7 +101,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.description = "MIDI pitch corresponding to the lowest frequency to be included in the chromagram";
     desc.minValue = 0;
     desc.maxValue = 127;
-    desc.defaultValue = 12;
+    desc.defaultValue = 36;
     desc.isQuantized = true;
     desc.quantizeStep = 1;
     list.push_back(desc);
@@ -132,7 +132,7 @@ ChromagramPlugin::getParameterDescriptors() const
     desc.unit = "bins";
     desc.description = "Number of constant-Q transform bins per octave, and the number of bins for the chromagram outputs";
     desc.minValue = 2;
-    desc.maxValue = 960;
+    desc.maxValue = 480;
     desc.defaultValue = 12;
     desc.isQuantized = true;
     desc.quantizeStep = 1;

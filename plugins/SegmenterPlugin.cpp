@@ -65,7 +65,7 @@ SegmenterPlugin::getPluginVersion() const
 string
 SegmenterPlugin::getCopyright() const
 {
-    return "Plugin by Mark Levy.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Mark Levy.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 bool

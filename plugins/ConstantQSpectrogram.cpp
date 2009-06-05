@@ -80,13 +80,13 @@ ConstantQSpectrogram::getMaker() const
 int
 ConstantQSpectrogram::getPluginVersion() const
 {
-    return 2;
+    return 3;
 }
 
 string
 ConstantQSpectrogram::getCopyright() const
 {
-    return "Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 ConstantQSpectrogram::ParameterList
@@ -121,8 +121,8 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.name = "Tuning Frequency";
     desc.unit = "Hz";
     desc.description = "Frequency of concert A";
-    desc.minValue = 420;
-    desc.maxValue = 460;
+    desc.minValue = 360;
+    desc.maxValue = 500;
     desc.defaultValue = 440;
     desc.isQuantized = false;
     list.push_back(desc);
@@ -132,7 +132,7 @@ ConstantQSpectrogram::getParameterDescriptors() const
     desc.unit = "bins";
     desc.description = "Number of constant-Q transform bins per octave";
     desc.minValue = 2;
-    desc.maxValue = 48;
+    desc.maxValue = 480;
     desc.defaultValue = 12;
     desc.isQuantized = true;
     desc.quantizeStep = 1;

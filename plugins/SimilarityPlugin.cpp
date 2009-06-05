@@ -3,7 +3,7 @@
 /*
  * SimilarityPlugin.cpp
  *
- * Copyright 2008 Centre for Digital Music, Queen Mary, University of London.
+ * Copyright 2009 Centre for Digital Music, Queen Mary, University of London.
  * All rights reserved.
  */
 
@@ -104,7 +104,7 @@ SimilarityPlugin::getPluginVersion() const
 string
 SimilarityPlugin::getCopyright() const
 {
-    return "Plugin by Mark Levy, Kurt Jacobson and Chris Cannam.  Copyright (c) 2008 QMUL - All Rights Reserved";
+    return "Plugin by Mark Levy, Kurt Jacobson and Chris Cannam.  Copyright (c) 2009 QMUL - All Rights Reserved";
 }
 
 size_t

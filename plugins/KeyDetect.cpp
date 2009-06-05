@@ -70,13 +70,13 @@ KeyDetector::getMaker() const
 int
 KeyDetector::getPluginVersion() const
 {
-    return 3;
+    return 4;
 }
 
 string
 KeyDetector::getCopyright() const
 {
-    return "Plugin by Katy Noland and Christian Landone.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Katy Noland and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 KeyDetector::ParameterList

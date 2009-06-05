@@ -90,7 +90,7 @@ OnsetDetector::getPluginVersion() const
 string
 OnsetDetector::getCopyright() const
 {
-    return "Plugin by Christian Landone, Chris Duxbury and Juan Pablo Bello.  Copyright (c) 2006-2008 QMUL - All Rights Reserved";
+    return "Plugin by Christian Landone, Chris Duxbury and Juan Pablo Bello.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
 }
 
 OnsetDetector::ParameterList
