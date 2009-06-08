@@ -151,7 +151,7 @@ DWT::getParameterDescriptors() const
  
     d.identifier = "wavelet";
     d.name = "Wavelet";
-    d.description = "";
+    d.description = "Wavelet type to use";
     d.unit = "";
     d.minValue = 0.f;
     d.maxValue = int(Wavelet::LastType);

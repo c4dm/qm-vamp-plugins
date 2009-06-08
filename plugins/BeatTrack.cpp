@@ -106,7 +106,7 @@ BeatTracker::getParameterDescriptors() const
 
     desc.identifier = "method";
     desc.name = "Beat Tracking Method";
-    desc.description = ""; //!!!
+    desc.description = "Basic method to use ";
     desc.minValue = 0;
     desc.maxValue = 1;
     desc.defaultValue = METHOD_NEW;

@@ -68,8 +68,8 @@ bool TonalChangeDetect::initialise(size_t channels, size_t stepSize, size_t bloc
     //    m_stepDelay = m_stepDelay / stepSize;
     m_stepDelay = (blockSize - stepSize) / stepSize; //!!! why? seems about right to look at, but...
 	
-    std::cerr << "TonalChangeDetect::initialise: step " << stepSize << ", block "
-              << blockSize << ", delay " << m_stepDelay << std::endl;
+//    std::cerr << "TonalChangeDetect::initialise: step " << stepSize << ", block "
+//              << blockSize << ", delay " << m_stepDelay << std::endl;
 	
     m_vaCurrentVector.resize(12, 0.0);
 	
@@ -99,7 +99,7 @@ std::string TonalChangeDetect::getMaker() const
 
 int TonalChangeDetect::getPluginVersion() const
 {
-    return 1;
+    return 2;
 }
 
 std::string TonalChangeDetect::getCopyright() const
@@ -114,6 +114,7 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     ParameterDescriptor desc;
     desc.identifier = "smoothingwidth";
     desc.name = "Gaussian smoothing";
+    desc.description = "Window length for the internal smoothing operation, in chroma analysis frames";
     desc.unit = "frames";
     desc.minValue = 0;
     desc.maxValue = 20;
@@ -125,6 +126,7 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     desc.identifier = "minpitch";
     desc.name = "Chromagram minimum pitch";
     desc.unit = "MIDI units";
+    desc.description = "Lowest pitch in MIDI units to be included in the chroma analysis";
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 32;
@@ -135,6 +137,7 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     desc.identifier = "maxpitch";
     desc.name = "Chromagram maximum pitch";
     desc.unit = "MIDI units";
+    desc.description = "Highest pitch in MIDI units to be included in the chroma analysis";
     desc.minValue = 0;
     desc.maxValue = 127;
     desc.defaultValue = 108;
@@ -145,6 +148,7 @@ TonalChangeDetect::ParameterList TonalChangeDetect::getParameterDescriptors() co
     desc.identifier = "tuning";
     desc.name = "Chromagram tuning frequency";
     desc.unit = "Hz";
+    desc.description = "Frequency of concert A in the music under analysis";
     desc.minValue = 420;
     desc.maxValue = 460;
     desc.defaultValue = 440;
@@ -222,7 +226,7 @@ TonalChangeDetect::reset()
     }
     while (!m_pending.empty()) m_pending.pop();
 	
-    m_vaCurrentVector.resize(12, 0.0);
+    m_vaCurrentVector.clear();
 
     m_origin = Vamp::RealTime::zeroTime;
     m_haveOrigin = false;
@@ -260,6 +264,7 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     hc.identifier = "tcstransform";
     hc.name = "Transform to 6D Tonal Content Space";
     hc.unit = "";
+    hc.description = "Representation of content in a six-dimensional tonal space";
     hc.hasFixedBinCount = true;
     hc.binCount = 6;
     hc.hasKnownExtents = true;
@@ -272,6 +277,7 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     d.identifier = "tcfunction";
     d.name = "Tonal Change Detection Function";
     d.unit = "";
+    d.description = "Estimate of the likelihood of a tonal change occurring within each spectral frame";
     d.minValue = 0;
     d.minValue = 2;
     d.hasFixedBinCount = true;
@@ -286,6 +292,7 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
     changes.identifier = "changepositions";
     changes.name = "Tonal Change Positions";
     changes.unit = "";
+    changes.description = "Estimated locations of tonal changes";
     changes.hasFixedBinCount = true;
     changes.binCount = 0;
     changes.hasKnownExtents = false;
