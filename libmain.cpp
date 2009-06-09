@@ -22,6 +22,7 @@
 #include "plugins/BarBeatTrack.h"
 #include "plugins/AdaptiveSpectrogram.h"
 #include "plugins/DWT.h"
+#include "plugins/Transcription.h"
 
 static Vamp::PluginAdapter<BeatTracker> beatTrackerAdapter;
 static Vamp::PluginAdapter<OnsetDetector> onsetDetectorAdapter;
@@ -35,6 +36,7 @@ static Vamp::PluginAdapter<SimilarityPlugin> similarityPluginAdapter;
 static Vamp::PluginAdapter<BarBeatTracker> barBeatTrackPluginAdapter;
 static Vamp::PluginAdapter<AdaptiveSpectrogram> adaptiveSpectrogramAdapter;
 static Vamp::PluginAdapter<DWT> dwtAdapter;
+static Vamp::PluginAdapter<Transcription> transcriptionAdapter;
 
 const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
                                                     unsigned int index)
@@ -54,6 +56,7 @@ const VampPluginDescriptor *vampGetPluginDescriptor(unsigned int vampApiVersion,
     case  9: return barBeatTrackPluginAdapter.getDescriptor();
     case 10: return dwtAdapter.getDescriptor();
     case 11: return adaptiveSpectrogramAdapter.getDescriptor();
+    case 12: return transcriptionAdapter.getDescriptor();
     default: return 0;
     }
 }

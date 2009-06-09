@@ -10,3 +10,4 @@ vamp:qm-vamp-plugins:qm-mfcc::Low Level Features
 vamp:qm-vamp-plugins:qm-barbeattracker::Time > Tempo
 vamp:qm-vamp-plugins:qm-adaptivespectrogram::Visualisation
 vamp:qm-vamp-plugins:qm-dwt::Visualisation
+vamp:qm-vamp-plugins:qm-transcription::Notes

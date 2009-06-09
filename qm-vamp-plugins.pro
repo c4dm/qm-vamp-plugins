@@ -53,7 +53,8 @@ HEADERS += plugins/AdaptiveSpectrogram.h \
            plugins/MFCCPlugin.h \
            plugins/SegmenterPlugin.h \
            plugins/SimilarityPlugin.h \
-           plugins/TonalChangeDetect.h
+           plugins/TonalChangeDetect.h \
+           plugins/Transcription.h
 SOURCES += g2cstubs.c \
            plugins/AdaptiveSpectrogram.cpp \
            plugins/BarBeatTrack.cpp \
@@ -67,5 +68,6 @@ SOURCES += g2cstubs.c \
            plugins/SegmenterPlugin.cpp \
            plugins/SimilarityPlugin.cpp \
            plugins/TonalChangeDetect.cpp \
+           plugins/Transcription.cpp \
            ./libmain.cpp
 

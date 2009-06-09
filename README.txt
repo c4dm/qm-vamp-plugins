@@ -7,7 +7,7 @@ Music at Queen Mary, University of London.
 
 http://www.elec.qmul.ac.uk/digitalmusic/
 
-Version 1.5.
+Version 1.6.
 
 For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 
@@ -15,8 +15,9 @@ For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 About This Release
 ==================
 
-This is a bugfix release only.  The plugins provided are unchanged
-from 1.4.
+This is a major feature release, adding four new plugins (adaptive
+spectrogram, polyphonic transcription, wavelet scalogram, and
+bar-and-beat tracker) as well as a new method for the beat tracker.
 
 
 Plugins Included
@@ -30,9 +31,15 @@ This plugin set includes the following plugins:
 
    * Key estimator and tonal change detector
 
+   * Adaptive multi-resolution FFT spectrogram
+
+   * Polyphonic note transcription estimator
+
    * Segmenter, to divide a track into a consistent sequence of segments
 
    * Timbral and rhythmic similarity between audio tracks
+
+   * Wavelet scalogram
 
    * Chromagram, constant-Q spectrogram, and MFCC calculation plugins
 
@@ -51,7 +58,7 @@ product or distribute them on commercial terms.  If you wish to
 arrange commercial licensing terms, please contact the Centre for
 Digital Music at Queen Mary, University of London.
 
-Copyright (c) 2006-2008 Queen Mary, University of London.  All rights
+Copyright (c) 2006-2009 Queen Mary, University of London.  All rights
 reserved except as described above.
 
 
@@ -368,4 +375,41 @@ single channel of audio, returning one MFCC vector from each process
 call.  It also returns the overall means of the coefficient values
 across the length of the audio input, as a separate output at the end
 of processing.
+
+
+Polyphonic Transcription
+------------------------
+
+ Identifier:    qm-transcription
+ Author:        Ruohua Zhou
+ Category:      Notes
+
+ References:    R. Zhou and J. D. Reiss.
+                A Real-Time Polyphonic Music Transcription System.
+                In Proceedings of the Fourth Music Information Retrieval
+                Evaluation eXchange (MIREX), Philadelphia, USA, 2008
+
+                R. Zhou and J. D. Reiss.
+                A Real-Time Frame-Based Multiple Pitch Estimation
+                 Method Using the Resonator Time Frequency Image.
+                Third Music Information Retrieval Evaluation eXchange
+                (MIREX), Vienna, Austria, 2007
+
+The Polyphonic Transcription plugin estimates a note transcription
+using MIDI pitch values from its input audio, returning a feature for
+each note (with timestamp and duration) whose value is the MIDI pitch
+number.  Velocity is not estimated.
+
+This plugin requires a host with Vamp 2.0 support in order to return
+durations properly.
+
+Although the published description of the method is described as
+real-time, the implementation used in this plugin is non-causal; it
+buffers its input to operate on in a single unit, doing all the real
+work after its entire input has been received, and is very memory
+intensive.  However, it is relatively fast (faster than real-time)
+compared to other polyphonic transcription methods.
+
+The plugin works best at 44.1KHz input sample rate, and is tuned for
+piano and guitar music.
 

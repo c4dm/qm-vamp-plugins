@@ -438,7 +438,17 @@ BeatTracker::beatTrackNew()
     vector<double> beatPeriod;
     vector<double> tempi;
 
-    for (size_t i = 2; i < m_d->dfOutput.size(); ++i) { // discard first two elts
+    size_t nonZeroCount = m_d->dfOutput.size();
+    while (nonZeroCount > 0) {
+        if (m_d->dfOutput[nonZeroCount-1] > 0.0) {
+            break;
+        }
+        --nonZeroCount;
+    }
+
+    std::cerr << "Note: nonZeroCount was " << m_d->dfOutput.size() << ", is now " << nonZeroCount << std::endl;
+
+    for (size_t i = 2; i < nonZeroCount; ++i) { // discard first two elts
         df.push_back(m_d->dfOutput[i]);
         beatPeriod.push_back(0.0);
     }
