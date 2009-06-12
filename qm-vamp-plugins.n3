@@ -27,6 +27,7 @@
     vamp:available_plugin plugbase:qm-similarity ; 
     vamp:available_plugin plugbase:qm-tempotracker ; 
     vamp:available_plugin plugbase:qm-tonalchange ; 
+    vamp:available_plugin plugbase:qm-transcription ; 
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html> ;
     .
 
@@ -1055,4 +1056,33 @@ plugbase:qm-tonalchange_output_changepositions a  vamp:SparseOutput ;
     vamp:sample_rate      21.5332 ;
     vamp:computes_event_type   af:TonalOnset;
     .
+plugbase:qm-transcription a   vamp:Plugin ;
+    dc:title              "Polyphonic Transcription" ;
+    vamp:name             "Polyphonic Transcription" ;
+    dc:description        """Transcribe the input audio to estimated notes""" ;
+    foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-transcription> ;
+    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    dc:rights             """Plugin by Dr. Ruohua Zhou.  Copyright (c) 2008-2009 QMUL - All Rights Reserved""" ;
+    vamp:identifier       "qm-transcription" ;
+    vamp:vamp_API_version vamp:api_version_2 ;
+    owl:versionInfo       "1" ;
+    vamp:input_domain     vamp:TimeDomain ;
+    vamp:output      plugbase:qm-transcription_output_transcription ;
+    .
+plugbase:qm-transcription_output_transcription a  vamp:SparseOutput ;
+    vamp:identifier       "transcription" ;
+    dc:title              "Transcription" ;
+    dc:description        """Estimated note pitch (MIDI note number from 0 to 127)"""  ;
+    vamp:fixed_bin_count  "true" ;
+    vamp:unit             "MIDI units" ;
+    a                     vamp:QuantizedOutput ;
+    vamp:quantize_step    1  ;
+    a                 vamp:KnownExtentsOutput ;
+    vamp:min_value    0  ;
+    vamp:max_value    127  ;
+    vamp:bin_count        1 ;
+    vamp:sample_type      vamp:VariableSampleRate ;
+    vamp:computes_event_type   af:Note ;
+    .
+
 
