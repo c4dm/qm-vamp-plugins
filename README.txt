@@ -413,3 +413,17 @@ compared to other polyphonic transcription methods.
 The plugin works best at 44.1KHz input sample rate, and is tuned for
 piano and guitar music.
 
+
+Adaptive Spectrogram
+--------------------
+
+ Identifier:    qm-adaptivespectrogram
+ Authors:       Wen Xue and Chris Cannam
+ Category:      Visualisation
+
+ References:    X. Wen and M. Sandler.
+                Composite spectrogram using multiple Fourier transforms.
+                IET Signal Processing Journal, January 2009
+
+The Adaptive Spectrogram plugin produces a composite spectrogram from
+a set of series of short-time Fourier transforms at differing resolutions.
