@@ -4,7 +4,7 @@ CONFIG += plugin warn_on release
 CONFIG -= qt
 
 linux-g++* {
-    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -ftree-vectorize -fomit-frame-pointer
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -ftree-vectorize -fomit-frame-pointer
     DEFINES += USE_PTHREADS
     INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
     LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
@@ -15,7 +15,8 @@ linux-g++ {
 }
 
 linux-g++-64 {
-    LIBS += -Lbuild/linux/amd64  -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
+    QMAKE_CXXFLAGS_RELEASE += -msse2
+    LIBS += -Lbuild/linux/amd64  -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
 }
 
 macx-g++* {
