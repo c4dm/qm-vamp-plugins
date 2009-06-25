@@ -39,7 +39,7 @@ This plugin set includes the following plugins:
 
    * Timbral and rhythmic similarity between audio tracks
 
-   * Wavelet scalogram
+   * Wavelet scalogram (discrete wavelet transform)
 
    * Chromagram, constant-Q spectrogram, and MFCC calculation plugins
 
@@ -427,3 +427,44 @@ Adaptive Spectrogram
 
 The Adaptive Spectrogram plugin produces a composite spectrogram from
 a set of series of short-time Fourier transforms at differing resolutions.
+
+
+Discrete Wavelet Transform
+--------------------------
+
+ Identifier:    qm-dwt
+ Author:        Thomas Wilmering
+ Category:      Visualisation
+
+ References:    S. Mallat.
+                A theory for multiresolution signal decomposition: the wavelet
+                 representation.
+                In IEEE Transactions on Pattern Analysis and Machine
+                 Intelligence, 11 (1989), pp. 674-693.
+
+                P. Rajmic and J. Vlach.
+                Real-Time Audio Processing via Segmented Wavelet Transform.
+                In Proceedings of the 10th Int. Conference on Digital Audio
+                 Effects (DAFx-07), Bordeaux, France, September 10-15, 2007.
+
+The Discrete Wavelet Transform plugin performs the forward DWT on the
+signal. The wavelet coefficients are derived from a fast segmented DWT
+algorithm without block end effects. The DWT can be performed with
+various functions from a selection of wavelets up to the 16th scale.
+
+The wavelet coefficients are returned as feature columns at a rate of
+half the sample rate of the signal to be analysed. To simulate
+multiresolution in the layer data table, the coefficient values at
+higher scales are copied multiple times according to the number of the
+scale. For example, for scale 2 each value will appear twice, at scale
+3 they will be appear four times, at scale 4 there will be 8 times the
+same coefficient value in order to simulate the lower resolution at
+higher scales.
+
+The Scales parameter adjusts the number of scales of the DWT. The
+blocksize needs to be set to at least 2^n, where n = number of scales.
+
+The Wavelet parameter selects the wavelet function to be used for the
+transform.  Wavelets from the following families are available:
+Daubechies, Symlets, Coiflets, Biorthogonal, Meyer.
+
