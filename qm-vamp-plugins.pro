@@ -4,7 +4,7 @@ CONFIG += plugin warn_on release
 CONFIG -= qt
 
 linux-g++* {
-    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -ftree-vectorize -fomit-frame-pointer
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer
     DEFINES += USE_PTHREADS
     INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
     LIBPATH += ../vamp-plugin-sdk/vamp-sdk ../qm-dsp
