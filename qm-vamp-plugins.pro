@@ -16,7 +16,7 @@ linux-g++ {
 
 linux-g++-64 {
     QMAKE_CXXFLAGS_RELEASE += -msse2
-    LIBS += -Lbuild/linux/amd64  -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas $$system(g++ -print-file-name=libstdc++.a) -lc -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
+    LIBS += -Lbuild/linux/amd64  -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -lc -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
 }
 
 macx-g++* {

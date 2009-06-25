@@ -345,6 +345,14 @@ BarBeatTracker::barBeatTrack()
     int beat = 0;
     int bar = 0;
 
+    if (!downbeats.empty()) {
+        // get the right number for the first beat; this will be
+        // incremented before use (at top of the following loop)
+        int firstDown = downbeats[0];
+        beat = m_bpb - firstDown - 1;
+        if (beat == m_bpb) beat = 0;
+    }
+
     for (size_t i = 0; i < beats.size(); ++i) {
 
 	size_t frame = beats[i] * m_d->dfConfig.stepSize;
