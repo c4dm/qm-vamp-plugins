@@ -244,6 +244,7 @@ DWT::process(const float *const *inputBuffers,
 //--------------------------------------------------------------------------------------------------	
 
     float tempDet;
+    float aTempDet;
     int outloc;
     int halfblocksize = int(.5 * b);
     int fbufloc;
@@ -280,10 +281,11 @@ DWT::process(const float *const *inputBuffers,
                 tempDet += fbuf[fbufloc2] * m_hpd[m];							// detail
             }
 		
-            if (m_absolute == 1) tempDet = fabs(tempDet);
+            aTempDet = fabs(tempDet);
+            if (m_absolute == 1) tempDet = aTempDet;
 			
 			
-            //if (tempDet < m_threshold) tempDet = 0;							// simple hard thresholding, same for each scale
+            if (aTempDet < m_threshold) tempDet = 0;							// simple hard thresholding, same for each scale
             wCoefficients[scale].push_back(tempDet);
         }
 																				
@@ -348,6 +350,7 @@ DWT::getRemainingFeatures()
 	
 	//-------------------------------------------------------------------------------------------	
 	float tempDet;
+        float aTempDet;
 	int outloc;
 	int halfblocksize = int(.5 * b);
 	int fbufloc;
@@ -384,9 +387,10 @@ DWT::getRemainingFeatures()
                     tempAprx[n] += fbuf[fbufloc2] * m_lpd[m];						// approximation
                     tempDet += fbuf[fbufloc2] * m_hpd[m];							// detail
                 }
-			
-                if (m_absolute == 1) tempDet = fabs(tempDet);
-                //if (tempDet < m_threshold) tempDet = 0;							// simple hard thresholding, same for each scale
+
+                aTempDet = fabs(tempDet);
+                if (m_absolute == 1) tempDet = aTempDet;
+                if (aTempDet < m_threshold) tempDet = 0;							// simple hard thresholding, same for each scale
                 wCoefficients[scale].push_back(tempDet);
             }
 		
