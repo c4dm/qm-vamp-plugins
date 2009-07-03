@@ -70,6 +70,14 @@ DWT::getCopyright() const
 }
 
 size_t 
+DWT::getPreferredBlockSize() const 
+{ 
+    size_t s = (1 << m_scales);
+    while (s < 1024) s *= 2;
+    return s;
+} 
+
+size_t 
 DWT::getPreferredStepSize() const 
 { 
     return 0;  
@@ -81,6 +89,11 @@ DWT::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
         channels > getMaxChannelCount()) return false;
 	
+    if ((1 << m_scales) > blockSize) {
+        std::cerr << "DWT::initialise: ERROR: Block size must be at least 2^scales (specified block size " << blockSize << " < " << (1 << m_scales) << ")" << std::endl;
+        return false;
+    }
+
     m_stepSize = stepSize;
     m_blockSize = blockSize;
 

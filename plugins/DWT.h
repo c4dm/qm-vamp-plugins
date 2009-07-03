@@ -34,6 +34,7 @@ public:
     std::string getMaker() const;
     int getPluginVersion() const;
     std::string getCopyright() const;
+    size_t getPreferredBlockSize() const;
     size_t getPreferredStepSize() const;
 	
     OutputList getOutputDescriptors() const;
