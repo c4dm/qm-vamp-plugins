@@ -325,7 +325,7 @@ DWT::process(const float *const *inputBuffers,
         feature.hasTimestamp = false;
 		
         for (int j = 0; j < s; j++) {
-            outloc = floor(m / (1 << j));									// This one pushes a single result bin 
+            outloc = m / (1 << j);									// This one pushes a single result bin 
             // onto the top of a feature column
             feature.values.push_back(wCoefficients[j][outloc]);				// each coefficient on higher scales need 
         }																	// to be copied multiple times to feature columns
@@ -430,7 +430,7 @@ DWT::getRemainingFeatures()
             feature.hasTimestamp = false;
 		
             for (int j = 0; j < s; j++) {
-                outloc = floor(m / (1 << j));									// This one pushes a single result bin 
+                outloc = m / (1 << j);									// This one pushes a single result bin 
                 // onto the top of a feature column
                 feature.values.push_back(wCoefficients[j][outloc]);				// each coefficient on higher scales need 
             }																	// to be copied multiple times to feature columns

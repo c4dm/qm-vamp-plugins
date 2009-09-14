@@ -10,15 +10,12 @@
 #include "MFCCPlugin.h"
 
 #include <dsp/mfcc/MFCC.h>
-
-#include <cmath>
+#include <maths/MathUtilities.h>
 
 using std::string;
 using std::vector;
 using std::cerr;
 using std::endl;
-
-using std::isnan;
 
 MFCCPlugin::MFCCPlugin(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
@@ -274,7 +271,7 @@ MFCCPlugin::process(const float *const *inputBuffers,
     feature.hasTimestamp = false;
     for (size_t i = 0; i < m_bins; ++i) {
         double value = output[i];
-        if (isnan(value)) value = 0.0;
+        if (ISNAN(value)) value = 0.0;
         m_binsums[i] += value;
 	feature.values.push_back(value);
     }

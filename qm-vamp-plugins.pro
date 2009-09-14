@@ -36,6 +36,15 @@ win32-x-g++ {
     LIBS += -shared -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -lf77blas -lg2cstubs -Wl,-Bdynamic -Wl,--version-script=vamp-plugin.map
 }
 
+solaris* {
+    QMAKE_CXXFLAGS_RELEASE += -DNDEBUG -fast
+    INCLUDEPATH += /usr/local/include ../qm-dsp
+    INCLUDEPATH += /opt/ATLAS3.9.14/include
+    LIBPATH += ../qm-dsp /opt/ATLAS3.9.14/lib
+    DEFINES += USE_PTHREADS
+    LIBS += -Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -latlas -Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map -lCstd -lCrun
+}
+
 OBJECTS_DIR = tmp_obj
 MOC_DIR = tmp_moc
 

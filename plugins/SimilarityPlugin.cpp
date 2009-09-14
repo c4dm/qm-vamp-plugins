@@ -681,7 +681,7 @@ SimilarityPlugin::calculateTimbral(FeatureSet &returnFeatures)
             count = 0;
             for (int k = 0; k < sz; ++k) {
                 double val = m_values[i][k][j];
-                if (isnan(val) || isinf(val)) continue;
+                if (ISNAN(val) || ISINF(val)) continue;
                 mean[j] += val;
                 ++count;
             }
@@ -691,7 +691,7 @@ SimilarityPlugin::calculateTimbral(FeatureSet &returnFeatures)
             for (int k = 0; k < sz; ++k) {
                 double val = ((m_values[i][k][j] - mean[j]) *
                               (m_values[i][k][j] - mean[j]));
-                if (isnan(val) || isinf(val)) continue;
+                if (ISNAN(val) || ISINF(val)) continue;
                 variance[j] += val;
                 ++count;
             }

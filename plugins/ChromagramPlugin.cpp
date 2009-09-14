@@ -373,7 +373,7 @@ ChromagramPlugin::process(const float *const *inputBuffers,
             cerr << value << " ";
         }
 */
-        if (isnan(value)) value = 0.0;
+        if (ISNAN(value)) value = 0.0;
         m_binsums[i] += value;
 	feature.values.push_back(value);
     }

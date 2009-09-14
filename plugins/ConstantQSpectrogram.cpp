@@ -364,8 +364,8 @@ ConstantQSpectrogram::process(const float *const *inputBuffers,
         double re = cqre[i];
         double im = cqim[i];
 //        std::cout << re << "," << im << ":";
-        if (isnan(re)) re = 0.0;
-        if (isnan(im)) im = 0.0;
+        if (ISNAN(re)) re = 0.0;
+        if (ISNAN(im)) im = 0.0;
         double value = sqrt(re * re + im * im);
 //        std::cout << value << " ";
 	feature.values.push_back(value);
