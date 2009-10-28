@@ -95,7 +95,7 @@ BarBeatTracker::getMaker() const
 int
 BarBeatTracker::getPluginVersion() const
 {
-    return 1;
+    return 2;
 }
 
 string

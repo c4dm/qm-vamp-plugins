@@ -7,7 +7,7 @@ Music at Queen Mary, University of London.
 
 http://www.elec.qmul.ac.uk/digitalmusic/
 
-Version 1.6.
+Version 1.6.1.
 
 For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 
@@ -15,9 +15,9 @@ For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 About This Release
 ==================
 
-This is a major feature release, adding four new plugins (adaptive
-spectrogram, polyphonic transcription, wavelet scalogram, and
-bar-and-beat tracker) as well as a new method for the beat tracker.
+This is a bug-fix release, fixing a failure to correctly smooth the
+onset detection function which caused the onset and beat tracking
+plugins occasionally to miss onsets or find spurious ones.
 
 
 Plugins Included

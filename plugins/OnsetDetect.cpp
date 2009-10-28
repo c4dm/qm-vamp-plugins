@@ -84,7 +84,7 @@ OnsetDetector::getMaker() const
 int
 OnsetDetector::getPluginVersion() const
 {
-    return 2;
+    return 3;
 }
 
 string
