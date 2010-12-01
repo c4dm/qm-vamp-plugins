@@ -10,6 +10,7 @@
 #include "AdaptiveSpectrogram.h"
 
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 #include <cfloat>
 
