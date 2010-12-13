@@ -51,17 +51,19 @@ For full details about the plugins, with references, please see
 License
 =======
 
-These plugins are provided in binary form only.  You may install and
-use the plugin binaries without fee for any purpose commercial or
-non-commercial.  You may redistribute the plugin binaries provided you
-do so without fee and you retain this README file with your
-distribution.  You may not bundle these plugins with a commercial
-product or distribute them on commercial terms.  If you wish to
-arrange commercial licensing terms, please contact the Centre for
-Digital Music at Queen Mary, University of London.
+These plugins are provided under the terms of the GNU General Public
+License.  You may install and use the plugin binaries without fee for
+any purpose commercial or non-commercial.  You may also modify and
+redistribute the plugins in source or binary form, provided you comply
+with the terms given by the GNU General Public License.  See the file
+COPYING for more details.
 
-Copyright (c) 2006-2009 Queen Mary, University of London.  All rights
-reserved except as described above.
+If you wish to use these plugins in a proprietary application or
+product for which the terms of the GPL are not appropriate, please
+contact the Centre for Digital Music at Queen Mary, University of
+London for further licensing terms.
+
+Copyright (c) 2006-2010 Queen Mary, University of London.
 
 
 To Install
