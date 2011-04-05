@@ -21,10 +21,14 @@ linux-g++-64 {
 
 macx-g++* {
     QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.4u.sdk
-    QMAKE_CXXFLAGS_RELEASE += -O2 -g0
-    CONFIG += x86 ppc
+    QMAKE_CXXFLAGS_RELEASE += -mmacosx-version-min=10.4 -O2 -g0
+    QMAKE_CFLAGS_RELEASE += -mmacosx-version-min=10.4
+    CONFIG += x86 ppc x86_64
+    QMAKE_CXX = g++-4.0
+    QMAKE_CC = gcc-4.0
+    QMAKE_LINK = g++-4.0
     DEFINES += USE_PTHREADS
-    LIBS += -lqm-dsp -lvamp-sdk -framework Accelerate -lpthread -exported_symbols_list=vamp-plugin.list
+    LIBS += -lqm-dsp -lvamp-sdk -framework Accelerate -lpthread -exported_symbols_list vamp-plugin.list
     INCLUDEPATH += ../vamp-plugin-sdk ../qm-dsp
     LIBPATH += ../include ../lib ../qm-dsp
 }
