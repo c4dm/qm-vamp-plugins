@@ -5,5 +5,7 @@ CXXFLAGS := $(CFLAGS)
 
 LDFLAGS	 := -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
 
+PLUGIN_EXT   := .so
+
 include build/general/Makefile.inc
 

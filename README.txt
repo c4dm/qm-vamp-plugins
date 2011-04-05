@@ -7,7 +7,7 @@ Music at Queen Mary, University of London.
 
 http://www.elec.qmul.ac.uk/digitalmusic/
 
-Version 1.6.1.
+Version 1.7.
 
 For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 
@@ -15,9 +15,9 @@ For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 About This Release
 ==================
 
-This is a bug-fix release, fixing a failure to correctly smooth the
-onset detection function which caused the onset and beat tracking
-plugins occasionally to miss onsets or find spurious ones.
+This release corresponds to a change in the licensing terms under
+which the QM plugins are published (from a closed-source license to
+the GPL).  It contains no new functionality over 1.6.
 
 
 Plugins Included
@@ -63,7 +63,7 @@ product for which the terms of the GPL are not appropriate, please
 contact the Centre for Digital Music at Queen Mary, University of
 London for further licensing terms.
 
-Copyright (c) 2006-2010 Queen Mary, University of London.
+Copyright (c) 2006-2011 Queen Mary, University of London.
 
 
 To Install
@@ -71,18 +71,17 @@ To Install
 
 Installation depends on your operating system.
 
-    Windows -> Copy qm-vamp-plugins.dll and qm-vamp-plugins.cat to
-               C:\Program Files\Vamp Plugins\
+    Win 32  -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins\
 
-    OS/X    -> Copy qm-vamp-plugins.dylib and qm-vamp-plugins.cat to
-               $HOME/Library/Audio/Plug-Ins/Vamp/
-               or
-               /Library/Audio/Plug-Ins/Vamp/
+    Win 64  -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins (x86)\
 
-    Linux   -> Copy qm-vamp-plugins.so and qm-vamp-plugins.cat to
-               $HOME/vamp/
-               or
-               /usr/local/lib/vamp/
-               or 
-               /usr/lib/vamp/
+    OS/X    -> Copy qm-vamp-plugins.dylib, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to $HOME/Library/Audio/Plug-Ins/Vamp/
+               or /Library/Audio/Plug-Ins/Vamp/
+
+    Linux   -> Copy qm-vamp-plugins.so, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to $HOME/vamp/ or /usr/local/lib/vamp/
+               or /usr/lib/vamp/
 
