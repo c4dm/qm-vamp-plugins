@@ -33,15 +33,15 @@ class BeatTrackerData
 {
 public:
     BeatTrackerData(const DFConfig &config) : dfConfig(config) {
-	df = new DetectionFunction(config);
+    df = new DetectionFunction(config);
     }
     ~BeatTrackerData() {
-	delete df;
+    delete df;
     }
     void reset() {
-	delete df;
-	df = new DetectionFunction(dfConfig);
-	dfOutput.clear();
+    delete df;
+    df = new DetectionFunction(dfConfig);
+    dfOutput.clear();
         origin = Vamp::RealTime::zeroTime;
     }
 
@@ -50,14 +50,20 @@ public:
     vector<double> dfOutput;
     Vamp::RealTime origin;
 };
-    
+
 
 BeatTracker::BeatTracker(float inputSampleRate) :
     Vamp::Plugin(inputSampleRate),
     m_d(0),
     m_method(METHOD_NEW),
     m_dfType(DF_COMPLEXSD),
-    m_whiten(false)
+    m_whiten(false),
+    m_alpha(0.9),  			// MEPD new exposed parameter for beat tracker, default value = 0.9 (as old version)
+    m_tightness(4.), 		// MEPD new exposed parameter for beat tracker, default value = 4. (as old version)
+    m_inputtempo(120.), 	// MEPD new exposed parameter for beat tracker, default value = 120. (as old version)
+    m_constraintempo(false) // MEPD new exposed parameter for beat tracker, default value = false (as old version)
+    // calling the beat tracker with these default parameters will give the same output as the previous existing version
+
 {
 }
 
@@ -99,7 +105,7 @@ BeatTracker::getPluginVersion() const
 string
 BeatTracker::getCopyright() const
 {
-    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
+    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2012 QMUL - All Rights Reserved";
 }
 
 BeatTracker::ParameterList
@@ -147,6 +153,58 @@ BeatTracker::getParameterDescriptors() const
     desc.valueNames.clear();
     list.push_back(desc);
 
+    // MEPD new exposed parameter - used in the dynamic programming part of the beat tracker
+    //Alpha Parameter of Beat Tracker
+    desc.identifier = "alpha";
+    desc.name = "Alpha";
+    desc.description = "Inertia - Flexibility Trade Off";
+    desc.minValue =  0.1;
+    desc.maxValue = 0.99;
+    desc.defaultValue = 0.90;
+    desc.unit = "";
+    desc.isQuantized = false;
+    list.push_back(desc);
+
+
+    // MEPD new exposed parameter - used in the dynamic programming part of the beat tracker
+    //Tightness Parameter of Beat Tracker
+    desc.identifier = "tightness";
+    desc.name = "Tightness";
+    desc.description = "Inertia - Flexibility Trade Off 2";
+    desc.minValue =  3;
+    desc.maxValue = 7;
+    desc.defaultValue = 4;
+    desc.unit = "";
+    desc.isQuantized = true;
+    list.push_back(desc);
+
+    // MEPD new exposed parameter - used in the periodicity estimation
+    //User input tempo
+    desc.identifier = "inputtempo";
+    desc.name = "InputTempo";
+    desc.description = "User defined Tempo";
+    desc.minValue =  50;
+    desc.maxValue = 250;
+    desc.defaultValue = 120;
+    desc.unit = "BPM";
+    desc.isQuantized = true;
+    list.push_back(desc);
+
+    // MEPD new exposed parameter - used in periodicity estimation
+    desc.identifier = "constraintempo";
+    desc.name = "Constrain Tempo";
+    desc.description = "Constrain tempo to use Gaussian weighting";
+    desc.minValue = 0;
+    desc.maxValue = 1;
+    desc.defaultValue = 0;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    desc.unit = "";
+    desc.valueNames.clear();
+    list.push_back(desc);
+
+
+
     return list;
 }
 
@@ -164,7 +222,15 @@ BeatTracker::getParameter(std::string name) const
     } else if (name == "method") {
         return m_method;
     } else if (name == "whiten") {
-        return m_whiten ? 1.0 : 0.0; 
+        return m_whiten ? 1.0 : 0.0;
+    } else if (name == "alpha") {
+        return m_alpha;
+    } else if (name == "tightness") {
+        return m_tightness;
+    }  else if (name == "inputtempo") {
+        return m_inputtempo;
+    }  else if (name == "constraintempo") {
+        return m_constraintempo ? 1.0 : 0.0;
     }
     return 0.0;
 }
@@ -184,6 +250,14 @@ BeatTracker::setParameter(std::string name, float value)
         m_method = lrintf(value);
     } else if (name == "whiten") {
         m_whiten = (value > 0.5);
+    } else if (name == "alpha") {
+        m_alpha = value;
+    } else if (name == "tightness") {
+        m_tightness = value;
+    } else if (name == "inputtempo") {
+        m_inputtempo = value;
+    } else if (name == "constraintempo") {
+        m_constraintempo = (value > 0.5);
     }
 }
 
@@ -191,12 +265,12 @@ bool
 BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
 {
     if (m_d) {
-	delete m_d;
-	m_d = 0;
+    delete m_d;
+    m_d = 0;
     }
 
     if (channels < getMinChannelCount() ||
-	channels > getMaxChannelCount()) {
+    channels > getMaxChannelCount()) {
         std::cerr << "BeatTracker::initialise: Unsupported channel count: "
                   << channels << std::endl;
         return false;
@@ -222,7 +296,7 @@ BeatTracker::initialise(size_t channels, size_t stepSize, size_t blockSize)
     dfConfig.adaptiveWhitening = m_whiten;
     dfConfig.whiteningRelaxCoeff = -1;
     dfConfig.whiteningFloor = -1;
-    
+
     m_d = new BeatTrackerData(dfConfig);
     return true;
 }
@@ -302,10 +376,10 @@ BeatTracker::process(const float *const *inputBuffers,
                      Vamp::RealTime timestamp)
 {
     if (!m_d) {
-	cerr << "ERROR: BeatTracker::process: "
-	     << "BeatTracker has not been initialised"
-	     << endl;
-	return FeatureSet();
+    cerr << "ERROR: BeatTracker::process: "
+         << "BeatTracker has not been initialised"
+         << endl;
+    return FeatureSet();
     }
 
     size_t len = m_d->dfConfig.frameLength / 2;
@@ -320,7 +394,7 @@ BeatTracker::process(const float *const *inputBuffers,
         magnitudes[i] = sqrt(inputBuffers[0][i*2  ] * inputBuffers[0][i*2  ] +
                              inputBuffers[0][i*2+1] * inputBuffers[0][i*2+1]);
 
-	phases[i] = atan2(-inputBuffers[0][i*2+1], inputBuffers[0][i*2]);
+    phases[i] = atan2(-inputBuffers[0][i*2+1], inputBuffers[0][i*2]);
     }
 
     double output = m_d->df->process(magnitudes, phases);
@@ -346,10 +420,10 @@ BeatTracker::FeatureSet
 BeatTracker::getRemainingFeatures()
 {
     if (!m_d) {
-	cerr << "ERROR: BeatTracker::getRemainingFeatures: "
-	     << "BeatTracker has not been initialised"
-	     << endl;
-	return FeatureSet();
+    cerr << "ERROR: BeatTracker::getRemainingFeatures: "
+         << "BeatTracker has not been initialised"
+         << endl;
+    return FeatureSet();
     }
 
     if (m_method == METHOD_OLD) return beatTrackOld();
@@ -383,33 +457,33 @@ BeatTracker::beatTrackOld()
 
     for (size_t i = 0; i < beats.size(); ++i) {
 
-	size_t frame = beats[i] * m_d->dfConfig.stepSize;
+    size_t frame = beats[i] * m_d->dfConfig.stepSize;
 
-	Feature feature;
-	feature.hasTimestamp = true;
-	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
-	    (frame, lrintf(m_inputSampleRate));
+    Feature feature;
+    feature.hasTimestamp = true;
+    feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
+        (frame, lrintf(m_inputSampleRate));
 
-	float bpm = 0.0;
-	int frameIncrement = 0;
+    float bpm = 0.0;
+    int frameIncrement = 0;
 
-	if (i < beats.size() - 1) {
+    if (i < beats.size() - 1) {
 
-	    frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
+        frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
 
-	    // one beat is frameIncrement frames, so there are
-	    // samplerate/frameIncrement bps, so
-	    // 60*samplerate/frameIncrement bpm
+        // one beat is frameIncrement frames, so there are
+        // samplerate/frameIncrement bps, so
+        // 60*samplerate/frameIncrement bpm
 
-	    if (frameIncrement > 0) {
-		bpm = (60.0 * m_inputSampleRate) / frameIncrement;
-		bpm = int(bpm * 100.0 + 0.5) / 100.0;
+        if (frameIncrement > 0) {
+        bpm = (60.0 * m_inputSampleRate) / frameIncrement;
+        bpm = int(bpm * 100.0 + 0.5) / 100.0;
                 sprintf(label, "%.2f bpm", bpm);
                 feature.label = label;
-	    }
-	}
+        }
+    }
 
-	returnFeatures[0].push_back(feature); // beats are output 0
+    returnFeatures[0].push_back(feature); // beats are output 0
     }
 
     double prevTempo = 0.0;
@@ -419,7 +493,7 @@ BeatTracker::beatTrackOld()
         size_t frame = i * m_d->dfConfig.stepSize * ttParams.lagLength;
 
 //        std::cerr << "unit " << i << ", step size " << m_d->dfConfig.stepSize << ", hop " << ttParams.lagLength << ", frame = " << frame << std::endl;
-        
+
         if (tempi[i] > 1 && int(tempi[i] * 100) != int(prevTempo * 100)) {
             Feature feature;
             feature.hasTimestamp = true;
@@ -461,52 +535,56 @@ BeatTracker::beatTrackNew()
 
     TempoTrackV2 tt(m_inputSampleRate, m_d->dfConfig.stepSize);
 
-    tt.calculateBeatPeriod(df, beatPeriod, tempi);
+
+    // MEPD - note this function is now passed 2 new parameters, m_inputtempo and m_constraintempo
+    tt.calculateBeatPeriod(df, beatPeriod, tempi, m_inputtempo, m_constraintempo);
 
     vector<double> beats;
-    tt.calculateBeats(df, beatPeriod, beats);
-    
+
+    // MEPD - note this function is now passed 2 new parameters, m_alpha and m_tightness
+    tt.calculateBeats(df, beatPeriod, beats, m_alpha, m_tightness);
+
     FeatureSet returnFeatures;
 
     char label[100];
 
     for (size_t i = 0; i < beats.size(); ++i) {
 
-	size_t frame = beats[i] * m_d->dfConfig.stepSize;
-        
-	Feature feature;
-	feature.hasTimestamp = true;
-	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
-	    (frame, lrintf(m_inputSampleRate));
+    size_t frame = beats[i] * m_d->dfConfig.stepSize;
 
-	float bpm = 0.0;
-	int frameIncrement = 0;
+    Feature feature;
+    feature.hasTimestamp = true;
+    feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
+        (frame, lrintf(m_inputSampleRate));
 
-	if (i+1 < beats.size()) {
+    float bpm = 0.0;
+    int frameIncrement = 0;
 
-	    frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
+    if (i+1 < beats.size()) {
 
-	    // one beat is frameIncrement frames, so there are
-	    // samplerate/frameIncrement bps, so
-	    // 60*samplerate/frameIncrement bpm
+        frameIncrement = (beats[i+1] - beats[i]) * m_d->dfConfig.stepSize;
 
-	    if (frameIncrement > 0) {
-		bpm = (60.0 * m_inputSampleRate) / frameIncrement;
-		bpm = int(bpm * 100.0 + 0.5) / 100.0;
+        // one beat is frameIncrement frames, so there are
+        // samplerate/frameIncrement bps, so
+        // 60*samplerate/frameIncrement bpm
+
+        if (frameIncrement > 0) {
+        bpm = (60.0 * m_inputSampleRate) / frameIncrement;
+        bpm = int(bpm * 100.0 + 0.5) / 100.0;
                 sprintf(label, "%.2f bpm", bpm);
                 feature.label = label;
-	    }
-	}
+        }
+    }
 
-	returnFeatures[0].push_back(feature); // beats are output 0
+    returnFeatures[0].push_back(feature); // beats are output 0
     }
 
     double prevTempo = 0.0;
 
     for (size_t i = 0; i < tempi.size(); ++i) {
 
-	size_t frame = i * m_d->dfConfig.stepSize;
-        
+    size_t frame = i * m_d->dfConfig.stepSize;
+
         if (tempi[i] > 1 && int(tempi[i] * 100) != int(prevTempo * 100)) {
             Feature feature;
             feature.hasTimestamp = true;
@@ -522,4 +600,3 @@ BeatTracker::beatTrackNew()
 
     return returnFeatures;
 }
-
