@@ -60,6 +60,7 @@ protected:
     mutable float neighbourhoodLimit; // in sec
     int nSegmentTypes;
     feature_types featureType;	// 1 = constant-Q, 2 = chroma
+    Vamp::RealTime m_endTime;
     
     void makeSegmenter() const;
 };

@@ -64,13 +64,13 @@ SegmenterPlugin::getMaker() const
 int
 SegmenterPlugin::getPluginVersion() const
 {
-    return 2;
+    return 3;
 }
 
 string
 SegmenterPlugin::getCopyright() const
 {
-    return "Plugin by Mark Levy.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
+    return "Plugin by Mark Levy.  Copyright (c) 2006-2013 QMUL - All Rights Reserved";
 }
 
 bool
@@ -270,6 +270,7 @@ SegmenterPlugin::getOutputDescriptors() const
     segmentation.quantizeStep = 1;
     segmentation.sampleType = OutputDescriptor::VariableSampleRate;
     segmentation.sampleRate = m_inputSampleRate / getPreferredStepSize();
+    segmentation.hasDuration = true;
 	
     list.push_back(segmentation);
     
@@ -277,7 +278,7 @@ SegmenterPlugin::getOutputDescriptors() const
 }
 
 SegmenterPlugin::FeatureSet
-SegmenterPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* timestamp */)
+SegmenterPlugin::process(const float *const *inputBuffers, Vamp::RealTime timestamp)
 {
     // convert float* to double*
     double *tempBuffer = new double[windowsize];
@@ -288,6 +289,8 @@ SegmenterPlugin::process(const float *const *inputBuffers, Vamp::RealTime /* tim
     segmenter->extractFeatures(tempBuffer, segmenter->getWindowsize());
 
     delete [] tempBuffer;
+
+    m_endTime = timestamp;
 	
     return FeatureSet();
 }
@@ -299,21 +302,45 @@ SegmenterPlugin::getRemainingFeatures()
     Segmentation segm = segmenter->getSegmentation();
 	
     FeatureSet returnFeatures;
+
+    // Map the segment types onto a dense series starting at 1
 	
+    std::map<int, int> typeMap;
+    int nextType = 1;
+
+    for (int i = 0; i < segm.segments.size(); ++i) {
+        Segment s = segm.segments[i];
+        if (typeMap.find(s.type) == typeMap.end()) {
+            typeMap[s.type] = nextType;
+            ++nextType;
+        }
+    }
+
     for (int i = 0; i < segm.segments.size(); ++i) {
 		
         Segment s = segm.segments[i];
 		
         Feature feature;
         feature.hasTimestamp = true;
-        feature.timestamp = Vamp::RealTime::frame2RealTime(s.start, static_cast<unsigned int>(m_inputSampleRate));
+        feature.timestamp = Vamp::RealTime::frame2RealTime
+            (s.start, (int)m_inputSampleRate);
+        feature.hasDuration = true;
+
+        if (i + 1 < segm.segments.size()) {
+            feature.duration = Vamp::RealTime::frame2RealTime
+                (segm.segments[i+1].start - s.start, (int)m_inputSampleRate);
+        } else {
+            feature.duration = m_endTime - feature.timestamp;
+        }            
+
+        int type = typeMap[s.type];
 		
         vector<float> floatval;
-        floatval.push_back(s.type);
+        floatval.push_back(type);
         feature.values = floatval;
 		
         ostringstream oss;
-        oss << s.type;
+        oss << char('A' + type - 1);
         feature.label = oss.str();
 		
         returnFeatures[0].push_back(feature);
