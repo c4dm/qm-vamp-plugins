@@ -105,7 +105,7 @@ BeatTracker::getPluginVersion() const
 string
 BeatTracker::getCopyright() const
 {
-    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2012 QMUL - All Rights Reserved";
+    return "Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2013 QMUL - All Rights Reserved";
 }
 
 BeatTracker::ParameterList

@@ -110,7 +110,7 @@ BarBeatTracker::getPluginVersion() const
 string
 BarBeatTracker::getCopyright() const
 {
-    return "Plugin by Matthew Davies, Christian Landone and Chris Cannam.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
+    return "Plugin by Matthew Davies, Christian Landone and Chris Cannam.  Copyright (c) 2006-2013 QMUL - All Rights Reserved";
 }
 
 BarBeatTracker::ParameterList
