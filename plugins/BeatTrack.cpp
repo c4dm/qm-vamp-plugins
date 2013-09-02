@@ -59,7 +59,7 @@ BeatTracker::BeatTracker(float inputSampleRate) :
     m_dfType(DF_COMPLEXSD),
     m_whiten(false),
     m_alpha(0.9),  			// MEPD new exposed parameter for beat tracker, default value = 0.9 (as old version)
-    m_tightness(4.), 		// MEPD new exposed parameter for beat tracker, default value = 4. (as old version)
+    m_tightness(4.),
     m_inputtempo(120.), 	// MEPD new exposed parameter for beat tracker, default value = 120. (as old version)
     m_constraintempo(false) // MEPD new exposed parameter for beat tracker, default value = false (as old version)
     // calling the beat tracker with these default parameters will give the same output as the previous existing version
@@ -165,24 +165,13 @@ BeatTracker::getParameterDescriptors() const
     desc.isQuantized = false;
     list.push_back(desc);
 
-
-    // MEPD new exposed parameter - used in the dynamic programming part of the beat tracker
-    //Tightness Parameter of Beat Tracker
-    desc.identifier = "tightness";
-    desc.name = "Tightness";
-    desc.description = "Inertia - Flexibility Trade Off 2";
-    desc.minValue =  3;
-    desc.maxValue = 7;
-    desc.defaultValue = 4;
-    desc.unit = "";
-    desc.isQuantized = true;
-    list.push_back(desc);
+    // We aren't exposing tightness as a parameter, it's fixed at 4
 
     // MEPD new exposed parameter - used in the periodicity estimation
     //User input tempo
     desc.identifier = "inputtempo";
-    desc.name = "InputTempo";
-    desc.description = "User defined Tempo";
+    desc.name = "Tempo Hint";
+    desc.description = "User-defined tempo on which to centre the probability distribution";
     desc.minValue =  50;
     desc.maxValue = 250;
     desc.defaultValue = 120;
@@ -193,7 +182,7 @@ BeatTracker::getParameterDescriptors() const
     // MEPD new exposed parameter - used in periodicity estimation
     desc.identifier = "constraintempo";
     desc.name = "Constrain Tempo";
-    desc.description = "Constrain tempo to use Gaussian weighting";
+    desc.description = "Constrain more tightly around the tempo hint, using a Gaussian weighting instead of Rayleigh";
     desc.minValue = 0;
     desc.maxValue = 1;
     desc.defaultValue = 0;
@@ -225,8 +214,6 @@ BeatTracker::getParameter(std::string name) const
         return m_whiten ? 1.0 : 0.0;
     } else if (name == "alpha") {
         return m_alpha;
-    } else if (name == "tightness") {
-        return m_tightness;
     }  else if (name == "inputtempo") {
         return m_inputtempo;
     }  else if (name == "constraintempo") {
@@ -252,8 +239,6 @@ BeatTracker::setParameter(std::string name, float value)
         m_whiten = (value > 0.5);
     } else if (name == "alpha") {
         m_alpha = value;
-    } else if (name == "tightness") {
-        m_tightness = value;
     } else if (name == "inputtempo") {
         m_inputtempo = value;
     } else if (name == "constraintempo") {

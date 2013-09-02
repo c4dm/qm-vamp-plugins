@@ -142,24 +142,13 @@ BarBeatTracker::getParameterDescriptors() const
     desc.isQuantized = false;
     list.push_back(desc);
 
-
-    // changes are as per the BeatTrack.cpp
-    //Tightness Parameter of Beat Tracker
-    desc.identifier = "tightness";
-    desc.name = "Tightness";
-    desc.description = "Inertia - Flexibility Trade Off 2";
-    desc.minValue =  3;
-    desc.maxValue = 7;
-    desc.defaultValue = 4;
-    desc.unit = "";
-    desc.isQuantized = true;
-    list.push_back(desc);
+    // We aren't exposing tightness as a parameter, it's fixed at 4
 
     // changes are as per the BeatTrack.cpp
     //User input tempo
     desc.identifier = "inputtempo";
-    desc.name = "InputTempo";
-    desc.description = "User defined Tempo";
+    desc.name = "Tempo Hint";
+    desc.description = "User-defined tempo on which to centre the probability distribution";
     desc.minValue =  50;
     desc.maxValue = 250;
     desc.defaultValue = 120;
@@ -170,7 +159,7 @@ BarBeatTracker::getParameterDescriptors() const
     // changes are as per the BeatTrack.cpp
     desc.identifier = "constraintempo";
     desc.name = "Constrain Tempo";
-    desc.description = "Constrain tempo to use Gaussian weighting";
+    desc.description = "Constrain more tightly around the tempo hint, using a Gaussian weighting instead of Rayleigh";
     desc.minValue = 0;
     desc.maxValue = 1;
     desc.defaultValue = 0;
@@ -191,8 +180,6 @@ BarBeatTracker::getParameter(std::string name) const
         return m_bpb;
     } else if (name == "alpha") {
         return m_alpha;
-    } else if (name == "tightness") {
-        return m_tightness;
     }  else if (name == "inputtempo") {
         return m_inputtempo;
     }  else if (name == "constraintempo") {
@@ -208,8 +195,6 @@ BarBeatTracker::setParameter(std::string name, float value)
         m_bpb = lrintf(value);
     } else if (name == "alpha") {
         m_alpha = value;
-    } else if (name == "tightness") {
-        m_tightness = value;
     } else if (name == "inputtempo") {
         m_inputtempo = value;
     } else if (name == "constraintempo") {
