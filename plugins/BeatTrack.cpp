@@ -171,7 +171,7 @@ BeatTracker::getParameterDescriptors() const
     //User input tempo
     desc.identifier = "inputtempo";
     desc.name = "Tempo Hint";
-    desc.description = "User-defined tempo on which to centre the probability distribution";
+    desc.description = "User-defined tempo on which to centre the tempo preference function";
     desc.minValue =  50;
     desc.maxValue = 250;
     desc.defaultValue = 120;
