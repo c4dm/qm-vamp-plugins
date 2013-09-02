@@ -99,7 +99,7 @@ BeatTracker::getMaker() const
 int
 BeatTracker::getPluginVersion() const
 {
-    return 5;
+    return 6;
 }
 
 string
