@@ -348,7 +348,7 @@ BarBeatTracker::process(const float *const *inputBuffers,
 #endif
     for (int i = 0; i < fl; ++i) dfinput[i] = inputBuffers[0][i];
 
-    double output = m_d->df->process(dfinput);
+    double output = m_d->df->processTimeDomain(dfinput);
 
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
 

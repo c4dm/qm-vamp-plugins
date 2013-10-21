@@ -178,7 +178,7 @@ protected:
                     m_rin[j] = m_in[origin + i * m_w/2 + j];
                 }
                 m_window.cut(m_rin);
-                m_fft->process(false, m_rin, m_rout, m_iout);
+                m_fft->forward(m_rin, m_rout, m_iout);
                 for (int j = 0; j < m_w/2; ++j) {
                     int k = j+1; // include Nyquist but not DC
                     double mag = sqrt(m_rout[k] * m_rout[k] +
