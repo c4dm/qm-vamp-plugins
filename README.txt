@@ -63,7 +63,7 @@ product for which the terms of the GPL are not appropriate, please
 contact the Centre for Digital Music at Queen Mary, University of
 London for further licensing terms.
 
-Copyright (c) 2006-2011 Queen Mary, University of London.
+Copyright (c) 2006-2013 Queen Mary, University of London.
 
 
 To Install
