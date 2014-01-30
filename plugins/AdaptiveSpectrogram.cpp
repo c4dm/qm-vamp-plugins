@@ -22,6 +22,7 @@
 #include <iostream>
 
 #include <dsp/transforms/FFT.h>
+#include <dsp/rateconversion/Decimator.h>
 
 using std::string;
 using std::vector;
@@ -38,7 +39,11 @@ AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     m_n(2),
     m_coarse(false),
     m_threaded(true),
-    m_threadsInUse(false)
+    m_threadsInUse(false),
+    m_decFactor(1),
+    m_buflen(0),
+    m_buffer(0),
+    m_decimator(0)
 {
 }
 
@@ -54,6 +59,9 @@ AdaptiveSpectrogram::~AdaptiveSpectrogram()
         delete i->second;
     }
     m_fftThreads.clear();
+
+    delete[] m_buffer;
+    delete m_decimator;
 }
 
 string
@@ -83,7 +91,7 @@ AdaptiveSpectrogram::getMaker() const
 int
 AdaptiveSpectrogram::getPluginVersion() const
 {
-    return 1;
+    return 2;
 }
 
 string
@@ -95,13 +103,14 @@ AdaptiveSpectrogram::getCopyright() const
 size_t
 AdaptiveSpectrogram::getPreferredStepSize() const
 {
-    return ((2 << m_w) << m_n) / 2;
+    return getPreferredBlockSize();
 }
 
 size_t
 AdaptiveSpectrogram::getPreferredBlockSize() const
 {
-    return (2 << m_w) << m_n;
+    // the /2 at the end is for 50% overlap (we handle framing ourselves)
+    return ((2 << m_w) << m_n) * m_decFactor / 2;
 }
 
 bool
@@ -110,13 +119,32 @@ AdaptiveSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockSi
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
+    if (blockSize != getPreferredBlockSize()) {
+        std::cerr << "AdaptiveSpectrogram::initialise: Block size " << blockSize << " does not match required block size of " << getPreferredBlockSize() << std::endl;
+        return false;
+    }
+    if (stepSize != getPreferredStepSize()) {
+        std::cerr << "AdaptiveSpectrogram::initialise: Step size " << stepSize << " does not match required step size of " << getPreferredStepSize() << std::endl;
+        return false;
+    }
+
+    if (m_decFactor > 1) {
+        m_decimator = new Decimator(blockSize, m_decFactor);
+    }
+
+    m_buflen = (blockSize * 2) / m_decFactor; // *2 for 50% overlap
+    m_buffer = new float[m_buflen];
+
+    reset();
+    
     return true;
 }
 
 void
 AdaptiveSpectrogram::reset()
 {
-
+    if (m_decimator) m_decimator->resetFilter();
+    for (int i = 0; i < m_buflen; ++i) m_buffer[i] = 0.f;
 }
 
 AdaptiveSpectrogram::ParameterList
@@ -163,6 +191,22 @@ AdaptiveSpectrogram::getParameterDescriptors() const
     desc2.valueNames.push_back("16384");
     list.push_back(desc2);
 
+    desc2.identifier = "dec";
+    desc2.name = "Decimation factor";
+    desc2.description = "Factor to down-sample by, increasing speed but lowering maximum frequency";
+    desc2.unit = "";
+    desc2.minValue = 0;
+    desc2.maxValue = 3;
+    desc2.defaultValue = 0;
+    desc2.isQuantized = true;
+    desc2.quantizeStep = 1;
+    desc2.valueNames.clear();
+    desc2.valueNames.push_back("No decimation");
+    desc2.valueNames.push_back("2");
+    desc2.valueNames.push_back("4");
+    desc2.valueNames.push_back("8");
+    list.push_back(desc2);
+
     ParameterDescriptor desc3;
     desc3.identifier = "coarse";
     desc3.name = "Omit alternate resolutions";
@@ -196,6 +240,15 @@ AdaptiveSpectrogram::getParameter(std::string id) const
     else if (id == "w") return m_w+1;
     else if (id == "threaded") return (m_threaded ? 1 : 0);
     else if (id == "coarse") return (m_coarse ? 1 : 0);
+    else if (id == "dec") {
+        int f = m_decFactor;
+        int p = 0;
+        while (f > 1) {
+            f >>= 1;
+            p += 1;
+        }
+        return p;
+    }
     return 0.f;
 }
 
@@ -212,6 +265,9 @@ AdaptiveSpectrogram::setParameter(std::string id, float value)
         m_threaded = (value > 0.5);
     } else if (id == "coarse") {
         m_coarse = (value > 0.5);
+    } else if (id == "dec") {
+        int p = lrintf(value);
+        if (p >= 0 && p <= 3) m_decFactor = 1 << p;
     }
 }
 
@@ -226,15 +282,15 @@ AdaptiveSpectrogram::getOutputDescriptors() const
     d.description = "The output of the plugin";
     d.unit = "";
     d.hasFixedBinCount = true;
-    d.binCount = getPreferredBlockSize() / 2;
+    d.binCount = getPreferredBlockSize() / (m_decFactor * 2);
     d.hasKnownExtents = false;
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::FixedSampleRate;
-    d.sampleRate = m_inputSampleRate / ((2 << m_w) / 2);
+    d.sampleRate = m_inputSampleRate / (m_decFactor * ((2 << m_w) / 2));
     d.hasDuration = false;
     char name[20];
     for (int i = 0; i < d.binCount; ++i) {
-        float freq = (m_inputSampleRate / (d.binCount * 2)) * (i + 1); // no DC bin
+        float freq = (m_inputSampleRate / (m_decFactor * (d.binCount * 2)) * (i + 1)); // no DC bin
         sprintf(name, "%d Hz", int(freq));
         d.binNames.push_back(name);
     }
@@ -253,6 +309,19 @@ AdaptiveSpectrogram::getRemainingFeatures()
 AdaptiveSpectrogram::FeatureSet
 AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 {
+    // framing: shift and write the new data to right half
+    for (int i = 0; i < m_buflen/2; ++i) {
+        m_buffer[i] = m_buffer[m_buflen/2 + i];
+    }
+
+    if (m_decFactor == 1) {
+        for (int i = 0; i < m_buflen/2; ++i) {
+            m_buffer[m_buflen/2 + i] = inputBuffers[0][i];
+        }
+    } else {
+        m_decimator->process(inputBuffers[0], m_buffer + m_buflen/2);
+    }
+
     FeatureSet fs;
 
     int minwid = (2 << m_w), maxwid = ((2 << m_w) << m_n);
@@ -279,11 +348,9 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
             m_fftThreads[w] = new FFTThread(w);
         }
         if (m_threaded) {
-            m_fftThreads[w]->startCalculation
-                (inputBuffers[0], s, index, maxwid);
+            m_fftThreads[w]->startCalculation(m_buffer, s, index, maxwid);
         } else {
-            m_fftThreads[w]->setParameters
-                (inputBuffers[0], s, index, maxwid);
+            m_fftThreads[w]->setParameters(m_buffer, s, index, maxwid);
             m_fftThreads[w]->performTask();
         }
         w *= 2;

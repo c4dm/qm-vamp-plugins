@@ -22,9 +22,11 @@
 #include <dsp/transforms/FFT.h>
 #include <base/Window.h>
 
-#include "thread/Thread.h"
-#include "thread/AsynchronousTask.h"
-#include "thread/BlockAllocator.h"
+#include <thread/Thread.h>
+#include <thread/AsynchronousTask.h>
+#include <thread/BlockAllocator.h>
+
+class Decimator;
 
 class AdaptiveSpectrogram : public Vamp::Plugin
 {
@@ -63,6 +65,10 @@ protected:
     int m_n;
     bool m_coarse;
     bool m_threaded;
+    int m_decFactor;
+    float *m_buffer;
+    int m_buflen;
+    Decimator *m_decimator;
 
     struct Spectrogram
     {
@@ -286,7 +292,7 @@ protected:
     void assemble(const Spectrograms &, const Cutting *,
                   std::vector<std::vector<float> > &,
                   int x, int y, int w, int h) const;
-    };
+};
 
 
 #endif
