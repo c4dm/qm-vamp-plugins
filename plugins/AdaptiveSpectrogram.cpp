@@ -291,7 +291,7 @@ AdaptiveSpectrogram::getOutputDescriptors() const
     char name[20];
     for (int i = 0; i < d.binCount; ++i) {
         float freq = (m_inputSampleRate / (m_decFactor * (d.binCount * 2)) * (i + 1)); // no DC bin
-        sprintf(name, "%d Hz", int(freq));
+        sprintf(name, "%.1f Hz", freq);
         d.binNames.push_back(name);
     }
     list.push_back(d);
