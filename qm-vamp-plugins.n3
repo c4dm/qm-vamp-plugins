@@ -7,14 +7,22 @@
 @prefix af:       <http://purl.org/ontology/af/> .
 @prefix foaf:     <http://xmlns.com/foaf/0.1/> .
 @prefix cc:       <http://web.resource.org/cc/> .
+@prefix doap: 	  <http://usefulinc.com/ns/doap#> .
 @prefix :         <#> .
 
 <>  a   vamp:PluginDescription ;
     foaf:maker          <http://www.vamp-plugins.org/doap.rdf#template-generator> ;
     foaf:primaryTopic   <http://vamp-plugins.org/rdf/plugins/qm-vamp-plugins> .
 
-:qm-vamp-plugins a  vamp:PluginLibrary ;
+:maker
+    foaf:name "Queen Mary, University of London" ;
+    foaf:logo <http://vamp-plugins.org/rdf/plugins/makers/qm.png> ;
+    foaf:page <http://c4dm.eecs.qmul.ac.uk/> .
+
+plugbase:library a  vamp:PluginLibrary ;
     vamp:identifier "qm-vamp-plugins"  ; 
+    dc:title "Queen Mary plugin set" ;
+    foaf:maker :maker ;
     vamp:available_plugin plugbase:qm-adaptivespectrogram ; 
     vamp:available_plugin plugbase:qm-barbeattracker ; 
     vamp:available_plugin plugbase:qm-chromagram ; 
@@ -29,18 +37,22 @@
     vamp:available_plugin plugbase:qm-tonalchange ; 
     vamp:available_plugin plugbase:qm-transcription ; 
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html> ;
-    .
+    doap:download-page <http://isophonics.net/QMVampPlugins> ;
+    dc:title "Queen Mary plugin set" ;
+    dc:description """Plugins from the Centre for Digital Music at Queen Mary, University of London""" .
 
 plugbase:qm-adaptivespectrogram a   vamp:Plugin ;
     dc:title              "Adaptive Spectrogram" ;
     vamp:name             "Adaptive Spectrogram" ;
+    vamp:category	  "Visualisation" ;
     dc:description        """Produce an adaptive spectrogram by adaptive selection from spectrograms at multiple resolutions""" ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Wen Xue and Chris Cannam.  Copyright (c) 2009 Wen Xue and QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-adaptivespectrogram" ;
     vamp:vamp_API_version vamp:api_version_2 ;
     owl:versionInfo       "1" ;
     vamp:input_domain     vamp:TimeDomain ;
+    foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-adaptivespectrogram> ;
 
     vamp:parameter   plugbase:qm-adaptivespectrogram_param_n ;
     vamp:parameter   plugbase:qm-adaptivespectrogram_param_w ;
@@ -103,13 +115,15 @@ plugbase:qm-adaptivespectrogram_output_output a  vamp:DenseOutput ;
 plugbase:qm-barbeattracker a   vamp:Plugin ;
     dc:title              "Bar and Beat Tracker" ;
     vamp:name             "Bar and Beat Tracker" ;
+    vamp:category	  "Time > Tempo" ;
     dc:description        """Estimate bar and beat locations""" ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Matthew Davies, Christian Landone and Chris Cannam.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-barbeattracker" ;
     vamp:vamp_API_version vamp:api_version_2 ;
     owl:versionInfo       "1" ;
     vamp:input_domain     vamp:TimeDomain ;
+    foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-barbeattracker> ;
 
     vamp:parameter   plugbase:qm-barbeattracker_param_bpb ;
 
@@ -176,9 +190,10 @@ plugbase:qm-barbeattracker_output_beatsd a  vamp:SparseOutput ;
 plugbase:qm-chromagram a   vamp:Plugin ;
     dc:title              "Chromagram" ;
     vamp:name             "Chromagram" ;
+    vamp:category	  "Visualisation" ;
     dc:description        """Extract a series of tonal chroma vectors from the audio""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-chromagram> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-chromagram" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -274,9 +289,10 @@ plugbase:qm-chromagram_output_chromameans a  vamp:DenseOutput ;
 plugbase:qm-constantq a   vamp:Plugin ;
     dc:title              "Constant-Q Spectrogram" ;
     vamp:name             "Constant-Q Spectrogram" ;
+    vamp:category	  "Visualisation" ;
     dc:description        """Extract a spectrogram with constant ratio of centre frequency to resolution from the input audio""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-constantq> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Chris Cannam and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-constantq" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -358,13 +374,15 @@ plugbase:qm-constantq_output_constantq a  vamp:DenseOutput ;
 plugbase:qm-dwt a   vamp:Plugin ;
     dc:title              "Discrete Wavelet Transform" ;
     vamp:name             "Discrete Wavelet Transform" ;
+    vamp:category	  "Visualisation" ;
     dc:description        """Visualisation by scalogram""" ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Thomas Wilmering.  Copyright (c) 2009 Thomas Wilmering and QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-dwt" ;
     vamp:vamp_API_version vamp:api_version_2 ;
     owl:versionInfo       "1" ;
     vamp:input_domain     vamp:TimeDomain ;
+    foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-dwt> ;
 
     vamp:parameter   plugbase:qm-dwt_param_scales ;
     vamp:parameter   plugbase:qm-dwt_param_wavelet ;
@@ -428,9 +446,10 @@ plugbase:qm-dwt_output_wcoeff a  vamp:DenseOutput ;
 plugbase:qm-keydetector a   vamp:Plugin ;
     dc:title              "Key Detector" ;
     vamp:name             "Key Detector" ;
+    vamp:category	  "Key and Tonality" ;
     dc:description        """Estimate the key of the music""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-keydetector> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Katy Noland and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-keydetector" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -534,9 +553,10 @@ plugbase:qm-keydetector_output_keystrength a  vamp:DenseOutput ;
 plugbase:qm-mfcc a   vamp:Plugin ;
     dc:title              "Mel-Frequency Cepstral Coefficients" ;
     vamp:name             "Mel-Frequency Cepstral Coefficients" ;
+    vamp:category	  "Low Level Features" ;
     dc:description        """Calculate a series of MFCC vectors from the audio""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-mfcc> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Nicolas Chetry and Chris Cannam.  Copyright (c) 2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-mfcc" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -610,9 +630,10 @@ plugbase:qm-mfcc_output_means a  vamp:DenseOutput ;
 plugbase:qm-onsetdetector a   vamp:Plugin ;
     dc:title              "Note Onset Detector" ;
     vamp:name             "Note Onset Detector" ;
+    vamp:category	  "Time > Onsets" ;
     dc:description        """Estimate individual note onset positions""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-onsetdetector> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Christian Landone, Chris Duxbury and Juan Pablo Bello.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-onsetdetector" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -698,9 +719,10 @@ plugbase:qm-onsetdetector_output_smoothed_df a  vamp:SparseOutput ;
 plugbase:qm-segmenter a   vamp:Plugin ;
     dc:title              "Segmenter" ;
     vamp:name             "Segmenter" ;
+    vamp:category	  "Classification" ;
     dc:description        """Divide the track into a sequence of consistent segments""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-segmenter> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Mark Levy.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-segmenter" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -766,9 +788,10 @@ plugbase:qm-segmenter_output_segmentation a  vamp:SparseOutput ;
 plugbase:qm-similarity a   vamp:Plugin ;
     dc:title              "Similarity" ;
     vamp:name             "Similarity" ;
+    vamp:category	  "Classification" ;
     dc:description        """Return a distance matrix for similarity between the input audio channels""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-similarity> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Mark Levy, Kurt Jacobson and Chris Cannam.  Copyright (c) 2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-similarity" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -870,9 +893,10 @@ plugbase:qm-similarity_output_beatspectrum a  vamp:SparseOutput ;
 plugbase:qm-tempotracker a   vamp:Plugin ;
     dc:title              "Tempo and Beat Tracker" ;
     vamp:name             "Tempo and Beat Tracker" ;
+    vamp:category	  "Time > Tempo" ;
     dc:description        """Estimate beat locations and tempo""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-tempotracker> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Christian Landone and Matthew Davies.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-tempotracker" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -958,9 +982,10 @@ plugbase:qm-tempotracker_output_tempo a  vamp:SparseOutput ;
 plugbase:qm-tonalchange a   vamp:Plugin ;
     dc:title              "Tonal Change" ;
     vamp:name             "Tonal Change" ;
+    vamp:category	  "Key and Tonality" ;
     dc:description        """Detect and return the positions of harmonic changes such as chord boundaries""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-tonalchange> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Martin Gasser and Christopher Harte.  Copyright (c) 2006-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-tonalchange" ;
     vamp:vamp_API_version vamp:api_version_2 ;
@@ -1059,9 +1084,10 @@ plugbase:qm-tonalchange_output_changepositions a  vamp:SparseOutput ;
 plugbase:qm-transcription a   vamp:Plugin ;
     dc:title              "Polyphonic Transcription" ;
     vamp:name             "Polyphonic Transcription" ;
+    vamp:category	  "Notes" ;
     dc:description        """Transcribe the input audio to estimated notes""" ;
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html#qm-transcription> ;
-    foaf:maker            [ foaf:name "Queen Mary, University of London" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """Plugin by Dr. Ruohua Zhou.  Copyright (c) 2008-2009 QMUL - All Rights Reserved""" ;
     vamp:identifier       "qm-transcription" ;
     vamp:vamp_API_version vamp:api_version_2 ;
