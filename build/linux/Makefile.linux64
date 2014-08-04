@@ -7,5 +7,7 @@ LDFLAGS	 := -shared -Lbuild/linux/amd64 -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/
 
 PLUGIN_EXT   := .so
 
+MAKEFILE_EXT := .linux64
+
 include build/general/Makefile.inc
 

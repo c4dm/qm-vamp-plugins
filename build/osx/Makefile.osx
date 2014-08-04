@@ -7,5 +7,7 @@ LDFLAGS	  := -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 -d
 
 PLUGIN_EXT   := .dylib
 
+MAKEFILE_EXT := .osx
+
 include build/general/Makefile.inc
 

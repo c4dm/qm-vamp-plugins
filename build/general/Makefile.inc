@@ -4,9 +4,9 @@ PLUGIN	?= qm-vamp-plugins$(PLUGIN_EXT)
 CXX	?= g++
 CC	?= gcc
 
-CFLAGS	:= $(CFLAGS) -I. -I../qm-dsp
-CXXFLAGS	:= $(CXXFLAGS) -I. -I../qm-dsp
-LDFLAGS		:= -L../qm-dsp $(LDFLAGS)
+CFLAGS	:= $(CFLAGS) -I. -Iqm-dsp
+CXXFLAGS	:= $(CXXFLAGS) -I. -Iqm-dsp
+LDFLAGS		:= -Lqm-dsp $(LDFLAGS)
 
 HEADERS := plugins/AdaptiveSpectrogram.h \
            plugins/BarBeatTrack.h \
@@ -41,11 +41,20 @@ SOURCES := g2cstubs.c \
 OBJECTS := $(SOURCES:.cpp=.o)
 OBJECTS := $(OBJECTS:.c=.o)
 
+all: qm-dsp $(PLUGIN)
+
+MF   := $(wildcard build/*/Makefile$(MAKEFILE_EXT))
+
+.PHONY: qm-dsp
+qm-dsp: 
+		$(MAKE) -C $@ -f $(MF)
+
 $(PLUGIN):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:		
-		rm $(OBJECTS)
+		$(MAKE) -C qm-dsp -f $(MF) clean
+		rm -f $(OBJECTS)
 
 distclean:	clean
 		rm $(PLUGIN)

@@ -8,5 +8,7 @@ LDFLAGS	 := -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/at
 
 PLUGIN_EXT   := .so
 
+MAKEFILE_EXT := .linux32
+
 include build/general/Makefile.inc
 
