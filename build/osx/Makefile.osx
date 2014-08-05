@@ -1,9 +1,9 @@
 
-CFLAGS := -O3 -ftree-vectorize -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 -I../vamp-plugin-sdk -I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers/ -DUSE_PTHREADS
+ARCHFLAGS	:= -mmacosx-version-min=10.6 -arch x86_64 -arch i386
 
-CXXFLAGS  := $(CFLAGS)
+CXXFLAGS 	+= $(ARCHFLAGS) -O3 -ftree-vectorize -I../vamp-plugin-sdk -DUSE_PTHREADS
 
-LDFLAGS	  := -isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -arch x86_64 -dynamiclib -lqm-dsp ../vamp-plugin-sdk/libvamp-sdk.a -framework Accelerate -lpthread -exported_symbols_list vamp-plugin.list -install_name qm-vamp-plugins.dylib
+LDFLAGS	    	+= $(ARCHFLAGS) -dynamiclib -lqm-dsp ../vamp-plugin-sdk/libvamp-sdk.a -framework Accelerate -lpthread -exported_symbols_list vamp-plugin.list -install_name qm-vamp-plugins.dylib
 
 PLUGIN_EXT   := .dylib
 
