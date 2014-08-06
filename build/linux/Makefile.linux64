@@ -1,9 +1,9 @@
 
-CFLAGS := -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
+CFLAGS += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
 
-CXXFLAGS := $(CFLAGS)
+CXXFLAGS += $(CFLAGS)
 
-LDFLAGS	 := -shared -Lbuild/linux/amd64 -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lcblas -lf77blas -latlas -Wl,-z,defs -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
+LDFLAGS	 += -shared -Lbuild/linux/amd64 -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lcblas -lf77blas -latlas -Wl,-z,defs -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
 
 PLUGIN_EXT   := .so
 
