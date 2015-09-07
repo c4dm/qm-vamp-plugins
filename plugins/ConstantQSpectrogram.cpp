@@ -29,11 +29,11 @@ ConstantQSpectrogram::ConstantQSpectrogram(float inputSampleRate) :
     m_step(0),
     m_block(0)
 {
-    m_minMIDIPitch = 24;
+    m_minMIDIPitch = 36;
     m_maxMIDIPitch = 84;
     m_tuningFrequency = 440;
     m_normalized = false;
-    m_bpo = 24;
+    m_bpo = 12;
 
     setupConfig();
 }
