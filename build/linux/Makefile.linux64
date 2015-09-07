@@ -1,5 +1,6 @@
 
 CFLAGS += -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -msse2 -mfpmath=sse -ftree-vectorize -DUSE_PTHREADS
+#CFLAGS += -DDEBUG -g -fno-exceptions -fPIC -ffast-math -DUSE_PTHREADS
 
 CXXFLAGS += $(CFLAGS)
 
