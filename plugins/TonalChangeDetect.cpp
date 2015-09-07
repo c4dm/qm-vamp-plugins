@@ -230,8 +230,8 @@ TonalChangeDetect::reset()
         m_chromagram = new Chromagram(m_config);
     }
     while (!m_pending.empty()) m_pending.pop();
-	
     m_vaCurrentVector.clear();
+    m_TCSGram.clear();
 
     m_origin = Vamp::RealTime::zeroTime;
     m_haveOrigin = false;
