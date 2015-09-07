@@ -5,7 +5,7 @@ QM Vamp Plugins
 To Install
 ==========
 
-This package contains plugins compiled for Linux on 32-bit x86.
+This package contains plugins compiled for Linux on 64-bit processors.
 
 To install them, copy the following files:
 

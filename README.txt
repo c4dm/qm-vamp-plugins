@@ -5,9 +5,9 @@ QM Vamp Plugins
 Vamp audio feature extraction plugins from the Centre for Digital
 Music at Queen Mary, University of London.
 
-http://www.elec.qmul.ac.uk/digitalmusic/
+http://c4dm.eecs.qmul.ac.uk/
 
-Version 1.7.
+Version 1.7.1.
 
 For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 
@@ -15,9 +15,9 @@ For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
 About This Release
 ==================
 
-This release corresponds to a change in the licensing terms under
-which the QM plugins are published (from a closed-source license to
-the GPL).  It contains no new functionality over 1.6.
+This is mostly a bugfix and build-system update release. The principal
+new feature since the previous 1.7 release is the addition of some new
+parameters to the BeatTracker plugin.
 
 
 Plugins Included
@@ -63,7 +63,7 @@ product for which the terms of the GPL are not appropriate, please
 contact the Centre for Digital Music at Queen Mary, University of
 London for further licensing terms.
 
-Copyright (c) 2006-2013 Queen Mary, University of London.
+Copyright (c) 2006-2015 Queen Mary, University of London.
 
 
 To Install

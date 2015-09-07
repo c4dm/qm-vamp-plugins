@@ -37,7 +37,7 @@ plugbase:library a  vamp:PluginLibrary ;
     vamp:available_plugin plugbase:qm-tonalchange ; 
     vamp:available_plugin plugbase:qm-transcription ; 
     foaf:page <http://vamp-plugins.org/plugin-doc/qm-vamp-plugins.html> ;
-    doap:download-page <http://isophonics.net/QMVampPlugins> ;
+    doap:download-page <https://code.soundsoftware.ac.uk/projects/qm-vamp-plugins/files> ;
     dc:title "Queen Mary plugin set" ;
     dc:description """Plugins from the Centre for Digital Music at Queen Mary, University of London""" .
 

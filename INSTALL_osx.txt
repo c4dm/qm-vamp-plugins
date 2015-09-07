@@ -5,8 +5,7 @@ QM Vamp Plugins
 To Install
 ==========
 
-This package contains plugins for the Apple OS/X operating system,
-compatible with both PPC and Intel hardware.
+This package contains plugins for the Apple Mac OS/X operating system.
 
 To install them, copy the files
 
