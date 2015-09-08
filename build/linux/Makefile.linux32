@@ -4,7 +4,7 @@ CFLAGS := -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -mfpmath=sse -ftr
 
 CXXFLAGS := $(CFLAGS)
 
-LDFLAGS	 := -Wl,-Bstatic -lqm-dsp -lvamp-sdk -L/usr/lib/sse2/atlas -L/usr/lib/atlas/sse -llapack -lblas -Wl,-Bdynamic -lpthread -Wl,-z,defs -Wl,--version-script=vamp-plugin.map
+LDFLAGS	 := -shared -Lbuild/linux/i686 -Wl,-Bstatic -lqm-dsp -lvamp-sdk -llapack -lcblas -lf77blas -latlas -lgfortran -Wl,-Bdynamic -lpthread -Wl,-z,defs -Wl,--version-script=vamp-plugin.map
 
 PLUGIN_EXT   := .so
 
