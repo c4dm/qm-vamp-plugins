@@ -33,11 +33,11 @@ public:
     FeatureSet getRemainingFeatures();
 
 protected:
-    size_t m_stepSize;
-    size_t m_blockSize;
+    int m_stepSize;
+    int m_blockSize;
     double * m_SoundIn;
-    size_t m_SampleN;
-    size_t m_AllocN;
+    int m_SampleN;
+    int m_AllocN;
     bool m_Excess;
     Vamp::RealTime m_Base;
 /*

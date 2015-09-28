@@ -351,10 +351,10 @@ Transcription::process(const float *const *inputBuffers,
 
     if (m_Excess) return FeatureSet();
 
-    for (size_t i = 0; i < m_blockSize;i++) {
+    for (int i = 0; i < m_blockSize;i++) {
 
         if (m_SampleN >= m_AllocN) {
-            size_t newsize = m_AllocN * 2;
+            int newsize = m_AllocN * 2;
             if (newsize < 10000) newsize = 10000;
             double *newbuf = (double *)realloc(m_SoundIn, newsize * sizeof(double));
             if (!newbuf) {
@@ -382,10 +382,9 @@ Transcription::getRemainingFeatures()
     double *hello1;
     double *hello2;
     int Msec;
-    size_t i;
-    size_t j;
-    size_t n;
-    size_t count;
+    int i;
+    int j;
+    int n;
 
     Msec=(int)(100*m_SampleN/m_inputSampleRate);
 
@@ -471,9 +470,7 @@ Transcription::getRemainingFeatures()
     double starts[88];
     for (n = 0; n < 88; ++n) starts[n] = -1.0;
 
-    int nn;
     for (j = 0; j <Msec; j++) {
-
         
         for(n=0;n<88;n++)
         {
@@ -536,17 +533,15 @@ Transcription::getRemainingFeatures()
 
 void sofacomplexMex(double *y, double *z, int ncols,double StartNote,double NoteInterval1,double NoteNum,double C,double D,double SR)
 {
-    int mseconds,i,j,el,count,count2;
-    double  Snote,NoteInterval,NoteN, BasicR;
+    int mseconds,i,el,count,count2;
+    double  Snote,NoteInterval,NoteN;
     double  *signs;
-    double  *rwork,*buffer;  
+    double  *rwork;  
     double  freq,R,gain,gainI,gainII,coefI,coefM;
     double output,input,outputI,outputM;
     double *x;
     double *sum,*sum2;
     double power;
-    double temp;
-   
     
     //SR=44100;
     Snote=StartNote;
@@ -813,7 +808,7 @@ void Smooth(double *In, int InLen,int smoothLen)
 }
 
 
-void FindPeaks(double *In, int InLen,double *Out1,double *Out2, int db, int db2, int db3)
+void FindPeaks(double *In, int InLen,double *Out1,double *Out2, int /* db */, int db2, int db3)
 {
     int i,lastout;
     for (i=0;i<InLen;i++)
@@ -1182,7 +1177,7 @@ void Mydiff( double *InputArray, int InputHLen, int InputVLen,int n)
 
 void PeakDetect(double *In, int InLen)
 {
-    int i,j;
+    int i;
     double *Out1;
  
     Out1=(double*)malloc(InLen*sizeof(double));
@@ -1307,21 +1302,15 @@ void OnsetDetection2(double *In,int InputLen,double *OutOne,double a,double b)
 
 }
 
-void PitchEstimation(double *In, int InLen, double *OutArray,double *OutArray2)
+void PitchEstimation(double *In, int /* InLen */, double *OutArray,double *OutArray2)
 {
     double *xx,*x,*y,*y1,*PeakPitch1, *PeakPitch2,*PeakInput1, *PeakInput2;
     double *out,*outValue;
     double *output,*output1;
-    double notefloat,hh0,hh1,hh28;
-    double outM12[12];
     int *outc;
-    int *yI;
     double temp;
-    int i,j,sumI;
+    int i,sumI;
     int Len;
-    int NN,NN2;
-    int count;
-    double Th;
  
     Len=1050;
     xx=(double*)malloc(Len*sizeof(double));
@@ -1479,16 +1468,13 @@ void PitchEstimation(double *In, int InLen, double *OutArray,double *OutArray2)
      
     }
 
-    Th=30;
     for(i=20;i<105;i++)
     {
         if(output1[i]==1)
         {
             OutArray[i]=outc[i]+200+2;
             OutArray2[i]=y[outc[i]];
-     
         } 
-   
     }
 
     free(xx); // xx=(double*)malloc(Len*sizeof(double));
@@ -1633,7 +1619,6 @@ void dbfunction( double *InputArray, int InputHLen, int InputVLen,double *OutArr
 {
     int i;
     int j;
-    double temp;
     
     for (i=0;i<InputVLen;i++)
     {

@@ -94,7 +94,7 @@ DWT::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
         channels > getMaxChannelCount()) return false;
 	
-    if ((1 << m_scales) > blockSize) {
+    if ((1U << m_scales) > blockSize) {
         std::cerr << "DWT::initialise: ERROR: Block size must be at least 2^scales (specified block size " << blockSize << " < " << (1 << m_scales) << ")" << std::endl;
         return false;
     }

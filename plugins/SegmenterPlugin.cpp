@@ -28,8 +28,10 @@ using std::ostringstream;
 SegmenterPlugin::SegmenterPlugin(float inputSampleRate) :
     Plugin(inputSampleRate),
     segmenter(0),
-    nSegmentTypes(10),
+    hopsize(0),
+    windowsize(0),
     neighbourhoodLimit(4),
+    nSegmentTypes(10),
     featureType(feature_types(1))
 {
 	
@@ -81,14 +83,14 @@ SegmenterPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
     if (!segmenter) makeSegmenter();
 
-    if (stepSize != hopsize) {
+    if (int(stepSize) != hopsize) {
         std::cerr << "SegmenterPlugin::initialise: supplied step size "
                   << stepSize << " differs from required step size " << hopsize
                   << std::endl;
         return false;
     }
 
-    if (blockSize != windowsize) {
+    if (int(blockSize) != windowsize) {
         std::cerr << "SegmenterPlugin::initialise: supplied block size "
                   << blockSize << " differs from required block size " << windowsize
                   << std::endl;
@@ -282,7 +284,7 @@ SegmenterPlugin::process(const float *const *inputBuffers, Vamp::RealTime timest
 {
     // convert float* to double*
     double *tempBuffer = new double[windowsize];
-    for (size_t i = 0; i < windowsize; ++i) {
+    for (int i = 0; i < windowsize; ++i) {
         tempBuffer[i] = inputBuffers[0][i];
     }
 
@@ -308,7 +310,7 @@ SegmenterPlugin::getRemainingFeatures()
     std::map<int, int> typeMap;
     int nextType = 1;
 
-    for (int i = 0; i < segm.segments.size(); ++i) {
+    for (int i = 0; i < int(segm.segments.size()); ++i) {
         Segment s = segm.segments[i];
         if (typeMap.find(s.type) == typeMap.end()) {
             typeMap[s.type] = nextType;
@@ -316,7 +318,7 @@ SegmenterPlugin::getRemainingFeatures()
         }
     }
 
-    for (int i = 0; i < segm.segments.size(); ++i) {
+    for (int i = 0; i < int(segm.segments.size()); ++i) {
 		
         Segment s = segm.segments[i];
 		
@@ -326,7 +328,7 @@ SegmenterPlugin::getRemainingFeatures()
             (s.start, (int)m_inputSampleRate);
         feature.hasDuration = true;
 
-        if (i + 1 < segm.segments.size()) {
+        if (i + 1 < int(segm.segments.size())) {
             feature.duration = Vamp::RealTime::frame2RealTime
                 (segm.segments[i+1].start - s.start, (int)m_inputSampleRate);
         } else {

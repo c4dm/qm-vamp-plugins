@@ -274,7 +274,7 @@ MFCCPlugin::process(const float *const *inputBuffers,
 
     Feature feature;
     feature.hasTimestamp = false;
-    for (size_t i = 0; i < m_bins; ++i) {
+    for (int i = 0; i < m_bins; ++i) {
         double value = output[i];
         if (ISNAN(value)) value = 0.0;
         m_binsums[i] += value;
@@ -297,7 +297,7 @@ MFCCPlugin::getRemainingFeatures()
     feature.hasTimestamp = true;
     feature.timestamp = Vamp::RealTime::zeroTime;
   
-    for (size_t i = 0; i < m_bins; ++i) {
+    for (int i = 0; i < m_bins; ++i) {
         double v = m_binsums[i];
         if (m_count > 0) v /= m_count;
         feature.values.push_back(v);

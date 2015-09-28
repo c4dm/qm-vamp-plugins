@@ -39,17 +39,17 @@ AdaptiveSpectrogram::AdaptiveSpectrogram(float inputSampleRate) :
     m_n(2),
     m_coarse(false),
     m_threaded(true),
-    m_threadsInUse(false),
     m_decFactor(1),
-    m_buflen(0),
     m_buffer(0),
-    m_decimator(0)
+    m_buflen(0),
+    m_decimator(0),
+    m_threadsInUse(false)
 {
 }
 
 AdaptiveSpectrogram::~AdaptiveSpectrogram()
 {
-    for (int i = 0; i < m_cutThreads.size(); ++i) {
+    for (int i = 0; i < int(m_cutThreads.size()); ++i) {
         delete m_cutThreads[i];
     }
     m_cutThreads.clear();
@@ -289,7 +289,7 @@ AdaptiveSpectrogram::getOutputDescriptors() const
     d.sampleRate = m_inputSampleRate / (m_decFactor * ((2 << m_w) / 2));
     d.hasDuration = false;
     char name[20];
-    for (int i = 0; i < d.binCount; ++i) {
+    for (int i = 0; i < int(d.binCount); ++i) {
         float freq = (m_inputSampleRate / (m_decFactor * (d.binCount * 2)) * (i + 1)); // no DC bin
         sprintf(name, "%.1f Hz", freq);
         d.binNames.push_back(name);
@@ -307,7 +307,7 @@ AdaptiveSpectrogram::getRemainingFeatures()
 }
 
 AdaptiveSpectrogram::FeatureSet
-AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
+AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime)
 {
     // framing: shift and write the new data to right half
     for (int i = 0; i < m_buflen/2; ++i) {
@@ -392,7 +392,7 @@ AdaptiveSpectrogram::process(const float *const *inputBuffers, RealTime ts)
 
     cutting->erase();
 
-    for (int i = 0; i < rmat.size(); ++i) {
+    for (int i = 0; i < int(rmat.size()); ++i) {
         Feature f;
         f.hasTimestamp = false;
         f.values = rmat[i];
