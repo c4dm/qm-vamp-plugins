@@ -5,11 +5,19 @@ QM Vamp Plugins
 Vamp audio feature extraction plugins from the Centre for Digital
 Music at Queen Mary, University of London.
 
-http://c4dm.eecs.qmul.ac.uk/
-
 Version 1.7.1.
 
-For more information about Vamp plugins, see http://www.vamp-plugins.org/ .
+This project:
+
+    https://code.soundsoftware.ac.uk/projects/qm-vamp-plugins
+
+About Vamp plugins:
+
+    http://www.vamp-plugins.org/
+
+About C4DM:
+
+    http://c4dm.eecs.qmul.ac.uk/
 
 
 About This Release
