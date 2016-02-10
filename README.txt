@@ -20,6 +20,20 @@ new feature since the previous 1.7 release is the addition of some new
 parameters to the BeatTracker plugin.
 
 
+Build Dependencies
+==================
+
+This code depends on the qm-dsp library:
+
+    https://code.soundsoftware.ac.uk/projects/qm-dsp
+
+If you have cloned this code from the Mercurial repository hosted at
+SoundSoftware, you should have got qm-dsp as well as a subdirectory
+(as it is listed as a Mercurial subrepository). Otherwise, you should
+clone that repository inside the working copy of this one before
+building.
+
+
 Plugins Included
 ================
 
