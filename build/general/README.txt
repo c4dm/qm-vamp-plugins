@@ -85,4 +85,25 @@ product for which the terms of the GPL are not appropriate, please
 contact the Centre for Digital Music at Queen Mary, University of
 London for further licensing terms.
 
-Copyright (c) 2006-2016 Queen Mary, University of London.
+Copyright (c) 2006-2015 Queen Mary, University of London.
+
+
+To Install
+==========
+
+Installation depends on your operating system.
+
+    Win 32  -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins\
+
+    Win 64  -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins (x86)\
+
+    OS/X    -> Copy qm-vamp-plugins.dylib, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to $HOME/Library/Audio/Plug-Ins/Vamp/
+               or /Library/Audio/Plug-Ins/Vamp/
+
+    Linux   -> Copy qm-vamp-plugins.so, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to $HOME/vamp/ or /usr/local/lib/vamp/
+               or /usr/lib/vamp/
+
