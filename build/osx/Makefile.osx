@@ -1,7 +1,9 @@
 
-ARCHFLAGS	?= -mmacosx-version-min=10.6 -arch x86_64 -arch i386
+ARCHFLAGS	?= -mmacosx-version-min=10.7 -arch x86_64 -stdlib=libc++
 
-CXXFLAGS 	+= $(ARCHFLAGS) -O3 -ftree-vectorize -I../vamp-plugin-sdk -DUSE_PTHREADS
+CFLAGS 		+= $(ARCHFLAGS) -Wall -O3 -ftree-vectorize -DUSE_PTHREADS
+
+CXXFLAGS 	+= $(CFLAGS) -std=c++11 -I../vamp-plugin-sdk
 
 LDFLAGS	    	+= $(ARCHFLAGS) -dynamiclib -lqm-dsp ../vamp-plugin-sdk/libvamp-sdk.a -framework Accelerate -lpthread -exported_symbols_list vamp-plugin.list -install_name qm-vamp-plugins.dylib
 

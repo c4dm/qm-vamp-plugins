@@ -1,7 +1,7 @@
 /* -*- c-basic-offset: 4 indent-tabs-mode: nil -*-  vi:set ts=8 sts=4 sw=4: */
 
 #ifndef _TRANSCRIPTION_PLUGIN_H_
-#define _TRSNSCRIPTION_PLUGIN_H_
+#define _TRANSCRIPTION_PLUGIN_H_
 
 #include <vamp-sdk/Plugin.h>
 
