@@ -12,7 +12,8 @@
     "libraries": {
         "vamp-plugin-sdk": {
             "vcs": "hg",
-            "service": "soundsoftware"
+            "service": "soundsoftware",
+            "branch": "vamp-kiss-naming"
         },
         "qm-dsp": {
             "vcs": "hg",
