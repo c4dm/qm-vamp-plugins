@@ -4,3 +4,5 @@ syntax: glob
 *.so
 *.dll
 glob:.vext-*.bin
+build/msvc/Debug
+build/msvc/Release

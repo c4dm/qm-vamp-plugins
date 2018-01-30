@@ -1,0 +1,310 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1F995CF1-8B4B-445C-824D-09B3268DB29D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft;$(ProjectDir)\..\..\lib\qm-dsp\ext\cblas\include;$(ProjectDir)\..\..\lib\qm-dsp;$(ProjectDir)\..\..\lib\vamp-plugin-sdk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\g2cstubs.c" />
+    <ClCompile Include="..\..\libmain.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\base\KaiserWindow.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\base\Pitch.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\base\SincWindow.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\chromagram\Chromagram.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\chromagram\ConstantQ.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\chromagram\CQprecalc.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\keydetection\GetKeyMode.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\mfcc\MFCC.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\onsets\DetectionFunction.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\onsets\PeakPicking.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\phasevocoder\PhaseVocoder.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\rateconversion\Decimator.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\rateconversion\DecimatorB.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\rateconversion\Resampler.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\rhythm\BeatSpectrum.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\segmentation\ClusterMeltSegmenter.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\segmentation\cluster_melt.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\segmentation\cluster_segmenter.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\segmentation\Segmenter.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\signalconditioning\DFProcess.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\signalconditioning\Filter.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\signalconditioning\FiltFilt.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\signalconditioning\Framer.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\tempotracking\DownBeat.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\tempotracking\TempoTrack.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\tempotracking\TempoTrackV2.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\tonal\ChangeDetectionFunction.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\tonal\TCSgram.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\tonal\TonalEstimator.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\DCT.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\FFT.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\wavelet\Wavelet.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_ddot.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_dgemm.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_globals.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_xerbla.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\ddot.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dgemm.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dgemv.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dger.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dlamch.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dscal.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dswap.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dtrmm.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dtrmv.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dtrsm.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\idamax.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\lsame.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\dgetf2.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\dgetrf.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\dgetri.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\dlaswp.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\dtrti2.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\dtrtri.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\exit_.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\f77_aloc.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\ieeeck.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\ilaenv.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\iparmq.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\i_nint.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\pow_di.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\s_cat.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\s_cmp.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\s_copy.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\clapack\src\xerbla.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\kissfft\kiss_fft.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\kissfft\tools\kiss_fftr.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\hmm\hmm.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\maths\Correlation.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\maths\CosineDistance.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\maths\KLDivergence.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\maths\MathUtilities.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\maths\pca\pca.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\thread\Thread.cpp" />
+    <ClCompile Include="..\..\lib\vamp-plugin-sdk\examples\AmplitudeFollower.cpp" />
+    <ClCompile Include="..\..\lib\vamp-plugin-sdk\examples\FixedTempoEstimator.cpp" />
+    <ClCompile Include="..\..\lib\vamp-plugin-sdk\src\vamp-sdk\FFT.cpp" />
+    <ClCompile Include="..\..\lib\vamp-plugin-sdk\src\vamp-sdk\PluginAdapter.cpp" />
+    <ClCompile Include="..\..\lib\vamp-plugin-sdk\src\vamp-sdk\RealTime.cpp" />
+    <ClCompile Include="..\..\plugins\AdaptiveSpectrogram.cpp" />
+    <ClCompile Include="..\..\plugins\BarBeatTrack.cpp" />
+    <ClCompile Include="..\..\plugins\BeatTrack.cpp" />
+    <ClCompile Include="..\..\plugins\ChromagramPlugin.cpp" />
+    <ClCompile Include="..\..\plugins\ConstantQSpectrogram.cpp" />
+    <ClCompile Include="..\..\plugins\DWT.cpp" />
+    <ClCompile Include="..\..\plugins\KeyDetect.cpp" />
+    <ClCompile Include="..\..\plugins\MFCCPlugin.cpp" />
+    <ClCompile Include="..\..\plugins\OnsetDetect.cpp" />
+    <ClCompile Include="..\..\plugins\SegmenterPlugin.cpp" />
+    <ClCompile Include="..\..\plugins\SimilarityPlugin.cpp" />
+    <ClCompile Include="..\..\plugins\TonalChangeDetect.cpp" />
+    <ClCompile Include="..\..\plugins\Transcription.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\lib\qm-dsp\build\general\Makefile.inc" />
+    <None Include="..\..\lib\vamp-plugin-sdk\skeleton\Makefile.inc" />
+    <None Include="..\general\Makefile.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\lib\qm-dsp\base\KaiserWindow.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\base\Pitch.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\base\SincWindow.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\base\Window.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\build\mingw32\mkspecs\win32-x-g++\qplatformdefs.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\chromagram\Chromagram.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\chromagram\ConstantQ.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\keydetection\GetKeyMode.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\mfcc\MFCC.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\onsets\DetectionFunction.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\onsets\PeakPicking.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\phasevocoder\PhaseVocoder.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\rateconversion\Decimator.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\rateconversion\DecimatorB.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\rateconversion\Resampler.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\rhythm\BeatSpectrum.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\segmentation\ClusterMeltSegmenter.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\segmentation\cluster_melt.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\segmentation\cluster_segmenter.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\segmentation\segment.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\segmentation\Segmenter.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\signalconditioning\DFProcess.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\signalconditioning\Filter.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\signalconditioning\FiltFilt.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\signalconditioning\Framer.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\tempotracking\DownBeat.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\tempotracking\TempoTrack.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\tempotracking\TempoTrackV2.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\tonal\ChangeDetectionFunction.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\tonal\TCSgram.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\tonal\TonalEstimator.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\transforms\DCT.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\transforms\FFT.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\dsp\wavelet\Wavelet.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\cblas\include\cblas.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\cblas\include\cblas_f77.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\clapack\include\blaswrap.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\clapack\include\clapack.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\clapack\include\f2c.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\kissfft\kissfft.hh" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\kissfft\kiss_fft.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\kissfft\tools\kiss_fftr.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\ext\kissfft\_kiss_fft_guts.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\hmm\hmm.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\include\cblas.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\include\clapack.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\Correlation.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\CosineDistance.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\KLDivergence.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\MathAliases.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\MathUtilities.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\MedianFilter.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\nan-inf.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\pca\pca.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\maths\Polyfit.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\thread\AsynchronousTask.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\thread\BlockAllocator.h" />
+    <ClInclude Include="..\..\lib\qm-dsp\thread\Thread.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\examples\FixedTempoEstimator.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\examples\PercussionOnsetDetector.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\examples\PowerSpectrum.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\examples\SpectralCentroid.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\host\system.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\skeleton\MyPlugin.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\src\vamp-hostsdk\Files.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\src\vamp-sdk\ext\vamp_kiss_fft.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\src\vamp-sdk\ext\vamp_kiss_fftr.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\src\vamp-sdk\ext\vamp_kiss_fft_guts.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\host-c.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\hostguard.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\Plugin.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginBase.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginBufferingAdapter.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginChannelAdapter.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginHostAdapter.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginInputDomainAdapter.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginLoader.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginSummarisingAdapter.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\PluginWrapper.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-hostsdk\RealTime.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\FFT.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\plugguard.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\Plugin.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\PluginAdapter.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\PluginBase.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\RealTime.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp-sdk\vamp-sdk.h" />
+    <ClInclude Include="..\..\lib\vamp-plugin-sdk\vamp\vamp.h" />
+    <ClInclude Include="..\..\plugins\AdaptiveSpectrogram.h" />
+    <ClInclude Include="..\..\plugins\BarBeatTrack.h" />
+    <ClInclude Include="..\..\plugins\BeatTrack.h" />
+    <ClInclude Include="..\..\plugins\ChromagramPlugin.h" />
+    <ClInclude Include="..\..\plugins\ConstantQSpectrogram.h" />
+    <ClInclude Include="..\..\plugins\DWT.h" />
+    <ClInclude Include="..\..\plugins\KeyDetect.h" />
+    <ClInclude Include="..\..\plugins\MFCCPlugin.h" />
+    <ClInclude Include="..\..\plugins\OnsetDetect.h" />
+    <ClInclude Include="..\..\plugins\SegmenterPlugin.h" />
+    <ClInclude Include="..\..\plugins\SimilarityPlugin.h" />
+    <ClInclude Include="..\..\plugins\TonalChangeDetect.h" />
+    <ClInclude Include="..\..\plugins\Transcription.h" />
+    <ClInclude Include="..\linux\amd64\atlas\cmm.h" />
+    <ClInclude Include="..\mingw32\mkspecs\win32-x-g++\qplatformdefs.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
