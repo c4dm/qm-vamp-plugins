@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1F995CF1-8B4B-445C-824D-09B3268DB29D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -39,7 +40,7 @@
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
@@ -69,17 +70,19 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;_USE_MATH_DEFINES;NOMINMAX;kiss_fft_scalar=double;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft;$(ProjectDir)\..\..\lib\qm-dsp\ext\cblas\include;$(ProjectDir)\..\..\lib\qm-dsp;$(ProjectDir)\..\..\lib\vamp-plugin-sdk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft;$(ProjectDir)\..\..\lib\qm-dsp\ext\cblas\include;$(ProjectDir)\..\..\lib\qm-dsp;$(ProjectDir)\..\..\lib\vamp-plugin-sdk;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft\tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>$(ProjectDir)..\mingw32\atlas.lib;$(ProjectDir)..\mingw32\cblas.lib;$(ProjectDir)..\mingw32\lapack.lib;$(ProjectDir)..\mingw32\f77blas.lib;$(ProjectDir)..\mingw32\g2cstubs.lib;$(ProjectDir)\no-vprintf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/EXPORT:vampGetPluginDescriptor %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -98,8 +101,17 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft;$(ProjectDir)\..\..\lib\qm-dsp\ext\cblas\include;$(ProjectDir)\..\..\lib\qm-dsp;$(ProjectDir)\..\..\lib\vamp-plugin-sdk;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft\tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;_USE_MATH_DEFINES;NOMINMAX;kiss_fft_scalar=double;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/EXPORT:vampGetPluginDescriptor %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\g2cstubs.c" />
     <ClCompile Include="..\..\libmain.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\base\KaiserWindow.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\base\Pitch.cpp" />
@@ -131,12 +143,8 @@
     <ClCompile Include="..\..\lib\qm-dsp\dsp\tonal\TCSgram.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\dsp\tonal\TonalEstimator.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\DCT.cpp" />
-    <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\FFT.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\FFTqm.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\dsp\wavelet\Wavelet.cpp" />
-    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_ddot.c" />
-    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_dgemm.c" />
-    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_globals.c" />
-    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_xerbla.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\ddot.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dgemm.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dgemv.c" />

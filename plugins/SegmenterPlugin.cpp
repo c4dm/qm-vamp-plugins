@@ -198,9 +198,9 @@ SegmenterPlugin::setParameter(std::string param, float value)
     }
 
     if (param == "featureType") {
-        if (featureType != feature_types(value)) // feature type changed, create a new segmenter
-        {
-            featureType = feature_types(value);
+		int nval = int(value + 0.5);
+        if (featureType != feature_types(nval)) { // feature type changed, create a new segmenter
+            featureType = feature_types(nval);
             makeSegmenter();
         }
         return;

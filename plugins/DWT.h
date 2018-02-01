@@ -63,8 +63,8 @@ protected:
     float m_threshold;
     float m_absolute;
 
-    vector<float> m_lpd;
-    vector<float> m_hpd;
+    vector<double> m_lpd;
+    vector<double> m_hpd;
 	
     vector< vector<float> > m_samplePass;	
 };

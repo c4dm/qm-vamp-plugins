@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <algorithm>
 
 #include "SimilarityPlugin.h"
 #include "base/Pitch.h"
