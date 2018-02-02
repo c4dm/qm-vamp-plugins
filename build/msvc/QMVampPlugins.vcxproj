@@ -105,10 +105,11 @@
     <ClCompile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft;$(ProjectDir)\..\..\lib\qm-dsp\ext\cblas\include;$(ProjectDir)\..\..\lib\qm-dsp;$(ProjectDir)\..\..\lib\vamp-plugin-sdk;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft\tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;_USE_MATH_DEFINES;NOMINMAX;kiss_fft_scalar=double;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;_USE_MATH_DEFINES;NOMINMAX;ADD_;kiss_fft_scalar=double;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalOptions>/EXPORT:vampGetPluginDescriptor %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>$(ProjectDir)\lib64\libopenblas.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -145,11 +146,14 @@
     <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\DCT.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\dsp\transforms\FFTqm.cpp" />
     <ClCompile Include="..\..\lib\qm-dsp\dsp\wavelet\Wavelet.cpp" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_ddot.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_dgemm.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_globals.c" />
+    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\cblas_xerbla.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\ddot.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dgemm.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dgemv.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dger.c" />
-    <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dlamch.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dscal.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dswap.c" />
     <ClCompile Include="..\..\lib\qm-dsp\ext\cblas\src\dtrmm.c" />
