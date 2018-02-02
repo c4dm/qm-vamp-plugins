@@ -67,6 +67,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>qm-vamp-plugins</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>qm-vamp-plugins</TargetName>
@@ -90,11 +91,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;QMVAMPPLUGINS_EXPORTS;_USE_MATH_DEFINES;NOMINMAX;ADD_;kiss_fft_scalar=double;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\lib\qm-dsp\ext\clapack\include;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft;$(ProjectDir)\..\..\lib\qm-dsp\ext\cblas\include;$(ProjectDir)\..\..\lib\qm-dsp;$(ProjectDir)\..\..\lib\vamp-plugin-sdk;$(ProjectDir)\..\..\lib\qm-dsp\ext\kissfft\tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -102,6 +103,9 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalOptions>/EXPORT:vampGetPluginDescriptor %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>$(ProjectDir)\lib32\atlas.lib;$(ProjectDir)\lib32\cblas.lib;$(ProjectDir)\lib32\lapack.lib;$(ProjectDir)\lib32\f77blas.lib;$(ProjectDir)\lib32\g2cstubs.lib;$(ProjectDir)\lib32\no-vprintf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
