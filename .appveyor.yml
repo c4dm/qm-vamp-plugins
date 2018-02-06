@@ -24,6 +24,4 @@ build:
   
 test_script:
   - set VAMP_PATH=C:\projects\qm-vamp-plugins\build\msvc\Release
-
-# To be restored:
-#  - vamp-plugin-tester-32\vamp-plugin-tester\vamp-plugin-tester.exe -a
+  - vamp-plugin-tester-32\vamp-plugin-tester\vamp-plugin-tester.exe -a
