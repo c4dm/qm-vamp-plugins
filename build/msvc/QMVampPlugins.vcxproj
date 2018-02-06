@@ -64,6 +64,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>qm-vamp-plugins</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -85,7 +86,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>$(ProjectDir)..\mingw32\atlas.lib;$(ProjectDir)..\mingw32\cblas.lib;$(ProjectDir)..\mingw32\lapack.lib;$(ProjectDir)..\mingw32\f77blas.lib;$(ProjectDir)..\mingw32\g2cstubs.lib;$(ProjectDir)\no-vprintf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)\$(Configuration)\qm-dsp.lib;$(ProjectDir)\lib32\atlas.lib;$(ProjectDir)\lib32\cblas.lib;$(ProjectDir)\lib32\lapack.lib;$(ProjectDir)\lib32\f77blas.lib;$(ProjectDir)\lib32\g2cstubs.lib;$(ProjectDir)\lib32\no-vprintf.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/EXPORT:vampGetPluginDescriptor %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
