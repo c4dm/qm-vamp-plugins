@@ -16,12 +16,12 @@ install:
 before_build:
   - set PATH=%PATH%;C:\Program Files (x86)\SMLNJ\bin
   - c:\ProgramData\chocolatey\bin\wget.exe --no-check-certificate https://code.soundsoftware.ac.uk/attachments/download/1581/vamp-plugin-tester-1.1-win32.zip
-  - ps: Expand-Archive vamp-plugin-tester-1.1-win32.zip -DestinationPath vamp-plugin-tester-32
+  - ps: Expand-Archive vamp-plugin-tester-1.1-win32.zip -DestinationPath vamp-plugin-tester-x86
   - vext install
 
 build:
   project: build\msvc\QMVampPlugins.sln
   
 test_script:
-  - set VAMP_PATH=C:\projects\qm-vamp-plugins\build\msvc\Release
-  - vamp-plugin-tester-32\vamp-plugin-tester\vamp-plugin-tester.exe -a
+  - set VAMP_PATH=%APPVEYOR_BUILD_FOLDER%\build\msvc\Release;%APPVEYOR_BUILD_FOLDER%\build\msvc\x64\Release
+  - vamp-plugin-tester-%PLATFORM%\vamp-plugin-tester\vamp-plugin-tester.exe -a
