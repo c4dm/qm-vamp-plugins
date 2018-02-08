@@ -15,8 +15,9 @@ install:
 
 before_build:
   - set PATH=%PATH%;C:\Program Files (x86)\SMLNJ\bin
-  - c:\ProgramData\chocolatey\bin\wget.exe --no-check-certificate https://code.soundsoftware.ac.uk/attachments/download/1581/vamp-plugin-tester-1.1-win32.zip
-  - ps: Expand-Archive vamp-plugin-tester-1.1-win32.zip -DestinationPath vamp-plugin-tester-x86
+  - c:\ProgramData\chocolatey\bin\wget.exe --no-check-certificate https://code.soundsoftware.ac.uk/attachments/download/2330/vamp-plugin-tester-1.1a-win32.zip https://code.soundsoftware.ac.uk/attachments/download/2331/vamp-plugin-tester-1.1a-win64.zip
+  - ps: Expand-Archive vamp-plugin-tester-1.1a-win32.zip -DestinationPath vamp-plugin-tester-x86
+  - ps: Expand-Archive vamp-plugin-tester-1.1a-win64.zip -DestinationPath vamp-plugin-tester-x64
   - vext install
 
 build:
