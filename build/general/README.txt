@@ -91,13 +91,8 @@ Copyright (c) 2006-2015 Queen Mary, University of London.
 To Install
 ==========
 
-Installation depends on your operating system.
-
-    Win 32  -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
-               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins\
-
-    Win 64  -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
-               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins (x86)\
+Installation depends on your operating system and (on Windows) whether
+you are installing a 32- or 64-bit version of the plugin set.
 
     OS/X    -> Copy qm-vamp-plugins.dylib, qm-vamp-plugins.cat and
                qm-vamp-plugins.n3 to $HOME/Library/Audio/Plug-Ins/Vamp/
@@ -106,4 +101,13 @@ Installation depends on your operating system.
     Linux   -> Copy qm-vamp-plugins.so, qm-vamp-plugins.cat and
                qm-vamp-plugins.n3 to $HOME/vamp/ or /usr/local/lib/vamp/
                or /usr/lib/vamp/
+
+    32-bit Windows with 32-bit plugin set, or
+    64-bit Windows with 64-bit plugin set
+            -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins\
+
+    64-bit Windows with 32-bit plugin set
+            -> Copy qm-vamp-plugins.dll, qm-vamp-plugins.cat and
+               qm-vamp-plugins.n3 to C:\Program Files\Vamp Plugins (x86)\
 
