@@ -4,7 +4,7 @@ CFLAGS += -DNDEBUG -O3 -fno-exceptions -Wall -Wextra -fPIC -ffast-math -msse -ms
 
 CXXFLAGS += $(CFLAGS)
 
-LDFLAGS	 += -shared -Wl,-Bstatic -lqm-dsp -lvamp-sdk -Wl,-z,defs -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
+LDFLAGS	 += -shared -Wl,-Bstatic -lqm-dsp -Wl,-z,defs -Wl,-Bdynamic -lpthread -Wl,--version-script=vamp-plugin.map
 
 PLUGIN_EXT   := .so
 

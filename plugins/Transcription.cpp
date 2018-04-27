@@ -18,6 +18,7 @@
 #include <vamp-sdk/PluginAdapter.h>
 #include <math.h>
 #include <stdlib.h>
+#include <algorithm>
 
 using std::string;
 using std::vector;

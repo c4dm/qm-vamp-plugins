@@ -213,6 +213,11 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
+    if (m_inputSampleRate > 384000) {
+        std::cerr << "ConstantQSpectrogram::initialise: Maximum input sample rate is 384000" << std::endl;
+        return false;
+    }
+
     setupConfig();
 
     m_cq = new ConstantQ(m_config);

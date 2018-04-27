@@ -216,6 +216,11 @@ ChromagramPlugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
+    if (m_inputSampleRate > 384000) {
+        std::cerr << "ChromagramPlugin::initialise: Maximum input sample rate is 384000" << std::endl;
+        return false;
+    }
+
     m_chromagram = new Chromagram(m_config);
     m_binsums = vector<double>(m_config.BPO);
 

@@ -25,10 +25,6 @@ using std::vector;
 using std::cerr;
 using std::endl;
 
-#ifndef __GNUC__
-#include <alloca.h>
-#endif
-
 float BarBeatTracker::m_stepSecs = 0.01161; // 512 samples at 44100
 
 class BarBeatTrackerData
@@ -341,14 +337,12 @@ BarBeatTracker::process(const float *const *inputBuffers,
     // We only support a single input channel
 
     const int fl = m_d->dfConfig.frameLength;
-#ifndef __GNUC__
-    double *dfinput = (double *)alloca(fl * sizeof(double));
-#else
-    double dfinput[fl];
-#endif
-    for (int i = 0; i < fl; ++i) dfinput[i] = inputBuffers[0][i];
+	double *dfinput = new double[fl];
 
+	for (int i = 0; i < fl; ++i) dfinput[i] = inputBuffers[0][i];
     double output = m_d->df->processTimeDomain(dfinput);
+
+	delete[] dfinput;
 
     if (m_d->dfOutput.empty()) m_d->origin = timestamp;
 
