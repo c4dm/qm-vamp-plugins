@@ -6,6 +6,9 @@ platform:
   - x86
   - x64
 
+image:
+  - Visual Studio 2017
+
 install:
   - cinst --allow-empty-checksums smlnj wget
   - ps: '"[hostfingerprints]" | Out-File -Encoding "ASCII" -Append $env:USERPROFILE\mercurial.ini'
