@@ -36,10 +36,11 @@ This code depends on the qm-dsp library:
     https://code.soundsoftware.ac.uk/projects/qm-dsp
 
 If you have cloned this code from the Mercurial repository hosted at
-SoundSoftware, you should have got qm-dsp as well as a subdirectory
-(as it is listed as a Mercurial subrepository). Otherwise, you should
-clone that repository inside the working copy of this one before
-building.
+SoundSoftware, you will need to run:
+
+    $ ./repoint install
+
+to install the necessary dependencies.
 
 
 Plugins Included
