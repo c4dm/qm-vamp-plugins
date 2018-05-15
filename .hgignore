@@ -5,7 +5,7 @@ syntax: glob
 *.so
 *.dll
 *.msi
-glob:.vext-*.bin
+glob:.repoint-*.bin
 build/msvc/Debug
 build/msvc/Release
 build/msvc/x64/Debug
