@@ -104,7 +104,7 @@ std::string TonalChangeDetect::getMaker() const
 
 int TonalChangeDetect::getPluginVersion() const
 {
-    return 2;
+    return 3;
 }
 
 std::string TonalChangeDetect::getCopyright() const
@@ -314,6 +314,7 @@ TonalChangeDetect::OutputList TonalChangeDetect::getOutputDescriptors() const
 
 TonalChangeDetect::FeatureSet
 TonalChangeDetect::process(const float *const *inputBuffers,
+
                            Vamp::RealTime timestamp)
 {
     if (!m_chromagram) {
@@ -323,7 +324,10 @@ TonalChangeDetect::process(const float *const *inputBuffers,
 	return FeatureSet();
     }
 
-    if (!m_haveOrigin) m_origin = timestamp;
+    if (!m_haveOrigin) {
+        m_origin = timestamp;
+        m_haveOrigin = true;
+    }
 
     // convert float* to double*
     double *tempBuffer = new double[m_block];
