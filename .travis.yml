@@ -28,5 +28,5 @@ before_install:
   - ./repoint install
 
 script:
-  - make -f build/linux/Makefile.linux64
+  - make -f build/linux/Makefile.linux64 test
   - VAMP_PATH=. ../vamp-plugin-tester/vamp-plugin-tester -a

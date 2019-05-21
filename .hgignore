@@ -13,3 +13,4 @@ build/msvc/x64/Release
 re:^build/mingw32/x64/Release/
 .vs
 *.db
+test/tmp

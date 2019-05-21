@@ -63,6 +63,9 @@ $(QM_DSP_DIR):
 $(PLUGIN):	$(OBJECTS)
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
+test:		all
+		bash test/regression.sh
+
 clean:		
 		$(MAKE) -C $(QM_DSP_DIR) -f $(MF) clean
 		rm -f $(OBJECTS)
