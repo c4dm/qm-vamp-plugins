@@ -15,8 +15,9 @@
             "service": "soundsoftware"
 	},
         "qm-dsp": {
-            "vcs": "hg",
-            "service": "soundsoftware"
+            "vcs": "git",
+            "service": "github",
+            "owner": "c4dm"
         }
     }
 }
