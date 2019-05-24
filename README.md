@@ -57,7 +57,7 @@ gather the necessary library code, and then
  - Windows (MSVC): Use the solution `build/msvc/QMVampPlugins.sln`
 
 
-License
+Licence
 -------
 
 These plugins are provided under the terms of the GNU General Public
