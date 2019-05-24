@@ -60,7 +60,7 @@ MF   := $(wildcard build/*/Makefile$(MAKEFILE_EXT))
 $(QM_DSP_DIR): 
 		$(MAKE) -C $@ -f $(MF)
 
-$(PLUGIN):	$(OBJECTS)
+$(PLUGIN):	$(OBJECTS) $(QM_DSP_DIR)/libqm-dsp.a
 		$(CXX) -o $@ $^ $(LDFLAGS)
 
 test:		all
