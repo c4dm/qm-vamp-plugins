@@ -104,7 +104,7 @@ std::string TonalChangeDetect::getMaker() const
 
 int TonalChangeDetect::getPluginVersion() const
 {
-    return 3;
+    return 4;
 }
 
 std::string TonalChangeDetect::getCopyright() const

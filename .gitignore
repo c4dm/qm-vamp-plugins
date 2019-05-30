@@ -13,5 +13,6 @@ re:^build/mingw32/x64/Release/
 .vs
 *.db
 test/tmp
+test/regression-obtained
 lib/
 *.orig

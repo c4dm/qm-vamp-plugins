@@ -85,7 +85,7 @@ ConstantQSpectrogram::getMaker() const
 int
 ConstantQSpectrogram::getPluginVersion() const
 {
-    return 3;
+    return 4;
 }
 
 string

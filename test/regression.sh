@@ -7,7 +7,6 @@ mydir=$(dirname "$0")
 source_url=https://code.soundsoftware.ac.uk/attachments/download/1698/Zweieck-Duell.ogg
 
 testfile="$mydir/tmp/input.ogg"
-outfile="$mydir/tmp/output.csv"
 truncated_testfile="$mydir/tmp/truncated.ogg"
 
 mkdir -p "$mydir/tmp"
@@ -73,7 +72,10 @@ for id in $ids ; do
         echo "This plugin produces bulky output, using shortened test file"
         infile="$truncated_testfile"
     fi
-    
+
+    mkdir -p "$mydir/regression-obtained/$plugin"
+    outfile="$mydir/regression-obtained/$plugin/$output.csv"
+
     VAMP_PATH="$mydir/.." \
              sonic-annotator \
  	     -d "$id" \

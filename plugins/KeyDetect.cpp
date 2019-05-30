@@ -75,7 +75,7 @@ KeyDetector::getMaker() const
 int
 KeyDetector::getPluginVersion() const
 {
-    return 4;
+    return 5;
 }
 
 string
@@ -288,7 +288,6 @@ KeyDetector::process(const float *const *inputBuffers,
         m_inputFrame[i] = (double)inputBuffers[0][i];
     }
 
-//    int key = (m_getKeyMode->process(m_inputFrame) % 24);
     int key = m_getKeyMode->process(m_inputFrame);
     bool minor = m_getKeyMode->isModeMinor(key);
     int tonic = key;
@@ -301,7 +300,6 @@ KeyDetector::process(const float *const *inputBuffers,
         Feature feature;
         feature.hasTimestamp = true;
         feature.timestamp = now;
-//        feature.timestamp = now;
         feature.values.push_back((float)tonic);
         feature.label = getKeyName(tonic, minor, false);
         returnFeatures[0].push_back(feature); // tonic
