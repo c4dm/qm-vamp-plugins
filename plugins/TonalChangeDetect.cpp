@@ -18,6 +18,9 @@
 #include <dsp/chromagram/Chromagram.h>
 #include <dsp/tonal/ChangeDetectionFunction.h>
 
+using std::cerr;
+using std::endl;
+
 TonalChangeDetect::TonalChangeDetect(float fInputSampleRate)	
     : Vamp::Plugin(fInputSampleRate),
       m_chromagram(0),

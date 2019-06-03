@@ -64,7 +64,7 @@ protected:
     mutable size_t m_step;
     mutable size_t m_block;
 
-    vector<double> m_binsums;
+    std::vector<double> m_binsums;
     size_t m_count;
 };
 
