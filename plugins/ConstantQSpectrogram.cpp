@@ -223,8 +223,8 @@ ConstantQSpectrogram::initialise(size_t channels, size_t stepSize, size_t blockS
     m_cq = new ConstantQ(m_config);
     m_bins = m_cq->getK();
     m_cq->sparsekernel();
-    m_step = m_cq->gethop();
-    m_block = m_cq->getfftlength();
+    m_step = m_cq->getHop();
+    m_block = m_cq->getFFTLength();
 
     if (blockSize != m_block) {
         std::cerr << "ConstantQSpectrogram::initialise: ERROR: supplied block size " << blockSize << " differs from required block size " << m_block << ", initialise failing" << std::endl;
@@ -248,8 +248,8 @@ ConstantQSpectrogram::reset()
 	m_cq = new ConstantQ(m_config);
         m_bins = m_cq->getK();
         m_cq->sparsekernel();
-        m_step = m_cq->gethop();
-        m_block = m_cq->getfftlength();
+        m_step = m_cq->getHop();
+        m_block = m_cq->getFFTLength();
     }
 }
 
@@ -258,8 +258,8 @@ ConstantQSpectrogram::getPreferredStepSize() const
 {
     if (!m_step) {
 	ConstantQ cq(m_config);
-	m_step = cq.gethop();
-	m_block = cq.getfftlength();
+	m_step = cq.getHop();
+	m_block = cq.getFFTLength();
     }
 
     return m_step;
@@ -270,8 +270,8 @@ ConstantQSpectrogram::getPreferredBlockSize() const
 {
     if (!m_block) {
 	ConstantQ cq(m_config);
-	m_step = cq.gethop();
-	m_block = cq.getfftlength();
+	m_step = cq.getHop();
+	m_block = cq.getFFTLength();
     }
 
     return m_block;
