@@ -442,7 +442,7 @@ OnsetDetector::getRemainingFeatures()
     PeakPicking peakPicker(ppParams);
 
     double *ppSrc = new double[ppParams.length];
-    for (unsigned int i = 0; i < ppParams.length; ++i) {
+    for (int i = 0; i < ppParams.length; ++i) {
         ppSrc[i] = m_d->dfOutput[i];
     }
 
@@ -473,10 +473,10 @@ OnsetDetector::getRemainingFeatures()
 	returnFeatures[0].push_back(feature); // onsets are output 0
     }
 
-    for (unsigned int i = 0; i < ppParams.length; ++i) {
+    for (int i = 0; i < ppParams.length; ++i) {
         
         Feature feature;
-//        feature.hasTimestamp = false;
+
         feature.hasTimestamp = true;
 	size_t frame = i * m_d->dfConfig.stepSize;
 	feature.timestamp = m_d->origin + Vamp::RealTime::frame2RealTime
