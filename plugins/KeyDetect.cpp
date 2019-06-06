@@ -16,8 +16,6 @@
 
 using std::string;
 using std::vector;
-//using std::cerr;
-using std::endl;
 
 #include <cmath>
 
@@ -34,6 +32,7 @@ KeyDetector::KeyDetector(float inputSampleRate) :
     m_blockSize(0),
     m_tuningFrequency(440),
     m_length(10),
+    m_rapid(true),
     m_getKeyMode(0),
     m_inputFrame(0),
     m_prevKey(-1)
@@ -81,7 +80,7 @@ KeyDetector::getPluginVersion() const
 string
 KeyDetector::getCopyright() const
 {
-    return "Plugin by Katy Noland and Christian Landone.  Copyright (c) 2006-2009 QMUL - All Rights Reserved";
+    return "Plugin by Katy Noland and Christian Landone.  Copyright (c) 2006-2019 QMUL - All Rights Reserved";
 }
 
 KeyDetector::ParameterList
@@ -111,6 +110,17 @@ KeyDetector::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
+    desc.identifier = "rapid";
+    desc.name = "Rapid";
+    desc.unit = "";
+    desc.description = "Sample intervals without overlap, for speed";
+    desc.minValue = 0;
+    desc.maxValue = 1;
+    desc.defaultValue = 1;
+    desc.isQuantized = true;
+    desc.quantizeStep = 1;
+    list.push_back(desc);
+
     return list;
 }
 
@@ -122,6 +132,9 @@ KeyDetector::getParameter(std::string param) const
     }
     if (param == "length") {
         return m_length;
+    }
+    if (param == "rapid") {
+        return m_rapid ? 1.f : 0.f;
     }
     std::cerr << "WARNING: KeyDetector::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
@@ -135,10 +148,27 @@ KeyDetector::setParameter(std::string param, float value)
         m_tuningFrequency = value;
     } else if (param == "length") {
         m_length = int(value + 0.1);
+    } else if (param == "rapid") {
+        m_rapid = (value > 0.5);
     } else {
         std::cerr << "WARNING: KeyDetector::setParameter: unknown parameter \""
                   << param << "\"" << std::endl;
     }
+
+    // force recalculate:
+    m_stepSize = 0;
+    m_blockSize = 0;
+}
+
+GetKeyMode::Config
+KeyDetector::getConfig() const
+{
+    GetKeyMode::Config config(m_inputSampleRate, m_tuningFrequency);
+    config.hpcpAverage = m_length;
+    config.medianAverage = m_length;
+    config.frameOverlapFactor = (m_rapid ? 1 : 8);
+    config.decimationFactor = 8;
+    return config;
 }
 
 bool
@@ -152,9 +182,7 @@ KeyDetector::initialise(size_t channels, size_t stepSize, size_t blockSize)
     if (channels < getMinChannelCount() ||
 	channels > getMaxChannelCount()) return false;
 
-    m_getKeyMode = new GetKeyMode(int(m_inputSampleRate + 0.1),
-                                  m_tuningFrequency,
-                                  m_length, m_length);
+    m_getKeyMode = new GetKeyMode(getConfig());
 
     m_stepSize = m_getKeyMode->getHopSize();
     m_blockSize = m_getKeyMode->getBlockSize();
@@ -181,9 +209,7 @@ KeyDetector::reset()
 {
     if (m_getKeyMode) {
         delete m_getKeyMode;
-        m_getKeyMode = new GetKeyMode(int(m_inputSampleRate + 0.1),
-                                      m_tuningFrequency,
-                                      m_length, m_length);
+        m_getKeyMode = new GetKeyMode(getConfig());
     }
 
     if (m_inputFrame) {
@@ -289,12 +315,15 @@ KeyDetector::process(const float *const *inputBuffers,
     }
 
     int key = m_getKeyMode->process(m_inputFrame);
-    bool minor = m_getKeyMode->isModeMinor(key);
+
     int tonic = key;
     if (tonic > 12) tonic -= 12;
 
     int prevTonic = m_prevKey;
     if (prevTonic > 12) prevTonic -= 12;
+
+    bool minor = (key > 12);
+    bool prevMinor = (m_prevKey > 12);
 
     if (m_first || (tonic != prevTonic)) {
         Feature feature;
@@ -305,7 +334,7 @@ KeyDetector::process(const float *const *inputBuffers,
         returnFeatures[0].push_back(feature); // tonic
     }
 
-    if (m_first || (minor != (m_getKeyMode->isModeMinor(m_prevKey)))) {
+    if (m_first || (minor != prevMinor)) {
         Feature feature;
         feature.hasTimestamp = true;
         feature.timestamp = now;
@@ -345,13 +374,11 @@ KeyDetector::getRemainingFeatures()
     return FeatureSet();
 }
 
-
 size_t
 KeyDetector::getPreferredStepSize() const
 {
     if (!m_stepSize) {
-        GetKeyMode gkm(int(m_inputSampleRate + 0.1),
-                       m_tuningFrequency, m_length, m_length);
+        GetKeyMode gkm(getConfig());
         m_stepSize = gkm.getHopSize();
         m_blockSize = gkm.getBlockSize();
     }
@@ -362,8 +389,7 @@ size_t
 KeyDetector::getPreferredBlockSize() const
 {
     if (!m_blockSize) {
-        GetKeyMode gkm(int(m_inputSampleRate + 0.1),
-                       m_tuningFrequency, m_length, m_length);
+        GetKeyMode gkm(getConfig());
         m_stepSize = gkm.getHopSize();
         m_blockSize = gkm.getBlockSize();
     }
