@@ -74,7 +74,7 @@ KeyDetector::getMaker() const
 int
 KeyDetector::getPluginVersion() const
 {
-    return 5;
+    return 6;
 }
 
 string
@@ -131,7 +131,7 @@ KeyDetector::getParameter(std::string param) const
         return m_tuningFrequency;
     }
     if (param == "length") {
-        return m_length;
+        return float(m_length);
     }
     if (param == "rapid") {
         return m_rapid ? 1.f : 0.f;
@@ -230,7 +230,7 @@ KeyDetector::getOutputDescriptors() const
 
     float osr = 0.0f;
     if (m_stepSize == 0) (void)getPreferredStepSize();
-    osr = m_inputSampleRate / m_stepSize;
+    osr = m_inputSampleRate / float(m_stepSize);
 
     OutputDescriptor d;
     d.identifier = "tonic";
@@ -297,6 +297,24 @@ KeyDetector::getOutputDescriptors() const
     }
     list.push_back(d);
 
+    d.identifier = "tonicstrength";
+    d.name = "Tonic Strength Plot";
+    d.unit = "";
+    d.description = "Correlation of the chroma vector with stored key profile for each tonic pitch across both major and minor mode";
+    d.hasFixedBinCount = true;
+    d.binCount = 12;
+    d.hasKnownExtents = false;
+    d.isQuantized = false;
+    d.sampleType = OutputDescriptor::OneSamplePerStep;
+    for (int i = 0; i < 12; ++i) {
+        int idx = conversion[i];
+        std::string label = getKeyName(idx > 12 ? idx-12 : idx, 
+                                       i >= 12,
+                                       false);
+        d.binNames.push_back(label);
+    }
+    list.push_back(d);
+
     return list;
 }
 
@@ -356,14 +374,29 @@ KeyDetector::process(const float *const *inputBuffers,
     m_first = false;
 
     Feature ksf;
-    ksf.values.reserve(25);
-    double *keystrengths = m_getKeyMode->getKeyStrengths();
-    for (int i = 0; i < 24; ++i) {
-        if (i == 12) ksf.values.push_back(-1);
-        ksf.values.push_back(keystrengths[conversion[i]-1]);
-    }
     ksf.hasTimestamp = false;
+    ksf.values.reserve(25);
+
+    Feature tsf;
+    tsf.hasTimestamp = false;
+    tsf.values.reserve(12);
+
+    double *keystrengths = m_getKeyMode->getKeyStrengths();
+
+    for (int i = 0; i < 24; ++i) {
+
+        if (i == 12) ksf.values.push_back(-1);
+        ksf.values.push_back(float(keystrengths[conversion[i]-1]));
+
+        if (i < 12) {
+            tsf.values.push_back(float(keystrengths[conversion[i]-1]));
+        } else {
+            tsf.values[i-12] += float(keystrengths[conversion[i]-1]);
+        }
+    }
+    
     returnFeatures[3].push_back(ksf);
+    returnFeatures[4].push_back(tsf);
 
     return returnFeatures;
 }
