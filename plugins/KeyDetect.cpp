@@ -287,6 +287,7 @@ KeyDetector::getOutputDescriptors() const
     d.hasKnownExtents = false;
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::OneSamplePerStep;
+    d.binNames.clear();
     for (int i = 0; i < 24; ++i) {
         if (i == 12) d.binNames.push_back(" ");
         int idx = conversion[i];
@@ -306,6 +307,7 @@ KeyDetector::getOutputDescriptors() const
     d.hasKnownExtents = false;
     d.isQuantized = false;
     d.sampleType = OutputDescriptor::OneSamplePerStep;
+    d.binNames.clear();
     for (int i = 0; i < 12; ++i) {
         int idx = conversion[i];
         std::string label = getKeyName(idx > 12 ? idx-12 : idx, 
