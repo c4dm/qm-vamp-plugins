@@ -298,10 +298,10 @@ KeyDetector::getOutputDescriptors() const
     }
     list.push_back(d);
 
-    d.identifier = "tonicstrength";
-    d.name = "Tonic Strength Plot";
+    d.identifier = "mergedkeystrength";
+    d.name = "Merged Key Strength Plot";
     d.unit = "";
-    d.description = "Correlation of the chroma vector with stored key profile for each tonic pitch across both major and minor mode";
+    d.description = "Correlation of the chroma vector with stored key profile for each key, with major and minor alternatives merged";
     d.hasFixedBinCount = true;
     d.binCount = 12;
     d.hasKnownExtents = false;
@@ -310,9 +310,7 @@ KeyDetector::getOutputDescriptors() const
     d.binNames.clear();
     for (int i = 0; i < 12; ++i) {
         int idx = conversion[i];
-        std::string label = getKeyName(idx > 12 ? idx-12 : idx, 
-                                       i >= 12,
-                                       false);
+        std::string label = getBothKeyNames(idx > 12 ? idx-12 : idx);
         d.binNames.push_back(label);
     }
     list.push_back(d);
@@ -463,4 +461,32 @@ KeyDetector::getKeyName(int index, bool minor, bool includeMajMin) const
     if (minor) return base + " minor";
     else return base + " major";
 }
+
+std::string
+KeyDetector::getBothKeyNames(int index) const
+{
+    // Keys are numbered with 1 => C, 12 => B
+
+    static const char *names[] = {
+        "C maj / A min",
+        "Db maj / Bb min",
+        "D maj / B min",
+        "Eb maj / C min",
+        "E maj / C# min",
+        "F maj / D min",
+        "F#/Gb maj / Eb/D# min",
+        "G maj / E min",
+        "Ab maj / F min",
+        "A maj / F# min",
+        "Bb maj / G min",
+        "B maj / G# min"
+    };
+
+    if (index < 1 || index > 12) {
+        return "(unknown)";
+    }
+
+    return names[index - 1];
+}
+    
 

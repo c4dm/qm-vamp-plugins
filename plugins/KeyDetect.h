@@ -60,6 +60,7 @@ protected:
 
     GetKeyMode::Config getConfig() const;
     std::string getKeyName(int index, bool minor, bool includeMajMin) const;
+    std::string getBothKeyNames(int index) const;
 
     GetKeyMode* m_getKeyMode;
     double* m_inputFrame;
