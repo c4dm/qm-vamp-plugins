@@ -1,4 +1,13 @@
 
+QM Vamp Plugins v1.8 (January 2020)
+-----------------------------------
+
+ - Fix incorrect chromagram tuning in key detector, improving
+   key detector output (thanks to Daniel Schürmann)
+ - Add Merged Key Strength Plot output to key detector
+ - Fix incorrect time alignment of tonal-change plugin outputs
+
+
 QM Vamp Plugins v1.7.1 (September 2015)
 ---------------------------------------
 
