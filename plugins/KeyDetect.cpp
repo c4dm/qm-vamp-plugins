@@ -32,7 +32,6 @@ KeyDetector::KeyDetector(float inputSampleRate) :
     m_blockSize(0),
     m_tuningFrequency(440),
     m_length(10),
-    m_rapid(true),
     m_getKeyMode(0),
     m_inputFrame(0),
     m_prevKey(-1)
@@ -110,17 +109,6 @@ KeyDetector::getParameterDescriptors() const
     desc.quantizeStep = 1;
     list.push_back(desc);
 
-    desc.identifier = "rapid";
-    desc.name = "Rapid";
-    desc.unit = "";
-    desc.description = "Sample intervals without overlap, for speed";
-    desc.minValue = 0;
-    desc.maxValue = 1;
-    desc.defaultValue = 1;
-    desc.isQuantized = true;
-    desc.quantizeStep = 1;
-    list.push_back(desc);
-
     return list;
 }
 
@@ -132,9 +120,6 @@ KeyDetector::getParameter(std::string param) const
     }
     if (param == "length") {
         return float(m_length);
-    }
-    if (param == "rapid") {
-        return m_rapid ? 1.f : 0.f;
     }
     std::cerr << "WARNING: KeyDetector::getParameter: unknown parameter \""
               << param << "\"" << std::endl;
@@ -148,8 +133,6 @@ KeyDetector::setParameter(std::string param, float value)
         m_tuningFrequency = value;
     } else if (param == "length") {
         m_length = int(value + 0.1);
-    } else if (param == "rapid") {
-        m_rapid = (value > 0.5);
     } else {
         std::cerr << "WARNING: KeyDetector::setParameter: unknown parameter \""
                   << param << "\"" << std::endl;
@@ -166,7 +149,7 @@ KeyDetector::getConfig() const
     GetKeyMode::Config config(m_inputSampleRate, m_tuningFrequency);
     config.hpcpAverage = m_length;
     config.medianAverage = m_length;
-    config.frameOverlapFactor = (m_rapid ? 1 : 8);
+    config.frameOverlapFactor = 1;
     config.decimationFactor = 8;
     return config;
 }

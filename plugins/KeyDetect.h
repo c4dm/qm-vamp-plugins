@@ -56,7 +56,6 @@ protected:
     mutable size_t m_blockSize;
     float m_tuningFrequency;
     int m_length;
-    bool m_rapid;
 
     GetKeyMode::Config getConfig() const;
     std::string getKeyName(int index, bool minor, bool includeMajMin) const;
