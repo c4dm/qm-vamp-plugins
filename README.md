@@ -74,4 +74,4 @@ If you wish to use this code in a proprietary application or product
 for which the terms of the GPL are not appropriate, please contact QM
 Innovation https://www.qminnovation.co.uk/ for licensing terms.
 
-Copyright (c) 2006-2019 Queen Mary, University of London.
+Copyright (c) 2006-2020 Queen Mary, University of London.
