@@ -2,6 +2,7 @@
 *.o
 *.obj
 *.so
+*.dylib
 *.dll
 *.msi
 .repoint-*.bin
