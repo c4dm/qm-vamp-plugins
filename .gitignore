@@ -16,3 +16,4 @@ test/tmp
 test/regression-obtained
 lib/
 *.orig
+.repoint*
