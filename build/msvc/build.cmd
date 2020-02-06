@@ -66,6 +66,14 @@ cd build\msvc
 msbuild QMVampPlugins.sln /t:Rebuild /p:Configuration=Release
 if %errorlevel% neq 0 exit /b %errorlevel%
 
+if "%ARG%" == "sign" (
+@echo Signing plugins
+signtool sign /v /n "%NAME%" /t http://time.certum.pl /fd sha1 /a Release\qm-vamp-plugins.dll
+signtool verify /pa Release\qm-vamp-plugins.dll
+signtool sign /v /n "%NAME%" /t http://time.certum.pl /fd sha1 /a x64\Release\qm-vamp-plugins.dll
+signtool verify /pa x64\Release\qm-vamp-plugins.dll
+)
+
 del qm-vamp-plugins.msi
 candle -v qm-vamp-plugins.wxs
 light -ext WixUIExtension -v qm-vamp-plugins.wixobj
