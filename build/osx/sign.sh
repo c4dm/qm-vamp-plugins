@@ -2,5 +2,5 @@
 
 set -eu
 
-codesign -s "Developer ID Application: Chris Cannam" -fv qm-vamp-plugins.dylib
+codesign -s "Developer ID Application: Chris Cannam" --options runtime -fv qm-vamp-plugins.dylib
 
