@@ -2,17 +2,11 @@
     "config": {
         "extdir": "lib"
     },
-    "services": {
-	"soundsoftware": {
-	    "vcs": ["hg", "git"],
-	    "anonymous": "https://code.soundsoftware.ac.uk/{vcs}/{repository}",
-	    "authenticated": "https://{account}@code.soundsoftware.ac.uk/{vcs}/{repository}"
-	}
-    },
     "libraries": {
         "vamp-plugin-sdk": {
-            "vcs": "hg",
-            "service": "soundsoftware"
+            "vcs": "git",
+            "service": "github",
+            "owner": "c4dm"
 	},
         "qm-dsp": {
             "vcs": "git",
